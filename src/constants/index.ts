@@ -1,6 +1,6 @@
-import { ChainId, JSBI, Percent, Token, WETH } from '@pancakeswap-libs/sdk'
+import { ChainId, JSBI, Percent, Token, WKLAY } from '@pancakeswap-libs/sdk'
 
-export const ROUTER_ADDRESS = '0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F'
+export const ROUTER_ADDRESS = '0xecDC29C1A9C286C771686301554C219D4dDaA93e'
 
 // a list of tokens by chain
 type ChainTokenList = {
@@ -28,15 +28,15 @@ export const ETH = new Token(
   'Binance-Peg Ethereum Token'
 )
 
-const WETH_ONLY: ChainTokenList = {
-  [ChainId.MAINNET]: [WETH[ChainId.MAINNET]],
-  [ChainId.BSCTESTNET]: [WETH[ChainId.BSCTESTNET]],
+const WKLAY_ONLY: ChainTokenList = {
+  [ChainId.MAINNET]: [WKLAY[ChainId.MAINNET]],
+  [ChainId.BSCTESTNET]: [WKLAY[ChainId.BSCTESTNET]],
 }
 
 // used to construct intermediary pairs for trading
 export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
-  ...WETH_ONLY,
-  [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, BUSD, BTCB, USDT, UST, ETH],
+  ...WKLAY_ONLY,
+  [ChainId.MAINNET]: [...WKLAY_ONLY[ChainId.MAINNET], DAI, BUSD, BTCB, USDT, UST, ETH],
 }
 
 /**
@@ -49,14 +49,14 @@ export const CUSTOM_BASES: { [chainId in ChainId]?: { [tokenAddress: string]: To
 
 // used for display in the default list when adding liquidity
 export const SUGGESTED_BASES: ChainTokenList = {
-  ...WETH_ONLY,
-  [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, BUSD, USDT],
+  ...WKLAY_ONLY,
+  [ChainId.MAINNET]: [...WKLAY_ONLY[ChainId.MAINNET], DAI, BUSD, USDT],
 }
 
 // used to construct the list of all pairs we consider by default in the frontend
 export const BASES_TO_TRACK_LIQUIDITY_FOR: ChainTokenList = {
-  ...WETH_ONLY,
-  [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, BUSD, BTCB, USDT],
+  ...WKLAY_ONLY,
+  [ChainId.MAINNET]: [...WKLAY_ONLY[ChainId.MAINNET], DAI, BUSD, BTCB, USDT],
 }
 
 export const PINNED_PAIRS: { readonly [chainId in ChainId]?: [Token, Token][] } = {
@@ -86,5 +86,5 @@ export const PRICE_IMPACT_WITHOUT_FEE_CONFIRM_MIN: Percent = new Percent(JSBI.Bi
 // for non expert mode disable swaps above this
 export const BLOCKED_PRICE_IMPACT_NON_EXPERT: Percent = new Percent(JSBI.BigInt(1500), BIPS_BASE) // 15%
 
-// used to ensure the user doesn't send so much ETH so they end up with <.01
-export const MIN_ETH: JSBI = JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(16)) // .01 ETH
+// used to ensure the user doesn't send so much KLAY so they end up with <.01
+export const MIN_KLAY: JSBI = JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(16)) // .01 KLAY

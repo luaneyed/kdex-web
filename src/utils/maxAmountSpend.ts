@@ -1,5 +1,5 @@
-import { CurrencyAmount, ETHER, JSBI } from '@pancakeswap-libs/sdk'
-import { MIN_ETH } from '../constants'
+import { CurrencyAmount, KLAY, JSBI } from '@pancakeswap-libs/sdk'
+import { MIN_KLAY } from '../constants'
 
 /**
  * Given some token amount, return the max that can be spent of it
@@ -7,11 +7,11 @@ import { MIN_ETH } from '../constants'
  */
 export function maxAmountSpend(currencyAmount?: CurrencyAmount): CurrencyAmount | undefined {
   if (!currencyAmount) return undefined
-  if (currencyAmount.currency === ETHER) {
-    if (JSBI.greaterThan(currencyAmount.raw, MIN_ETH)) {
-      return CurrencyAmount.ether(JSBI.subtract(currencyAmount.raw, MIN_ETH))
+  if (currencyAmount.currency === KLAY) {
+    if (JSBI.greaterThan(currencyAmount.raw, MIN_KLAY)) {
+      return CurrencyAmount.klay(JSBI.subtract(currencyAmount.raw, MIN_KLAY))
     }
-    return CurrencyAmount.ether(JSBI.BigInt(0))
+    return CurrencyAmount.klay(JSBI.BigInt(0))
   }
   return currencyAmount
 }

@@ -1,4 +1,4 @@
-import { Currency, CurrencyAmount, currencyEquals, ETHER, Token } from '@pancakeswap-libs/sdk'
+import { Currency, CurrencyAmount, currencyEquals, KLAY, Token } from '@pancakeswap-libs/sdk'
 import React, { CSSProperties, MutableRefObject, useCallback, useMemo } from 'react'
 import { FixedSizeList } from 'react-window'
 import styled from 'styled-components'
@@ -18,7 +18,7 @@ import Loader from '../Loader'
 import { isTokenOnList } from '../../utils'
 
 function currencyKey(currency: Currency): string {
-  return currency instanceof Token ? currency.address : currency === ETHER ? 'ETHER' : ''
+  return currency instanceof Token ? currency.address : currency === KLAY ? 'KLAY' : ''
 }
 
 const StyledBalanceText = styled(Text)`
@@ -159,7 +159,7 @@ export default function CurrencyList({
   onCurrencySelect,
   otherCurrency,
   fixedListRef,
-  showETH,
+  showKLAY,
 }: {
   height: number
   currencies: Currency[]
@@ -167,9 +167,9 @@ export default function CurrencyList({
   onCurrencySelect: (currency: Currency) => void
   otherCurrency?: Currency | null
   fixedListRef?: MutableRefObject<FixedSizeList | undefined>
-  showETH: boolean
+  showKLAY: boolean
 }) {
-  const itemData = useMemo(() => (showETH ? [Currency.ETHER, ...currencies] : [...currencies]), [currencies, showETH])
+  const itemData = useMemo(() => (showKLAY ? [Currency.KLAY, ...currencies] : [...currencies]), [currencies, showKLAY])
 
   const Row = useCallback(
     ({ data, index, style }) => {

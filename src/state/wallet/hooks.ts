@@ -1,4 +1,4 @@
-import { Currency, CurrencyAmount, ETHER, JSBI, Token, TokenAmount } from '@pancakeswap-libs/sdk'
+import { Currency, CurrencyAmount, KLAY, JSBI, Token, TokenAmount } from '@pancakeswap-libs/sdk'
 import { useMemo } from 'react'
 import ERC20_INTERFACE from '../../constants/abis/erc20'
 import { useAllTokens } from '../../hooks/Tokens'
@@ -8,9 +8,9 @@ import { isAddress } from '../../utils'
 import { useSingleContractMultipleData, useMultipleContractSingleData } from '../multicall/hooks'
 
 /**
- * Returns a map of the given addresses to their eventually consistent ETH balances.
+ * Returns a map of the given addresses to their eventually consistent KLAY balances.
  */
-export function useETHBalances(
+export function useKLAYBalances(
   uncheckedAddresses?: (string | undefined)[]
 ): { [address: string]: CurrencyAmount | undefined } {
   const multicallContract = useMulticallContract()
@@ -28,7 +28,7 @@ export function useETHBalances(
 
   const results = useSingleContractMultipleData(
     multicallContract,
-    'getEthBalance',
+    'getKlayBalance',
     addresses.map(address => [address])
   )
 
@@ -36,7 +36,7 @@ export function useETHBalances(
     () =>
       addresses.reduce<{ [address: string]: CurrencyAmount }>((memo, address, i) => {
         const value = results?.[i]?.result?.[0]
-        if (value) memo[address] = CurrencyAmount.ether(JSBI.BigInt(value.toString()))
+        if (value) memo[address] = CurrencyAmount.klay(JSBI.BigInt(value.toString()))
         return memo
       }, {}),
     [addresses, results]
@@ -103,18 +103,18 @@ export function useCurrencyBalances(
   ])
 
   const tokenBalances = useTokenBalances(account, tokens)
-  const containsETH: boolean = useMemo(() => currencies?.some(currency => currency === ETHER) ?? false, [currencies])
-  const ethBalance = useETHBalances(containsETH ? [account] : [])
+  const containsKLAY: boolean = useMemo(() => currencies?.some(currency => currency === KLAY) ?? false, [currencies])
+  const klayBalance = useKLAYBalances(containsKLAY ? [account] : [])
 
   return useMemo(
     () =>
       currencies?.map(currency => {
         if (!account || !currency) return undefined
         if (currency instanceof Token) return tokenBalances[currency.address]
-        if (currency === ETHER) return ethBalance[account]
+        if (currency === KLAY) return klayBalance[account]
         return undefined
       }) ?? [],
-    [account, currencies, ethBalance, tokenBalances]
+    [account, currencies, klayBalance, tokenBalances]
   )
 }
 

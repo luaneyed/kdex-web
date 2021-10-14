@@ -3,7 +3,7 @@ import styled, { ThemeContext } from 'styled-components'
 import { splitSignature } from '@ethersproject/bytes'
 import { Contract } from '@ethersproject/contracts'
 import { TransactionResponse } from '@ethersproject/providers'
-import { Currency, currencyEquals, ETHER, Percent, WETH } from '@pancakeswap-libs/sdk'
+import { Currency, currencyEquals, KLAY, Percent, WKLAY } from '@pancakeswap-libs/sdk'
 import { Button, Flex, Text } from '@pancakeswap-libs/uikit'
 import { ArrowDown, Plus } from 'react-feather'
 import { RouteComponentProps } from 'react-router'
@@ -203,8 +203,8 @@ export default function RemoveLiquidity({
     const liquidityAmount = parsedAmounts[Field.LIQUIDITY]
     if (!liquidityAmount) throw new Error('missing liquidity amount')
 
-    const currencyBIsETH = currencyB === ETHER
-    const oneCurrencyIsETH = currencyA === ETHER || currencyBIsETH
+    const currencyBIsKLAY = currencyB === KLAY
+    const oneCurrencyIsKLAY = currencyA === KLAY || currencyBIsKLAY
     const deadlineFromNow = Math.ceil(Date.now() / 1000) + deadline
 
     if (!tokenA || !tokenB) throw new Error('could not wrap')
@@ -213,14 +213,14 @@ export default function RemoveLiquidity({
     let args: Array<string | string[] | number | boolean>
     // we have approval, use normal remove liquidity
     if (approval === ApprovalState.APPROVED) {
-      // removeLiquidityETH
-      if (oneCurrencyIsETH) {
-        methodNames = ['removeLiquidityETH', 'removeLiquidityETHSupportingFeeOnTransferTokens']
+      // removeLiquidityKLAY
+      if (oneCurrencyIsKLAY) {
+        methodNames = ['removeLiquidityKLAY', 'removeLiquidityKLAYSupportingFeeOnTransferTokens']
         args = [
-          currencyBIsETH ? tokenA.address : tokenB.address,
+          currencyBIsKLAY ? tokenA.address : tokenB.address,
           liquidityAmount.raw.toString(),
-          amountsMin[currencyBIsETH ? Field.CURRENCY_A : Field.CURRENCY_B].toString(),
-          amountsMin[currencyBIsETH ? Field.CURRENCY_B : Field.CURRENCY_A].toString(),
+          amountsMin[currencyBIsKLAY ? Field.CURRENCY_A : Field.CURRENCY_B].toString(),
+          amountsMin[currencyBIsKLAY ? Field.CURRENCY_B : Field.CURRENCY_A].toString(),
           account,
           deadlineFromNow,
         ]
@@ -241,14 +241,14 @@ export default function RemoveLiquidity({
     }
     // we have a signataure, use permit versions of remove liquidity
     else if (signatureData !== null) {
-      // removeLiquidityETHWithPermit
-      if (oneCurrencyIsETH) {
-        methodNames = ['removeLiquidityETHWithPermit', 'removeLiquidityETHWithPermitSupportingFeeOnTransferTokens']
+      // removeLiquidityKLAYWithPermit
+      if (oneCurrencyIsKLAY) {
+        methodNames = ['removeLiquidityKLAYWithPermit', 'removeLiquidityKLAYWithPermitSupportingFeeOnTransferTokens']
         args = [
-          currencyBIsETH ? tokenA.address : tokenB.address,
+          currencyBIsKLAY ? tokenA.address : tokenB.address,
           liquidityAmount.raw.toString(),
-          amountsMin[currencyBIsETH ? Field.CURRENCY_A : Field.CURRENCY_B].toString(),
-          amountsMin[currencyBIsETH ? Field.CURRENCY_B : Field.CURRENCY_A].toString(),
+          amountsMin[currencyBIsKLAY ? Field.CURRENCY_A : Field.CURRENCY_B].toString(),
+          amountsMin[currencyBIsKLAY ? Field.CURRENCY_B : Field.CURRENCY_A].toString(),
           account,
           signatureData.deadline,
           false,
@@ -257,7 +257,7 @@ export default function RemoveLiquidity({
           signatureData.s,
         ]
       }
-      // removeLiquidityETHWithPermit
+      // removeLiquidityKLAYWithPermit
       else {
         methodNames = ['removeLiquidityWithPermit']
         args = [
@@ -400,11 +400,11 @@ export default function RemoveLiquidity({
     [onUserInput]
   )
 
-  const oneCurrencyIsETH = currencyA === ETHER || currencyB === ETHER
-  const oneCurrencyIsWETH = Boolean(
+  const oneCurrencyIsKLAY = currencyA === KLAY || currencyB === KLAY
+  const oneCurrencyIsWKLAY = Boolean(
     chainId &&
-      ((currencyA && currencyEquals(WETH[chainId], currencyA)) ||
-        (currencyB && currencyEquals(WETH[chainId], currencyB)))
+      ((currencyA && currencyEquals(WKLAY[chainId], currencyA)) ||
+        (currencyB && currencyEquals(WKLAY[chainId], currencyB)))
   )
 
   const handleSelectCurrencyA = useCallback(
@@ -546,23 +546,23 @@ export default function RemoveLiquidity({
                           </Text>
                         </RowFixed>
                       </RowBetween>
-                      {chainId && (oneCurrencyIsWETH || oneCurrencyIsETH) ? (
+                      {chainId && (oneCurrencyIsWKLAY || oneCurrencyIsKLAY) ? (
                         <RowBetween style={{ justifyContent: 'flex-end' }}>
-                          {oneCurrencyIsETH ? (
+                          {oneCurrencyIsKLAY ? (
                             <StyledInternalLink
-                              to={`/remove/${currencyA === ETHER ? WETH[chainId].address : currencyIdA}/${
-                                currencyB === ETHER ? WETH[chainId].address : currencyIdB
+                              to={`/remove/${currencyA === KLAY ? WKLAY[chainId].address : currencyIdA}/${
+                                currencyB === KLAY ? WKLAY[chainId].address : currencyIdB
                               }`}
                             >
-                              {TranslateString(1188, 'Receive WBNB')}
+                              {TranslateString(1188, 'Receive WKLAY')}
                             </StyledInternalLink>
-                          ) : oneCurrencyIsWETH ? (
+                          ) : oneCurrencyIsWKLAY ? (
                             <StyledInternalLink
                               to={`/remove/${
-                                currencyA && currencyEquals(currencyA, WETH[chainId]) ? 'BNB' : currencyIdA
-                              }/${currencyB && currencyEquals(currencyB, WETH[chainId]) ? 'BNB' : currencyIdB}`}
+                                currencyA && currencyEquals(currencyA, WKLAY[chainId]) ? 'KLAY' : currencyIdA
+                              }/${currencyB && currencyEquals(currencyB, WKLAY[chainId]) ? 'KLAY' : currencyIdB}`}
                             >
-                              {TranslateString(1190, 'Receive BNB')}
+                              {TranslateString(1190, 'Receive KLAY')}
                             </StyledInternalLink>
                           ) : null}
                         </RowBetween>
@@ -675,7 +675,7 @@ export default function RemoveLiquidity({
 
       {pair ? (
         <AutoColumn style={{ minWidth: '20rem', marginTop: '1rem' }}>
-          <MinimalPositionCard showUnwrapped={oneCurrencyIsWETH} pair={pair} />
+          <MinimalPositionCard showUnwrapped={oneCurrencyIsWKLAY} pair={pair} />
         </AutoColumn>
       ) : null}
     </>

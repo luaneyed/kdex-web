@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { TransactionResponse } from '@ethersproject/providers'
-import { Currency, currencyEquals, ETHER, TokenAmount, WETH } from '@pancakeswap-libs/sdk'
+import { Currency, currencyEquals, KLAY, TokenAmount, WKLAY } from '@pancakeswap-libs/sdk'
 import { Button, CardBody, AddIcon, Text as UIKitText } from '@pancakeswap-libs/uikit'
 import { RouteComponentProps } from 'react-router-dom'
 import { LightCard } from 'components/Card'
@@ -47,10 +47,10 @@ export default function AddLiquidity({
   const currencyB = useCurrency(currencyIdB)
   const TranslateString = useI18n()
 
-  const oneCurrencyIsWBNB = Boolean(
+  const oneCurrencyIsWKLAY = Boolean(
     chainId &&
-      ((currencyA && currencyEquals(currencyA, WETH[chainId])) ||
-        (currencyB && currencyEquals(currencyB, WETH[chainId])))
+      ((currencyA && currencyEquals(currencyA, WKLAY[chainId])) ||
+        (currencyB && currencyEquals(currencyB, WKLAY[chainId])))
   )
   const expertMode = useIsExpertMode()
 
@@ -135,19 +135,19 @@ export default function AddLiquidity({
     let method: (...args: any) => Promise<TransactionResponse>
     let args: Array<string | string[] | number>
     let value: BigNumber | null
-    if (currencyA === ETHER || currencyB === ETHER) {
-      const tokenBIsBNB = currencyB === ETHER
-      estimate = router.estimateGas.addLiquidityETH
-      method = router.addLiquidityETH
+    if (currencyA === KLAY || currencyB === KLAY) {
+      const tokenBIsKLAY = currencyB === KLAY
+      estimate = router.estimateGas.addLiquidityKLAY
+      method = router.addLiquidityKLAY
       args = [
-        wrappedCurrency(tokenBIsBNB ? currencyA : currencyB, chainId)?.address ?? '', // token
-        (tokenBIsBNB ? parsedAmountA : parsedAmountB).raw.toString(), // token desired
-        amountsMin[tokenBIsBNB ? Field.CURRENCY_A : Field.CURRENCY_B].toString(), // token min
-        amountsMin[tokenBIsBNB ? Field.CURRENCY_B : Field.CURRENCY_A].toString(), // eth min
+        wrappedCurrency(tokenBIsKLAY ? currencyA : currencyB, chainId)?.address ?? '', // token
+        (tokenBIsKLAY ? parsedAmountA : parsedAmountB).raw.toString(), // token desired
+        amountsMin[tokenBIsKLAY ? Field.CURRENCY_A : Field.CURRENCY_B].toString(), // token min
+        amountsMin[tokenBIsKLAY ? Field.CURRENCY_B : Field.CURRENCY_A].toString(), // klay min
         account,
         deadlineFromNow,
       ]
-      value = BigNumber.from((tokenBIsBNB ? parsedAmountB : parsedAmountA).raw.toString())
+      value = BigNumber.from((tokenBIsKLAY ? parsedAmountB : parsedAmountA).raw.toString())
     } else {
       estimate = router.estimateGas.addLiquidity
       method = router.addLiquidity
@@ -272,7 +272,7 @@ export default function AddLiquidity({
           history.push(`/add/${newCurrencyIdB}`)
         }
       } else {
-        history.push(`/add/${currencyIdA || 'BNB'}/${newCurrencyIdB}`)
+        history.push(`/add/${currencyIdA || 'KLAY'}/${newCurrencyIdB}`)
       }
     },
     [currencyIdA, history, currencyIdB]
@@ -443,7 +443,7 @@ export default function AddLiquidity({
       </AppBody>
       {pair && !noLiquidity && pairState !== PairState.INVALID ? (
         <AutoColumn style={{ minWidth: '20rem', marginTop: '1rem' }}>
-          <MinimalPositionCard showUnwrapped={oneCurrencyIsWBNB} pair={pair} />
+          <MinimalPositionCard showUnwrapped={oneCurrencyIsWKLAY} pair={pair} />
         </AutoColumn>
       ) : null}
     </>

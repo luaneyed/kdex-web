@@ -26,7 +26,7 @@ export function useEagerConnect() {
         activate(injected, undefined, true).catch(() => {
           setTried(true)
         })
-      } else if (isMobile && window.ethereum && hasSignedIn) {
+      } else if (isMobile && window.klaytn && hasSignedIn) {
         activate(injected, undefined, true).catch(() => {
           setTried(true)
         })
@@ -54,9 +54,9 @@ export function useInactiveListener(suppress = false) {
   const { active, error, activate } = useWeb3ReactCore() // specifically using useWeb3React because of what this hook does
 
   useEffect(() => {
-    const { ethereum } = window
+    const { klaytn } = window
 
-    if (ethereum && ethereum.on && !active && !error && !suppress) {
+    if (klaytn && klaytn.on && !active && !error && !suppress) {
       const handleChainChanged = () => {
         // eat errors
         activate(injected, undefined, true).catch((e) => {
@@ -73,13 +73,13 @@ export function useInactiveListener(suppress = false) {
         }
       }
 
-      ethereum.on('chainChanged', handleChainChanged)
-      ethereum.on('accountsChanged', handleAccountsChanged)
+      klaytn.on('chainChanged', handleChainChanged)
+      klaytn.on('accountsChanged', handleAccountsChanged)
 
       return () => {
-        if (ethereum.removeListener) {
-          ethereum.removeListener('chainChanged', handleChainChanged)
-          ethereum.removeListener('accountsChanged', handleAccountsChanged)
+        if (klaytn.removeListener) {
+          klaytn.removeListener('chainChanged', handleChainChanged)
+          klaytn.removeListener('accountsChanged', handleAccountsChanged)
         }
       }
     }
