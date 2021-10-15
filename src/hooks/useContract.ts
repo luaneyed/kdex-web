@@ -31,8 +31,8 @@ export function useTokenContract(tokenAddress?: string, withSignerIfPossible?: b
 }
 
 export function useWKLAYContract(withSignerIfPossible?: boolean): Contract | null {
-  const { chainId } = useActiveWeb3React()
-  return useContract(chainId ? WKLAY[chainId].address : undefined, WKLAY_ABI, withSignerIfPossible)
+  const { chainId } = useActiveWeb3React();
+  return useContract(chainId ? WKLAY[chainId].address : undefined, WKLAY_ABI, withSignerIfPossible);
 }
 
 export function useENSRegistrarContract(withSignerIfPossible?: boolean): Contract | null {

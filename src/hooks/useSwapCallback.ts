@@ -129,7 +129,7 @@ export function useSwapCallback(
               .then((gasEstimate) => {
                 return {
                   call,
-                  gasEstimate,
+                  gasEstimate: BigNumber.from(gasEstimate.toString()),
                 }
               })
               .catch((gasError) => {

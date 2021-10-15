@@ -59,7 +59,7 @@
         "type": "address"
       }
     ],
-    "name": "getEthBalance",
+    "name": "getKlayBalance",
     "outputs": [
       {
         "name": "balance",

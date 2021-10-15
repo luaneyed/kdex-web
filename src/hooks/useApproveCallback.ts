@@ -1,15 +1,17 @@
-import { MaxUint256 } from '@ethersproject/constants'
-import { TransactionResponse } from '@ethersproject/providers'
-import { Trade, TokenAmount, CurrencyAmount, KLAY } from '@pancakeswap-libs/sdk'
-import { useCallback, useMemo } from 'react'
-import { ROUTER_ADDRESS } from '../constants'
-import { useTokenAllowance } from '../data/Allowances'
-import { Field } from '../state/swap/actions'
-import { useTransactionAdder, useHasPendingApproval } from '../state/transactions/hooks'
-import { computeSlippageAdjustedAmounts } from '../utils/prices'
-import { calculateGasMargin } from '../utils'
-import { useTokenContract } from './useContract'
-import { useActiveWeb3React } from './index'
+import { BigNumber } from '@ethersproject/bignumber';
+import { MaxUint256 } from '@ethersproject/constants';
+import { TransactionResponse } from '@ethersproject/providers';
+import { CurrencyAmount, KLAY, TokenAmount, Trade } from '@pancakeswap-libs/sdk';
+import { useCallback, useMemo } from 'react';
+
+import { useActiveWeb3React } from '.';
+import { ROUTER_ADDRESS } from '../constants';
+import { useTokenAllowance } from '../data/Allowances';
+import { Field } from '../state/swap/actions';
+import { useHasPendingApproval, useTransactionAdder } from '../state/transactions/hooks';
+import { calculateGasMargin } from '../utils';
+import { computeSlippageAdjustedAmounts } from '../utils/prices';
+import { useTokenContract } from './useContract';
 
 export enum ApprovalState {
   UNKNOWN,
@@ -81,7 +83,7 @@ export function useApproveCallback(
     // eslint-disable-next-line consistent-return
     return tokenContract
       .approve(spender, useExact ? amountToApprove.raw.toString() : MaxUint256, {
-        gasLimit: calculateGasMargin(estimatedGas),
+        gasLimit: calculateGasMargin(BigNumber.from(estimatedGas.toString())),
       })
       .then((response: TransactionResponse) => {
         addTransaction(response, {
