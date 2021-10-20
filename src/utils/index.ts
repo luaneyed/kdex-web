@@ -23,7 +23,7 @@ const KLAYTNSCOPE_PREFIXES: { [chainId in ChainId]: string } = {
 }
 
 export function getBscScanLink(chainId: ChainId, data: string, type: 'transaction' | 'token' | 'address'): string {
-  const prefix = `https://${KLAYTNSCOPE_PREFIXES[chainId] || KLAYTNSCOPE_PREFIXES[ChainId.MAINNET]}bscscan.com`
+  const prefix = `https://${KLAYTNSCOPE_PREFIXES[chainId] || KLAYTNSCOPE_PREFIXES[ChainId.CYPRESS]}bscscan.com`
 
   switch (type) {
     case 'transaction': {

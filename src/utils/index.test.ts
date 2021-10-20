@@ -29,13 +29,13 @@ describe('utils', () => {
       expect(getBscScanLink(3, 'abc', 'address')).toEqual('https://bscscan.com/address/abc')
     })
     it('enum', () => {
-      expect(getBscScanLink(ChainId.MAINNET, 'abc', 'address')).toEqual('https://bscscan.com/address/abc')
+      expect(getBscScanLink(ChainId.CYPRESS, 'abc', 'address')).toEqual('https://bscscan.com/address/abc')
     })
   })
 
   describe('#calculateSlippageAmount', () => {
     it('bounds are correct', () => {
-      const tokenAmount = new TokenAmount(new Token(ChainId.MAINNET, AddressZero, 0), '100')
+      const tokenAmount = new TokenAmount(new Token(ChainId.CYPRESS, AddressZero, 0), '100')
       expect(() => calculateSlippageAmount(tokenAmount, -1)).toThrow()
       expect(calculateSlippageAmount(tokenAmount, 0).map((bound) => bound.toString())).toEqual(['100', '100'])
       expect(calculateSlippageAmount(tokenAmount, 100).map((bound) => bound.toString())).toEqual(['99', '101'])
