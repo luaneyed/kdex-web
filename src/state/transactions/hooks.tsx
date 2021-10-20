@@ -23,7 +23,9 @@ export function useTransactionAdder(): (
       if (!account) return
       if (!chainId) return
 
-      const { hash } = response
+      const hash = response.hash ?? (response as any).transactionHash;  //  transactionHash on caver
+      console.log('hash!', hash);
+      // const { hash } = response
       if (!hash) {
         throw Error('No transaction hash found.')
       }

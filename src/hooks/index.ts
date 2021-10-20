@@ -73,14 +73,14 @@ export function useInactiveListener(suppress = false) {
         }
       }
 
-      klaytn.on('chainChanged', handleChainChanged)
-      klaytn.on('accountsChanged', handleAccountsChanged)
+      klaytn.on('networkChanged', handleChainChanged);
+      klaytn.on('accountsChanged', handleAccountsChanged);
 
       return () => {
-        if (klaytn.removeListener) {
-          klaytn.removeListener('chainChanged', handleChainChanged)
-          klaytn.removeListener('accountsChanged', handleAccountsChanged)
-        }
+        // if (klaytn.removeListener) {
+        //   klaytn.removeListener('chainChanged', handleChainChanged)
+        //   klaytn.removeListener('accountsChanged', handleAccountsChanged)
+        // }
       }
     }
     return undefined

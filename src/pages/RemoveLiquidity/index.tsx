@@ -152,6 +152,8 @@ export default function RemoveLiquidity({
       message,
     })
 
+    console.log('STD 1');
+
     library
       .send('eth_signTypedData_v4', [account, data])
       .then(splitSignature)
@@ -164,6 +166,7 @@ export default function RemoveLiquidity({
         })
       })
       .catch((e) => {
+        console.log('STD 2', e);
         // for all errors other than 4001 (EIP-1193 user rejected request), fall back to manual approve
         if (e?.code !== 4001) {
           approveCallback()

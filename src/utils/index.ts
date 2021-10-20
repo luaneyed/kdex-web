@@ -1,12 +1,20 @@
-import { Contract } from '@ethersproject/contracts'
-import { getAddress } from '@ethersproject/address'
-import { AddressZero } from '@ethersproject/constants'
-import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers'
-import { BigNumber } from '@ethersproject/bignumber'
-import { abi as IUniswapV2Router02ABI } from '@uniswap/v2-periphery/build/IUniswapV2Router02.json'
-import { ChainId, JSBI, Percent, Token, CurrencyAmount, Currency, KLAY } from '@pancakeswap-libs/sdk'
-import { ROUTER_ADDRESS } from '../constants'
-import { TokenAddressMap } from '../state/lists/hooks'
+import { getAddress } from '@ethersproject/address';
+import { BigNumber } from '@ethersproject/bignumber';
+import { AddressZero } from '@ethersproject/constants';
+import { Contract } from '@ethersproject/contracts';
+import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
+import { ChainId, Currency, CurrencyAmount, JSBI, KLAY, Percent, Token } from '@pancakeswap-libs/sdk';
+import Caver, { Contract as CaverContract } from 'caver-js';
+
+import { ROUTER_ADDRESS } from '../constants';
+import { TokenAddressMap } from '../state/lists/hooks';
+import { abi as IUniswapV2Router02ABI } from './kdexRouter.json';
+
+// const RPC_URL = 'kenn';
+// export const caver =
+//   typeof window !== 'undefined' && window.klaytn
+//     ? new Caver(window.klaytn)
+//     : new Caver(RPC_URL)
 
 // returns the checksummed address if the address is valid, otherwise returns false
 export function isAddress(value: any): string | false {
@@ -23,18 +31,16 @@ const KLAYTNSCOPE_PREFIXES: { [chainId in ChainId]: string } = {
 }
 
 export function getBscScanLink(chainId: ChainId, data: string, type: 'transaction' | 'token' | 'address'): string {
-  const prefix = `https://${KLAYTNSCOPE_PREFIXES[chainId] || KLAYTNSCOPE_PREFIXES[ChainId.CYPRESS]}bscscan.com`
+  const prefix = `https://${KLAYTNSCOPE_PREFIXES[chainId] || KLAYTNSCOPE_PREFIXES[ChainId.CYPRESS]}scope.klaytn.com`
 
   switch (type) {
     case 'transaction': {
       return `${prefix}/tx/${data}`
     }
-    case 'token': {
-      return `${prefix}/token/${data}`
-    }
+    case 'token':
     case 'address':
     default: {
-      return `${prefix}/address/${data}`
+      return `${prefix}/account/${data}`
     }
   }
 }
@@ -70,7 +76,7 @@ export function calculateSlippageAmount(value: CurrencyAmount, slippage: number)
 
 // account is not optional
 export function getSigner(library: Web3Provider, account: string): JsonRpcSigner {
-  return library.getSigner(account).connectUnchecked()
+  return library.getSigner(account).connectUnchecked();
 }
 
 // account is optional
@@ -79,17 +85,36 @@ export function getProviderOrSigner(library: Web3Provider, account?: string): We
 }
 
 // account is optional
-export function getContract(address: string, ABI: any, library: Web3Provider, account?: string): Contract {
+export function getWeb3Contract(address: string, ABI: any, library: Web3Provider, account?: string): Contract {
   if (!isAddress(address) || address === AddressZero) {
     throw Error(`Invalid 'address' parameter '${address}'.`)
   }
 
+  console.log('new web3 Contract!');
   return new Contract(address, ABI, getProviderOrSigner(library, account) as any)
 }
 
 // account is optional
+export function getCaverContract(address: string, ABI: any, library: Web3Provider, account?: string): CaverContract {
+  if (!isAddress(address) || address === AddressZero) {
+    throw Error(`Invalid 'address' parameter '${address}'.`)
+  }
+
+  // console.log('new caver Contract!', caver.account, caver.abi);
+
+  const { caver } = window;
+  console.log('new caver contract!', caver);
+  /* eslint-disable-next-line new-cap */
+  return new caver.klay.Contract(
+    ABI,
+    address
+  )
+  // contract.options.gas = 3000000
+}
+
+// account is optional
 export function getRouterContract(_: number, library: Web3Provider, account?: string): Contract {
-  return getContract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
+  return getWeb3Contract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
 }
 
 export function escapeRegExp(string: string): string {

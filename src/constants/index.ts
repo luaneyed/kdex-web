@@ -7,26 +7,31 @@ type ChainTokenList = {
   readonly [chainId in ChainId]: Token[]
 }
 
-export const CAKE = new Token(ChainId.CYPRESS, '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', 18, 'CAKE', 'PancakeSwap Token')
-export const WBNB = new Token(ChainId.CYPRESS, '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', 18, 'WBNB', 'Wrapped BNB')
-export const DAI = new Token(ChainId.CYPRESS, '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3', 18, 'DAI', 'Dai Stablecoin')
-export const BUSD = new Token(ChainId.CYPRESS, '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56', 18, 'BUSD', 'Binance USD')
-export const BTCB = new Token(ChainId.CYPRESS, '0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c', 18, 'BTCB', 'Binance BTC')
-export const USDT = new Token(ChainId.CYPRESS, '0x55d398326f99059fF775485246999027B3197955', 18, 'USDT', 'Tether USD')
-export const UST = new Token(
-  ChainId.CYPRESS,
-  '0x23396cF899Ca06c4472205fC903bDB4de249D6fC',
-  18,
-  'UST',
-  'Wrapped UST Token'
-)
-export const ETH = new Token(
-  ChainId.CYPRESS,
-  '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
-  18,
-  'ETH',
-  'Binance-Peg Ethereum Token'
-)
+export const DAMON = new Token(ChainId.BAOBAB, '0x66F80d658792765aE76c64c1110D003930797062', 18, 'DAMON', 'Damon');
+export const KAY = new Token(ChainId.BAOBAB, '0x94e5b0A5fe58595A14d123A27eCc1feAB4D3F5e0', 16, 'KAY', 'Kay');
+export const ROSS = new Token(ChainId.BAOBAB, '0x9f25b88E25F74B711D38C228fabbB5178b5F6864', 8, 'ROSS', 'Ross');
+export const LUAN = new Token(ChainId.BAOBAB, '0x99ac0F642821C33eDcBeaf079Ad691b72b495de0', 6, 'LUAN', 'Luan');
+
+// export const CAKE = new Token(ChainId.CYPRESS, '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', 18, 'CAKE', 'PancakeSwap Token')
+// export const WBNB = new Token(ChainId.CYPRESS, '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', 18, 'WBNB', 'Wrapped BNB')
+// export const DAI = new Token(ChainId.CYPRESS, '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3', 18, 'DAI', 'Dai Stablecoin')
+// export const BUSD = new Token(ChainId.CYPRESS, '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56', 18, 'BUSD', 'Binance USD')
+// export const BTCB = new Token(ChainId.CYPRESS, '0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c', 18, 'BTCB', 'Binance BTC')
+// export const USDT = new Token(ChainId.CYPRESS, '0x55d398326f99059fF775485246999027B3197955', 18, 'USDT', 'Tether USD')
+// export const UST = new Token(
+//   ChainId.CYPRESS,
+//   '0x23396cF899Ca06c4472205fC903bDB4de249D6fC',
+//   18,
+//   'UST',
+//   'Wrapped UST Token'
+// )
+// export const ETH = new Token(
+//   ChainId.CYPRESS,
+//   '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
+//   18,
+//   'ETH',
+//   'Binance-Peg Ethereum Token'
+// )
 
 const WKLAY_ONLY: ChainTokenList = {
   [ChainId.CYPRESS]: [WKLAY[ChainId.CYPRESS]],
@@ -36,7 +41,8 @@ const WKLAY_ONLY: ChainTokenList = {
 // used to construct intermediary pairs for trading
 export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
   ...WKLAY_ONLY,
-  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS], DAI, BUSD, BTCB, USDT, UST, ETH],
+  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS], DAMON, KAY, ROSS, LUAN],
+  [ChainId.BAOBAB]: [...WKLAY_ONLY[ChainId.BAOBAB], DAMON, KAY, ROSS, LUAN],
 }
 
 /**
@@ -50,20 +56,27 @@ export const CUSTOM_BASES: { [chainId in ChainId]?: { [tokenAddress: string]: To
 // used for display in the default list when adding liquidity
 export const SUGGESTED_BASES: ChainTokenList = {
   ...WKLAY_ONLY,
-  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS], DAI, BUSD, USDT],
+  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS], DAMON, LUAN],
+  [ChainId.BAOBAB]: [...WKLAY_ONLY[ChainId.BAOBAB], DAMON, LUAN],
 }
 
 // used to construct the list of all pairs we consider by default in the frontend
 export const BASES_TO_TRACK_LIQUIDITY_FOR: ChainTokenList = {
   ...WKLAY_ONLY,
-  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS], DAI, BUSD, BTCB, USDT],
+  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS], DAMON, KAY, ROSS, LUAN],
+  [ChainId.BAOBAB]: [...WKLAY_ONLY[ChainId.BAOBAB], DAMON, KAY, ROSS, LUAN],
 }
 
 export const PINNED_PAIRS: { readonly [chainId in ChainId]?: [Token, Token][] } = {
   [ChainId.CYPRESS]: [
-    [CAKE, WBNB],
-    [BUSD, USDT],
-    [DAI, USDT],
+    [DAMON, LUAN],
+    [KAY, LUAN],
+    [ROSS, LUAN],
+  ],
+  [ChainId.BAOBAB]: [
+    [DAMON, LUAN],
+    [KAY, LUAN],
+    [ROSS, LUAN],
   ],
 }
 

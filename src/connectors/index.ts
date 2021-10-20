@@ -1,10 +1,11 @@
-import { ConnectorNames } from '@pancakeswap-libs/uikit'
-import { Web3Provider } from '@ethersproject/providers'
-import { InjectedConnector } from '@web3-react/injected-connector'
-import { WalletConnectConnector } from '@web3-react/walletconnect-connector'
-import { WalletLinkConnector } from '@web3-react/walletlink-connector'
-import { BscConnector } from '@binance-chain/bsc-connector'
-import { NetworkConnector } from './NetworkConnector'
+import { Web3Provider } from '@ethersproject/providers';
+import { ConnectorNames } from '@pancakeswap-libs/uikit';
+import { InjectedConnector } from '@web3-react/injected-connector';
+import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
+import { WalletLinkConnector } from '@web3-react/walletlink-connector';
+
+import { KaikasConnector } from './KaikasConnector';
+import { NetworkConnector } from './NetworkConnector';
 
 const NETWORK_URL = process.env.REACT_APP_NETWORK_URL
 
@@ -28,7 +29,7 @@ export const injected = new InjectedConnector({
   supportedChainIds: [8217, 1001],
 })
 
-export const bscConnector = new BscConnector({ supportedChainIds: [1001] })
+export const kaikasConnector = new KaikasConnector({ supportedChainIds: [1001] });
 
 // mainnet only
 export const walletconnect = new WalletConnectConnector({
@@ -49,5 +50,5 @@ export const walletlink = new WalletLinkConnector({
 export const connectorsByName: { [connectorName in ConnectorNames]: any } = {
   [ConnectorNames.Injected]: injected,
   [ConnectorNames.WalletConnect]: walletconnect,
-  [ConnectorNames.BSC]: bscConnector,
+  [ConnectorNames.Kaikas]: kaikasConnector,
 }

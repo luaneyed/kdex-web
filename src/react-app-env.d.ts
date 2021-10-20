@@ -7,13 +7,15 @@ declare module 'jazzicon' {
 declare module 'fortmatic'
 
 interface Window {
-  klaytn?: {
+  ethereum?: {
     isMetaMask?: true
     on?: (...args: any[]) => void
     removeListener?: (...args: any[]) => void
   }
   web3?: any
-  BinanceChain?: BinanceChain
+  klaytn?: any
+  caver?: any
+  // klaytn?: KlaytnAPI
 }
 
 declare module 'content-hash' {
@@ -26,9 +28,10 @@ declare module 'multihashes' {
   declare function toB58String(hash: Uint8Array): string
 }
 
-interface BinanceChain {
-  send: unknown
+interface KlaytnAPI {
+  sendAsync: (options: any, callback: (err, result: any) => void) => void //  https://docs.kaikas.io/02_api_reference/01_klaytn_provider#klaytn.sendasync-options-callback
   enable: () => Promise<string[]>
-  on?: (method: string, listener: (...args: any[]) => void) => void
-  removeListener?: (method: string, listener: (...args: any[]) => void) => void
+  on: (method: 'accountsChanged' | 'networkChanged', listener: (...args: any[]) => void) => void
+  on: (method: 'accountsChanged', listener: (accounts: string[]) => void) => void
+  on: (method: 'networkChanged', listener: () => void) => void
 }

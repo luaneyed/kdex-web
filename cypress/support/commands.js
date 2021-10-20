@@ -69,14 +69,17 @@ class CustomizedBridge extends _Eip1193Bridge {
 
 // sets up the injected provider to be a mock klaytn provider with the given mnemonic/index
 Cypress.Commands.overwrite('visit', (original, url, options) => {
+  console.log('visit!!!');
   return original(url.startsWith('/') && url.length > 2 && !url.startsWith('/#') ? `/#${url}` : url, {
     ...options,
     onBeforeLoad(win) {
       options && options.onBeforeLoad && options.onBeforeLoad(win)
       win.localStorage.clear()
-      const provider = new JsonRpcProvider('https://rinkeby.infura.io/v3/4bf032f2d38a4ed6bb975b80d6340847', 4)
+      // const provider = new JsonRpcProvider('https://rinkeby.infura.io/v3/4bf032f2d38a4ed6bb975b80d6340847', 4)
+      const provider = new JsonRpcProvider('https://api.baobab.klaytn.net:8651', 1001)
       const signer = new Wallet(PRIVATE_KEY_TEST_NEVER_USE, provider)
       win.klaytn = new CustomizedBridge(signer, provider)
+      // win.ethereum = new CustomizedBridge(signer, provider)
     }
   })
 })

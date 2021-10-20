@@ -12,6 +12,9 @@ import Providers from './Providers'
 import 'inter-ui'
 import './i18n'
 
+if ('ethereum' in window) {
+  (window.ethereum as any).autoRefreshOnNetworkChange = false
+}
 if ('klaytn' in window) {
   (window.klaytn as any).autoRefreshOnNetworkChange = false
 }
