@@ -134,12 +134,14 @@ export function useDerivedMintInfo(
     error = 'Connect Wallet'
   }
 
+  const invalid_pair_error = TranslateString(136, 'Invalid pair');
   if (pairState === PairState.INVALID) {
-    error = error ?? TranslateString(136, 'Invalid pair')
+    error = error ?? invalid_pair_error;
   }
 
+  const amount_error = TranslateString(84, 'Enter an amount');
   if (!parsedAmounts[Field.CURRENCY_A] || !parsedAmounts[Field.CURRENCY_B]) {
-    error = error ?? TranslateString(84, 'Enter an amount')
+    error = error ?? amount_error;
   }
 
   const { [Field.CURRENCY_A]: currencyAAmount, [Field.CURRENCY_B]: currencyBAmount } = parsedAmounts
