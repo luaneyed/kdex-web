@@ -7,7 +7,7 @@ import { AlertTriangle } from 'react-feather'
 import useI18n from 'hooks/useI18n'
 import { useActiveWeb3React } from '../../hooks'
 import { useAllTokens } from '../../hooks/Tokens'
-import { getBscScanLink, shortenAddress } from '../../utils'
+import { getKlaytnScopeLink, shortenAddress } from '../../utils'
 import { ExternalLink } from '../Shared'
 import CurrencyLogo from '../CurrencyLogo'
 import Modal from '../Modal'
@@ -74,9 +74,9 @@ function TokenWarningCard({ token }: TokenWarningCardProps) {
               : token.name || token.symbol}{' '}
           </Text>
           {chainId && (
-            <ExternalLink style={{ fontWeight: 400 }} href={getBscScanLink(chainId, token.address, 'token')}>
+            <ExternalLink style={{ fontWeight: 400 }} href={getKlaytnScopeLink(chainId, token.address, 'token')}>
               <Text title={token.address}>
-                {shortenAddress(token.address)} {TranslateString(116, '(View on BscScan)')}
+                {shortenAddress(token.address)} {TranslateString(116, '(View on Klaytnscope)')}
               </Text>
             </ExternalLink>
           )}

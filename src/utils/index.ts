@@ -30,7 +30,7 @@ const KLAYTNSCOPE_PREFIXES: { [chainId in ChainId]: string } = {
   1001: 'baobab.'
 }
 
-export function getBscScanLink(chainId: ChainId, data: string, type: 'transaction' | 'token' | 'address'): string {
+export function getKlaytnScopeLink(chainId: ChainId, data: string, type: 'transaction' | 'token' | 'address'): string {
   const prefix = `https://${KLAYTNSCOPE_PREFIXES[chainId] || KLAYTNSCOPE_PREFIXES[ChainId.CYPRESS]}scope.klaytn.com`
 
   switch (type) {

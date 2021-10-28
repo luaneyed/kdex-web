@@ -3,7 +3,7 @@ import { AddressZero } from '@ethersproject/constants'
 import { TokenAmount, Token, ChainId, Percent, JSBI } from '@pancakeswap-libs/sdk'
 
 import {
-  getBscScanLink,
+  getKlaytnScopeLink,
   calculateSlippageAmount,
   isAddress,
   shortenAddress,
@@ -14,22 +14,22 @@ import {
 describe('utils', () => {
   describe('#getBscScanLink', () => {
     it('correct for tx', () => {
-      expect(getBscScanLink(1, 'abc', 'transaction')).toEqual('https://bscscan.com/tx/abc')
+      expect(getKlaytnScopeLink(1, 'abc', 'transaction')).toEqual('https://bscscan.com/tx/abc')
     })
     it('correct for token', () => {
-      expect(getBscScanLink(1, 'abc', 'token')).toEqual('https://bscscan.com/token/abc')
+      expect(getKlaytnScopeLink(1, 'abc', 'token')).toEqual('https://bscscan.com/token/abc')
     })
     it('correct for address', () => {
-      expect(getBscScanLink(1, 'abc', 'address')).toEqual('https://bscscan.com/address/abc')
+      expect(getKlaytnScopeLink(1, 'abc', 'address')).toEqual('https://bscscan.com/address/abc')
     })
     it('unrecognized chain id defaults to mainnet', () => {
-      expect(getBscScanLink(2, 'abc', 'address')).toEqual('https://bscscan.com/address/abc')
+      expect(getKlaytnScopeLink(2, 'abc', 'address')).toEqual('https://bscscan.com/address/abc')
     })
     it('ropsten', () => {
-      expect(getBscScanLink(3, 'abc', 'address')).toEqual('https://bscscan.com/address/abc')
+      expect(getKlaytnScopeLink(3, 'abc', 'address')).toEqual('https://bscscan.com/address/abc')
     })
     it('enum', () => {
-      expect(getBscScanLink(ChainId.CYPRESS, 'abc', 'address')).toEqual('https://bscscan.com/address/abc')
+      expect(getKlaytnScopeLink(ChainId.CYPRESS, 'abc', 'address')).toEqual('https://bscscan.com/address/abc')
     })
   })
 

@@ -3,7 +3,7 @@ import { AlertCircle, CheckCircle } from 'react-feather'
 import { Text } from '@pancakeswap-libs/uikit'
 import styled, { ThemeContext } from 'styled-components'
 import { useActiveWeb3React } from '../../hooks'
-import { getBscScanLink } from '../../utils'
+import { getKlaytnScopeLink } from '../../utils'
 import { ExternalLink } from '../Shared'
 import { AutoColumn } from '../Column'
 import { AutoRow } from '../Row'
@@ -36,7 +36,7 @@ export default function TransactionPopup({
       </div>
       <AutoColumn gap="8px">
         <Text>{summary ?? `Hash: ${hash.slice(0, 8)}...${hash.slice(58, 65)}`}</Text>
-        {chainId && <ExternalLink href={getBscScanLink(chainId, hash, 'transaction')}>View on bscscan</ExternalLink>}
+        {chainId && <ExternalLink href={getKlaytnScopeLink(chainId, hash, 'transaction')}>View on klaytnscope</ExternalLink>}
       </AutoColumn>
     </RowNoFlex>
   )

@@ -7,7 +7,7 @@ import { useActiveWeb3React } from '../../hooks'
 import { ExternalLink } from '../Shared'
 import { AutoColumn } from '../Column'
 import { RowBetween } from '../Row'
-import { getBscScanLink } from '../../utils'
+import { getKlaytnScopeLink } from '../../utils'
 
 const InputPanel = styled.div`
   display: flex;
@@ -104,8 +104,8 @@ export default function AddressInputPanel({
                 {TranslateString(1138, 'Recipient')}
               </Text>
               {address && chainId && (
-                <ExternalLink href={getBscScanLink(chainId, name ?? address, 'address')} style={{ fontSize: '14px' }}>
-                  {TranslateString(116, '(View on BscScan)')}
+                <ExternalLink href={getKlaytnScopeLink(chainId, name ?? address, 'address')} style={{ fontSize: '14px' }}>
+                  {TranslateString(116, '(View on Klaytnscope)')}
                 </ExternalLink>
               )}
             </RowBetween>
