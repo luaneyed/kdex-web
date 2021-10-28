@@ -69,10 +69,7 @@ export function useApproveCallback(
         console.error('tokenCaverContract is null')
         return
       }
-      estimateApproveGas = (_spender, amount) => {
-        console.log('caver estimate', _spender, amount);
-        return tokenCaverContract.methods.approve(_spender, amount.toString()).estimateGas({ from: account });
-      };
+      estimateApproveGas = (_spender, amount) => tokenCaverContract.methods.approve(_spender, amount.toString()).estimateGas({ from: account });
       sendApprove = (_spender, amount, gasLimit) => tokenCaverContract.methods.approve(_spender, amount).send({ from: account, gas: gasLimit });
     } else {
       if (!tokenContract) {

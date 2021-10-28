@@ -113,8 +113,13 @@ export function getCaverContract(address: string, ABI: any, library: Web3Provide
 }
 
 // account is optional
-export function getRouterContract(_: number, library: Web3Provider, account?: string): Contract {
+export function getRouterWeb3Contract(_: number, library: Web3Provider, account?: string): Contract {
   return getWeb3Contract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
+}
+
+// account is optional
+export function getRouterCaverContract(_: number, library: Web3Provider, account?: string): CaverContract {
+  return getCaverContract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
 }
 
 export function escapeRegExp(string: string): string {

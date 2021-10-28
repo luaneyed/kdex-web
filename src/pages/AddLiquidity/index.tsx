@@ -23,7 +23,7 @@ import { useDerivedMintInfo, useMintActionHandlers, useMintState } from 'state/m
 
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { useIsExpertMode, useUserDeadline, useUserSlippageTolerance } from 'state/user/hooks'
-import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from 'utils'
+import { calculateGasMargin, calculateSlippageAmount, getRouterCaverContract, getRouterWeb3Contract } from 'utils'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { wrappedCurrency } from 'utils/wrappedCurrency'
 import { currencyId } from 'utils/currencyId'
@@ -114,10 +114,12 @@ export default function AddLiquidity({
   const [approvalB, approveBCallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_B], ROUTER_ADDRESS)
 
   const addTransaction = useTransactionAdder()
+  const useCaver = true;
 
   async function onAdd() {
     if (!chainId || !library || !account) return
-    const router = getRouterContract(chainId, library, account)
+    const router = getRouterWeb3Contract(chainId, library, account);
+    const caverRouter = getRouterCaverContract(chainId, library, account);
 
     const { [Field.CURRENCY_A]: parsedAmountA, [Field.CURRENCY_B]: parsedAmountB } = parsedAmounts
     if (!parsedAmountA || !parsedAmountB || !currencyA || !currencyB) {
@@ -131,14 +133,14 @@ export default function AddLiquidity({
 
     const deadlineFromNow = Math.ceil(Date.now() / 1000) + deadline
 
-    let estimate
-    let method: (...args: any) => Promise<TransactionResponse>
+    // let estimate
+    // let method: (...args: any) => Promise<TransactionResponse>
     let args: Array<string | string[] | number>
     let value: BigNumber | null
+    let methodName: string;
     if (currencyA === KLAY || currencyB === KLAY) {
-      const tokenBIsKLAY = currencyB === KLAY
-      estimate = router.estimateGas.addLiquidityKLAY
-      method = router.addLiquidityKLAY
+      const tokenBIsKLAY = currencyB === KLAY;
+      methodName = 'addLiquidityKLAY';
       args = [
         wrappedCurrency(tokenBIsKLAY ? currencyA : currencyB, chainId)?.address ?? '', // token
         (tokenBIsKLAY ? parsedAmountA : parsedAmountB).raw.toString(), // token desired
@@ -149,8 +151,7 @@ export default function AddLiquidity({
       ]
       value = BigNumber.from((tokenBIsKLAY ? parsedAmountB : parsedAmountA).raw.toString())
     } else {
-      estimate = router.estimateGas.addLiquidity
-      method = router.addLiquidity
+      methodName = 'addLiquidity';
       args = [
         wrappedCurrency(currencyA, chainId)?.address ?? '',
         wrappedCurrency(currencyB, chainId)?.address ?? '',
@@ -166,12 +167,20 @@ export default function AddLiquidity({
 
     setAttemptingTxn(true)
     // const aa = await estimate(...args, value ? { value } : {})
-    await estimate(...args, value ? { value } : {})
-      .then((estimatedGasLimit) =>
-        method(...args, {
-          ...(value ? { value } : {}),
-          gasLimit: calculateGasMargin(estimatedGasLimit),
-        }).then((response) => {
+    const option = value ? { value } : {};
+    const estimation = useCaver
+      ? caverRouter.methods[methodName](...args).estimateGas({ from: account, ...option })
+      : router.estimateGas[methodName](...args, option);
+
+    await estimation
+      .then((estimatedGasLimit) => {
+        const gasLimit = calculateGasMargin(BigNumber.from(estimatedGasLimit.toString()));
+        const sentTransaction = useCaver
+          ? caverRouter.methods[methodName](...args).send({ ...option, gas: gasLimit, from: account })
+          : router[methodName](...args, { ...option, gasLimit });
+
+        return sentTransaction
+          .then((response) => {
           setAttemptingTxn(false)
 
           addTransaction(response, {
@@ -181,8 +190,8 @@ export default function AddLiquidity({
           })
 
           setTxHash(response.hash)
-        })
-      )
+        });
+      })
       .catch((e) => {
         setAttemptingTxn(false)
         // we only care if the error is something _other_ than the user rejected the tx

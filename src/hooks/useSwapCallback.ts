@@ -4,7 +4,7 @@ import { JSBI, Percent, Router, SwapParameters, Trade, TradeType } from '@pancak
 import { useMemo } from 'react'
 import { BIPS_BASE, DEFAULT_DEADLINE_FROM_NOW, INITIAL_ALLOWED_SLIPPAGE } from '../constants'
 import { useTransactionAdder } from '../state/transactions/hooks'
-import { calculateGasMargin, getRouterContract, isAddress, shortenAddress } from '../utils'
+import { calculateGasMargin, getRouterWeb3Contract, isAddress, shortenAddress } from '../utils'
 import isZero from '../utils/isZero'
 import { useActiveWeb3React } from './index'
 import useENS from './useENS'
@@ -53,7 +53,7 @@ function useSwapCallArguments(
   return useMemo(() => {
     if (!trade || !recipient || !library || !account || !chainId) return []
 
-    const contract: Contract | null = getRouterContract(chainId, library, account)
+    const contract: Contract | null = getRouterWeb3Contract(chainId, library, account)
     if (!contract) {
       return []
     }
