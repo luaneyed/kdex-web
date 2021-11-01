@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useSingleCallResult } from '../state/multicall/hooks'
 import { isAddress } from '../utils'
 import isZero from '../utils/isZero'
-import { useENSRegistrarContract, useENSResolverContract } from './useContract'
+import { useENSRegistrarContract, useENSResolverEthersContract } from './useContract'
 import useDebounce from './useDebounce'
 
 /**
@@ -23,7 +23,7 @@ export default function useENSName(address?: string): { ENSName: string | null; 
   const registrarContract = useENSRegistrarContract(false)
   const resolverAddress = useSingleCallResult(registrarContract, 'resolver', ensNodeArgument)
   const resolverAddressResult = resolverAddress.result?.[0]
-  const resolverContract = useENSResolverContract(
+  const resolverContract = useENSResolverEthersContract(
     resolverAddressResult && !isZero(resolverAddressResult) ? resolverAddressResult : undefined,
     false
   )

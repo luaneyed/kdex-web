@@ -8,7 +8,7 @@ import Caver, { Contract as CaverContract } from 'caver-js';
 
 import { ROUTER_ADDRESS } from '../constants';
 import { TokenAddressMap } from '../state/lists/hooks';
-import { CommonContract } from './contract';
+import { CaverCommonContract, CommonContract, EthersCommonContract } from './contract';
 import { abi as IUniswapV2Router02ABI } from './kdexRouter.json';
 
 // const RPC_URL = 'kenn';
@@ -113,21 +113,17 @@ export function getCaverContract(address: string, ABI: any, library: Web3Provide
   // contract.options.gas = 3000000
 }
 
+export function getContract(useCaver: boolean, address: string, abi: any, library: Web3Provider, account?: string): CommonContract {
+  const ethersContract = new EthersCommonContract(getEthersContract(address, abi, library, account));
+  
+  return useCaver
+    ? new CaverCommonContract(getCaverContract(address, abi, library, account), ethersContract.interface)
+    : ethersContract;
+}
+
 // account is optional
 export function getRouterContract(useCaver: boolean, _: number, library: Web3Provider, account?: string): CommonContract {
-  return useCaver
-    ? 
-  return getEthersContract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
-}
-
-// account is optional
-export function getRouterEthersContract(_: number, library: Web3Provider, account?: string): Contract {
-  return getEthersContract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
-}
-
-// account is optional
-export function getRouterCaverContract(_: number, library: Web3Provider, account?: string): CaverContract {
-  return getCaverContract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
+  return getContract(useCaver, ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account);
 }
 
 export function escapeRegExp(string: string): string {

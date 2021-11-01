@@ -3,6 +3,7 @@ import { Contract } from '@ethersproject/contracts';
 import { FunctionFragment, Interface } from '@ethersproject/contracts/node_modules/@ethersproject/abi';
 import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { CommonContract } from 'utils/contract';
 
 import { AppDispatch, AppState } from '..';
 import { useActiveWeb3React } from '../../hooks';
@@ -224,7 +225,7 @@ export function useMultipleContractSingleData(
 }
 
 export function useSingleCallResult(
-  contract: Contract | null | undefined,
+  contract: CommonContract | null | undefined,
   methodName: string,
   inputs?: OptionalMethodInputs,
   options?: ListenerOptions

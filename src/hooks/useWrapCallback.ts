@@ -4,7 +4,7 @@ import { tryParseAmount } from '../state/swap/hooks'
 import { useTransactionAdder } from '../state/transactions/hooks'
 import { useCurrencyBalance } from '../state/wallet/hooks'
 import { useActiveWeb3React } from './index'
-import { useWKLAYContract } from './useContract'
+import { useWKLAYContract, useWKLAYEthersContract } from './useContract'
 
 export enum WrapType {
   NOT_APPLICABLE,
@@ -22,10 +22,11 @@ const NOT_APPLICABLE = { wrapType: WrapType.NOT_APPLICABLE }
 export default function useWrapCallback(
   inputCurrency: Currency | undefined,
   outputCurrency: Currency | undefined,
-  typedValue: string | undefined
+  typedValue: string | undefined,
+  useCaver: boolean,
 ): { wrapType: WrapType; execute?: undefined | (() => Promise<void>); inputError?: string } {
   const { chainId, account } = useActiveWeb3React()
-  const wklayContract = useWKLAYContract()
+  const wklayContract = useWKLAYContract(useCaver);
   const balance = useCurrencyBalance(account ?? undefined, inputCurrency)
   // we can always parse the amount typed as the input currency, since wrapping is 1:1
   const inputAmount = useMemo(() => tryParseAmount(typedValue, inputCurrency), [inputCurrency, typedValue])
@@ -43,7 +44,7 @@ export default function useWrapCallback(
           sufficientBalance && inputAmount
             ? async () => {
                 try {
-                  const txReceipt = await wklayContract.deposit({ value: `0x${inputAmount.raw.toString(16)}` })
+                  const txReceipt = await wklayContract.methods.deposit().send({ value: `0x${inputAmount.raw.toString(16)}` })
                   addTransaction(txReceipt, { summary: `Wrap ${inputAmount.toSignificant(6)} KLAY to WKLAY` })
                 } catch (error) {
                   console.error('Could not deposit', error)

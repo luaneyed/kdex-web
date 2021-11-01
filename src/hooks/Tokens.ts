@@ -1,15 +1,15 @@
-import { parseBytes32String } from '@ethersproject/strings'
-import { Currency, KLAY, Token, currencyEquals } from '@pancakeswap-libs/sdk'
-import { useMemo } from 'react'
-import { useSelectedTokenList } from '../state/lists/hooks'
-import { NEVER_RELOAD, useSingleCallResult } from '../state/multicall/hooks'
+import { parseBytes32String } from '@ethersproject/strings';
+import { Currency, currencyEquals, KLAY, Token } from '@pancakeswap-libs/sdk';
+import { useMemo } from 'react';
+
+import { useActiveWeb3React } from '.';
+import { useSelectedTokenList } from '../state/lists/hooks';
+import { NEVER_RELOAD, useSingleCallResult } from '../state/multicall/hooks';
+import { useUserAddedTokens } from '../state/user/hooks';
+import { isAddress } from '../utils';
+import { useBytes32TokenContract, useTokenContract } from './useContract';
+
 // eslint-disable-next-line import/no-cycle
-import { useUserAddedTokens } from '../state/user/hooks'
-import { isAddress } from '../utils'
-
-import { useActiveWeb3React } from './index'
-import { useBytes32TokenContract, useTokenEthersContract } from './useContract'
-
 export function useAllTokens(): { [address: string]: Token } {
   const { chainId } = useActiveWeb3React()
   const userAddedTokens = useUserAddedTokens()
@@ -58,8 +58,9 @@ export function useToken(tokenAddress?: string): Token | undefined | null {
 
   const address = isAddress(tokenAddress)
 
-  const tokenContract = useTokenEthersContract(address || undefined, false)
-  const tokenContractBytes32 = useBytes32TokenContract(address || undefined, false)
+  const useCaver = true;
+  const tokenContract = useTokenContract(useCaver, address || undefined, false);
+  const tokenContractBytes32 = useBytes32TokenContract(useCaver, address || undefined, false);
   const token: Token | undefined = address ? tokens[address] : undefined
 
   const tokenName = useSingleCallResult(token ? undefined : tokenContract, 'name', undefined, NEVER_RELOAD)

@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import ERC20_INTERFACE from '../../constants/abis/erc20'
 import { useAllTokens } from '../../hooks/Tokens'
 import { useActiveWeb3React } from '../../hooks'
-import { useMulticallContract } from '../../hooks/useContract'
+import { useMulticallEthersContract } from '../../hooks/useContract'
 import { isAddress } from '../../utils'
 import { useSingleContractMultipleData, useMultipleContractSingleData } from '../multicall/hooks'
 
@@ -13,7 +13,7 @@ import { useSingleContractMultipleData, useMultipleContractSingleData } from '..
 export function useKLAYBalances(
   uncheckedAddresses?: (string | undefined)[]
 ): { [address: string]: CurrencyAmount | undefined } {
-  const multicallContract = useMulticallContract()
+  const multicallContract = useMulticallEthersContract()
 
   const addresses: string[] = useMemo(
     () =>

@@ -1,45 +1,42 @@
-import React, { useCallback, useContext, useMemo, useState } from 'react'
-import styled, { ThemeContext } from 'styled-components'
-import { splitSignature } from '@ethersproject/bytes'
-import { Contract } from '@ethersproject/contracts'
-import { TransactionResponse } from '@ethersproject/providers'
-import { Currency, currencyEquals, KLAY, Percent, WKLAY } from '@pancakeswap-libs/sdk'
-import { Button, Flex, Text } from '@pancakeswap-libs/uikit'
-import { ArrowDown, Plus } from 'react-feather'
-import { RouteComponentProps } from 'react-router'
+import { BigNumber } from '@ethersproject/bignumber';
+import { splitSignature } from '@ethersproject/bytes';
+import { Contract } from '@ethersproject/contracts';
+import { TransactionResponse } from '@ethersproject/providers';
+import { Currency, currencyEquals, KLAY, Percent, WKLAY } from '@pancakeswap-libs/sdk';
+import { Button, Flex, Text } from '@pancakeswap-libs/uikit';
+import ConnectWalletButton from 'components/ConnectWalletButton';
+import useI18n from 'hooks/useI18n';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
+import { ArrowDown, Plus } from 'react-feather';
+import { RouteComponentProps } from 'react-router';
+import styled, { ThemeContext } from 'styled-components';
 
-import { BigNumber } from '@ethersproject/bignumber'
-import ConnectWalletButton from 'components/ConnectWalletButton'
-import useI18n from 'hooks/useI18n'
-import { AutoColumn, ColumnCenter } from '../../components/Column'
-import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
-import CurrencyInputPanel from '../../components/CurrencyInputPanel'
-import DoubleCurrencyLogo from '../../components/DoubleLogo'
-import { AddRemoveTabs } from '../../components/NavigationTabs'
-import { MinimalPositionCard } from '../../components/PositionCard'
-import { RowBetween, RowFixed } from '../../components/Row'
-
-import Slider from '../../components/Slider'
-import CurrencyLogo from '../../components/CurrencyLogo'
-import { ROUTER_ADDRESS } from '../../constants'
-import { useActiveWeb3React } from '../../hooks'
-import { useCurrency } from '../../hooks/Tokens'
-import { usePairContract } from '../../hooks/useContract'
-
-import { useTransactionAdder } from '../../state/transactions/hooks'
-import { StyledInternalLink } from '../../components/Shared'
-import { calculateGasMargin, calculateSlippageAmount, getRouterEthersContract } from '../../utils'
-import { currencyId } from '../../utils/currencyId'
-import useDebouncedChangeHandler from '../../utils/useDebouncedChangeHandler'
-import { wrappedCurrency } from '../../utils/wrappedCurrency'
-import AppBody from '../AppBody'
-import { ClickableText, Wrapper } from '../Pool/styleds'
-import { useApproveCallback, ApprovalState } from '../../hooks/useApproveCallback'
-import { Dots } from '../../components/swap/styleds'
-import { useBurnActionHandlers, useDerivedBurnInfo, useBurnState } from '../../state/burn/hooks'
-
-import { Field } from '../../state/burn/actions'
-import { useUserDeadline, useUserSlippageTolerance } from '../../state/user/hooks'
+import { AutoColumn, ColumnCenter } from '../../components/Column';
+import CurrencyInputPanel from '../../components/CurrencyInputPanel';
+import CurrencyLogo from '../../components/CurrencyLogo';
+import DoubleCurrencyLogo from '../../components/DoubleLogo';
+import { AddRemoveTabs } from '../../components/NavigationTabs';
+import { MinimalPositionCard } from '../../components/PositionCard';
+import { RowBetween, RowFixed } from '../../components/Row';
+import { StyledInternalLink } from '../../components/Shared';
+import Slider from '../../components/Slider';
+import { Dots } from '../../components/swap/styleds';
+import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal';
+import { ROUTER_ADDRESS } from '../../constants';
+import { useActiveWeb3React } from '../../hooks';
+import { useCurrency } from '../../hooks/Tokens';
+import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback';
+import { usePairContract } from '../../hooks/useContract';
+import { Field } from '../../state/burn/actions';
+import { useBurnActionHandlers, useBurnState, useDerivedBurnInfo } from '../../state/burn/hooks';
+import { useTransactionAdder } from '../../state/transactions/hooks';
+import { useUserDeadline, useUserSlippageTolerance } from '../../state/user/hooks';
+import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from '../../utils';
+import { currencyId } from '../../utils/currencyId';
+import useDebouncedChangeHandler from '../../utils/useDebouncedChangeHandler';
+import { wrappedCurrency } from '../../utils/wrappedCurrency';
+import AppBody from '../AppBody';
+import { ClickableText, Wrapper } from '../Pool/styleds';
 
 const OutlineCard = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.borderColor};
@@ -195,7 +192,8 @@ export default function RemoveLiquidity({
     if (!currencyAmountA || !currencyAmountB) {
       throw new Error('missing currency amounts')
     }
-    const router = getRouterEthersContract(chainId, library, account)
+    const useCaver = true;
+    const router = getRouterContract(useCaver, chainId, library, account);
 
     const amountsMin = {
       [Field.CURRENCY_A]: calculateSlippageAmount(currencyAmountA, allowedSlippage)[0],
@@ -282,7 +280,7 @@ export default function RemoveLiquidity({
     }
     const safeGasEstimates: (BigNumber | undefined)[] = await Promise.all(
       methodNames.map((methodName, index) =>
-        router.estimateGas[methodName](...args)
+        router[methodName](...args).estimateGas({ from: account })
           .then(gas => calculateGasMargin(BigNumber.from(gas.toString())))
           .catch((e) => {
             console.error(`estimateGas failed`, index, methodName, args, e)
