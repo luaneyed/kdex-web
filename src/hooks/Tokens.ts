@@ -8,7 +8,7 @@ import { useUserAddedTokens } from '../state/user/hooks'
 import { isAddress } from '../utils'
 
 import { useActiveWeb3React } from './index'
-import { useBytes32TokenContract, useTokenWeb3Contract } from './useContract'
+import { useBytes32TokenContract, useTokenEthersContract } from './useContract'
 
 export function useAllTokens(): { [address: string]: Token } {
   const { chainId } = useActiveWeb3React()
@@ -58,7 +58,7 @@ export function useToken(tokenAddress?: string): Token | undefined | null {
 
   const address = isAddress(tokenAddress)
 
-  const tokenContract = useTokenWeb3Contract(address || undefined, false)
+  const tokenContract = useTokenEthersContract(address || undefined, false)
   const tokenContractBytes32 = useBytes32TokenContract(address || undefined, false)
   const token: Token | undefined = address ? tokens[address] : undefined
 

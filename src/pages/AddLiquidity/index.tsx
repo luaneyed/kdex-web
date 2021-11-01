@@ -23,7 +23,7 @@ import { useDerivedMintInfo, useMintActionHandlers, useMintState } from 'state/m
 
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { useIsExpertMode, useUserDeadline, useUserSlippageTolerance } from 'state/user/hooks'
-import { calculateGasMargin, calculateSlippageAmount, getRouterCaverContract, getRouterWeb3Contract } from 'utils'
+import { calculateGasMargin, calculateSlippageAmount, getRouterCaverContract, getRouterEthersContract } from 'utils'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { wrappedCurrency } from 'utils/wrappedCurrency'
 import { currencyId } from 'utils/currencyId'
@@ -118,7 +118,7 @@ export default function AddLiquidity({
 
   async function onAdd() {
     if (!chainId || !library || !account) return
-    const router = getRouterWeb3Contract(chainId, library, account);
+    const router = getRouterEthersContract(chainId, library, account);
     const caverRouter = getRouterCaverContract(chainId, library, account);
 
     const { [Field.CURRENCY_A]: parsedAmountA, [Field.CURRENCY_B]: parsedAmountB } = parsedAmounts

@@ -8,6 +8,7 @@ import Caver, { Contract as CaverContract } from 'caver-js';
 
 import { ROUTER_ADDRESS } from '../constants';
 import { TokenAddressMap } from '../state/lists/hooks';
+import { CommonContract } from './contract';
 import { abi as IUniswapV2Router02ABI } from './kdexRouter.json';
 
 // const RPC_URL = 'kenn';
@@ -85,7 +86,7 @@ export function getProviderOrSigner(library: Web3Provider, account?: string): We
 }
 
 // account is optional
-export function getWeb3Contract(address: string, ABI: any, library: Web3Provider, account?: string): Contract {
+export function getEthersContract(address: string, ABI: any, library: Web3Provider, account?: string): Contract {
   if (!isAddress(address) || address === AddressZero) {
     throw Error(`Invalid 'address' parameter '${address}'.`)
   }
@@ -113,8 +114,15 @@ export function getCaverContract(address: string, ABI: any, library: Web3Provide
 }
 
 // account is optional
-export function getRouterWeb3Contract(_: number, library: Web3Provider, account?: string): Contract {
-  return getWeb3Contract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
+export function getRouterContract(useCaver: boolean, _: number, library: Web3Provider, account?: string): CommonContract {
+  return useCaver
+    ? 
+  return getEthersContract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
+}
+
+// account is optional
+export function getRouterEthersContract(_: number, library: Web3Provider, account?: string): Contract {
+  return getEthersContract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
 }
 
 // account is optional

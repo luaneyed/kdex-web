@@ -12,7 +12,7 @@ import { Field } from '../state/swap/actions';
 import { useHasPendingApproval, useTransactionAdder } from '../state/transactions/hooks';
 import { calculateGasMargin } from '../utils';
 import { computeSlippageAdjustedAmounts } from '../utils/prices';
-import { useTokenCaverContract, useTokenWeb3Contract } from './useContract';
+import { useTokenCaverContract, useTokenEthersContract } from './useContract';
 
 export enum ApprovalState {
   UNKNOWN,
@@ -46,7 +46,7 @@ export function useApproveCallback(
       : ApprovalState.APPROVED
   }, [amountToApprove, currentAllowance, pendingApproval, spender])
 
-  const tokenContract = useTokenWeb3Contract(token?.address)
+  const tokenContract = useTokenEthersContract(token?.address)
   const tokenCaverContract = useTokenCaverContract(token?.address)
   const addTransaction = useTransactionAdder()
 
