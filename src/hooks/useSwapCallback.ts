@@ -4,9 +4,10 @@ import { JSBI, Percent, Router, SwapParameters, Trade, TradeType } from '@pancak
 import { useMemo } from 'react'
 import { BIPS_BASE, DEFAULT_DEADLINE_FROM_NOW, INITIAL_ALLOWED_SLIPPAGE } from '../constants'
 import { useTransactionAdder } from '../state/transactions/hooks'
-import { calculateGasMargin, getRouterWeb3Contract, isAddress, shortenAddress } from '../utils'
+import { calculateGasMargin, getRouterCaverContract, getRouterWeb3Contract, isAddress, shortenAddress } from '../utils'
 import isZero from '../utils/isZero'
 import { useActiveWeb3React } from './index'
+import { CaverContract } from './useContract'
 import useENS from './useENS'
 
  enum SwapCallbackState {
@@ -15,22 +16,39 @@ import useENS from './useENS'
   VALID,
 }
 
-interface SwapCall {
+interface Web3SwapCall {
   contract: Contract
   parameters: SwapParameters
 }
 
-interface SuccessfulCall {
-  call: SwapCall
+interface SuccessfulWeb3Call {
+  call: Web3SwapCall
   gasEstimate: BigNumber
 }
 
-interface FailedCall {
-  call: SwapCall
+interface FailedWeb3Call {
+  call: Web3SwapCall
   error: Error
 }
 
-type EstimatedSwapCall = SuccessfulCall | FailedCall
+type EstimatedWeb3SwapCall = SuccessfulWeb3Call | FailedWeb3Call
+
+interface CaverSwapCall {
+  contract: CaverContract
+  parameters: SwapParameters
+}
+
+interface SuccessfulCaverCall {
+  call: Web3SwapCall
+  gasEstimate: BigNumber
+}
+
+interface FailedCaverCall {
+  call: Web3SwapCall
+  error: Error
+}
+
+type EstimatedCaverSwapCall = SuccessfulWeb3Call | FailedWeb3Call
 
 /**
  * Returns the swap calls that can be used to make the trade
@@ -39,12 +57,12 @@ type EstimatedSwapCall = SuccessfulCall | FailedCall
  * @param deadline the deadline for the trade
  * @param recipientAddressOrName
  */
-function useSwapCallArguments(
+function useWeb3SwapCallArguments(
   trade: Trade | undefined, // trade to execute, required
   allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
   deadline: number = DEFAULT_DEADLINE_FROM_NOW, // in seconds from now
   recipientAddressOrName: string | null // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
-): SwapCall[] {
+): Web3SwapCall[] {
   const { account, chainId, library } = useActiveWeb3React()
 
   const { address: recipientAddress } = useENS(recipientAddressOrName)
@@ -54,6 +72,61 @@ function useSwapCallArguments(
     if (!trade || !recipient || !library || !account || !chainId) return []
 
     const contract: Contract | null = getRouterWeb3Contract(chainId, library, account)
+    if (!contract) {
+      return []
+    }
+
+    const swapMethods = []
+
+    swapMethods.push(
+      // @ts-ignore
+      Router.swapCallParameters(trade, {
+        feeOnTransfer: false,
+        allowedSlippage: new Percent(JSBI.BigInt(Math.floor(allowedSlippage)), BIPS_BASE),
+        recipient,
+        ttl: deadline,
+      })
+    )
+
+    if (trade.tradeType === TradeType.EXACT_INPUT) {
+      swapMethods.push(
+        // @ts-ignore
+        Router.swapCallParameters(trade, {
+          feeOnTransfer: true,
+          allowedSlippage: new Percent(JSBI.BigInt(Math.floor(allowedSlippage)), BIPS_BASE),
+          recipient,
+          ttl: deadline,
+        })
+      )
+    }
+
+    return swapMethods.map((parameters) => ({ parameters, contract }))
+  }, [account, allowedSlippage, chainId, deadline, library, recipient, trade])
+}
+
+
+/**
+ * Returns the swap calls that can be used to make the trade
+ * @param trade trade to execute
+ * @param allowedSlippage user allowed slippage
+ * @param deadline the deadline for the trade
+ * @param recipientAddressOrName
+ */
+ function useCaverSwapCallArguments(
+  trade: Trade | undefined, // trade to execute, required
+  allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
+  deadline: number = DEFAULT_DEADLINE_FROM_NOW, // in seconds from now
+  recipientAddressOrName: string | null // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
+): CaverSwapCall[] {
+  const { account, chainId, library } = useActiveWeb3React()
+
+  const { address: recipientAddress } = useENS(recipientAddressOrName)
+  const recipient = recipientAddressOrName === null ? account : recipientAddress
+
+  return useMemo(() => {
+    if (!trade || !recipient || !library || !account || !chainId) return []
+
+    const contract: CaverContract | null = getRouterCaverContract(chainId, library, account)
     if (!contract) {
       return []
     }
@@ -96,7 +169,7 @@ export function useSwapCallback(
 ): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: string | null } {
   const { account, chainId, library } = useActiveWeb3React()
 
-  const swapCalls = useSwapCallArguments(trade, allowedSlippage, deadline, recipientAddressOrName)
+  const swapCalls = useWeb3SwapCallArguments(trade, allowedSlippage, deadline, recipientAddressOrName)
 
   const addTransaction = useTransactionAdder()
 
@@ -117,7 +190,7 @@ export function useSwapCallback(
     return {
       state: SwapCallbackState.VALID,
       callback: async function onSwap(): Promise<string> {
-        const estimatedCalls: EstimatedSwapCall[] = await Promise.all(
+        const estimatedCalls: EstimatedWeb3SwapCall[] = await Promise.all(
           swapCalls.map((call) => {
             const {
               parameters: { methodName, args, value },
@@ -160,12 +233,12 @@ export function useSwapCallback(
 
         // a successful estimation is a bignumber gas estimate and the next call is also a bignumber gas estimate
         const successfulEstimation = estimatedCalls.find(
-          (el, ix, list): el is SuccessfulCall =>
-            'gasEstimate' in el && (ix === list.length - 1 || 'gasEstimate' in list[ix + 1])
+          (call, i, list): call is SuccessfulWeb3Call =>
+            'gasEstimate' in call && (i === list.length - 1 || 'gasEstimate' in list[i + 1])
         )
 
         if (!successfulEstimation) {
-          const errorCalls = estimatedCalls.filter((call): call is FailedCall => 'error' in call)
+          const errorCalls = estimatedCalls.filter((call): call is FailedWeb3Call => 'error' in call)
           if (errorCalls.length > 0) throw errorCalls[errorCalls.length - 1].error
           throw new Error('Unexpected error. Please contact support: none of the calls threw an error')
         }
