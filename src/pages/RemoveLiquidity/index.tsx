@@ -280,7 +280,7 @@ export default function RemoveLiquidity({
     }
     const safeGasEstimates: (BigNumber | undefined)[] = await Promise.all(
       methodNames.map((methodName, index) =>
-        router[methodName](...args).estimateGas({ from: account })
+        router.methods[methodName](...args).estimateGas({ from: account })
           .then(gas => calculateGasMargin(BigNumber.from(gas.toString())))
           .catch((e) => {
             console.error(`estimateGas failed`, index, methodName, args, e)
@@ -298,13 +298,14 @@ export default function RemoveLiquidity({
       console.error('This transaction would fail. Please contact support.')
     } else {
       const methodName = methodNames[indexOfSuccessfulEstimation]
-      const safeGasEstimate = safeGasEstimates[indexOfSuccessfulEstimation]
+      const safeGasEstimate = (safeGasEstimates[indexOfSuccessfulEstimation] as BigNumber).toNumber();
 
       setAttemptingTxn(true)
-      await router[methodName](...args, {
+      await router.methods[methodName](...args).send({
+        from: account,
         gasLimit: safeGasEstimate,
       })
-        .then((response: TransactionResponse) => {
+        .then((response) => {
           setAttemptingTxn(false)
 
           addTransaction(response, {
@@ -313,7 +314,7 @@ export default function RemoveLiquidity({
             } and ${parsedAmounts[Field.CURRENCY_B]?.toSignificant(3)} ${currencyB?.symbol}`,
           })
 
-          setTxHash(response.hash)
+          setTxHash(response.transactionHash)
         })
         .catch((e: Error) => {
           setAttemptingTxn(false)
