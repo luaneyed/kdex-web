@@ -28,7 +28,7 @@ export class EthersCommonContract implements CommonContract {
 
 
 export class CaverCommonContract implements CommonContract {
-  constructor(private readonly origin: CaverContract, private readonly inter: Interface) {}
+  constructor(private readonly origin: CaverContract, private readonly inter: Interface, private readonly account?: string) {}
 
   readonly address = this.origin.options.address;
   
@@ -41,9 +41,10 @@ export class CaverCommonContract implements CommonContract {
       (...args: Array<any>) => {
         const withArgs = (method as any)(...args);
         return ({
-          estimateGas: ({ from, gasLimit, value }: EstimateGasOptions) => withArgs.estimateGas({ from, gas: gasLimit, value }),
-          call: ({ from, gasPrice, gasLimit, value }: CallOptions) => withArgs.call({ from, gasPrice, gas: gasLimit, value }),
-          send: async ({ from, gasPrice, gasLimit, value }: SendOptions): Promise<CommonTransactionReceipt> => {
+          //  todo : remove default account
+          estimateGas: ({ from = this.account, gasLimit, value }: EstimateGasOptions) => withArgs.estimateGas({ from, gas: gasLimit, value }),
+          call: ({ from = this.account, gasPrice, gasLimit, value }: CallOptions) => withArgs.call({ from, gasPrice, gas: gasLimit, value }),
+          send: async ({ from = this.account, gasPrice, gasLimit, value }: SendOptions): Promise<CommonTransactionReceipt> => {
             const r: TransactionReceipt = await withArgs.send({ from, gasPrice, gas: gasLimit, value });
             return {
               to: r.to,
@@ -108,9 +109,9 @@ export interface CommonTransactionReceipt {
   // status?: number
 }
 
-interface EstimateGasOptions { from: string, gasLimit?: number, value?: string | BigNumber }
-interface CallOptions { from: string, gasPrice?: string, gasLimit?: number, value?: string | BigNumber }
-interface SendOptions { from: string, gasPrice?: string, gasLimit: number, value?: string | BigNumber }
+interface EstimateGasOptions { from?: string, gasLimit?: number, value?: string | BigNumber }
+interface CallOptions { from?: string, gasPrice?: string, gasLimit?: number, value?: string | BigNumber }
+interface SendOptions { from?: string, gasPrice?: string, gasLimit?: number, value?: string | BigNumber }
 
 export interface CommonContract {
   readonly address: string;

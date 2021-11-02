@@ -96,7 +96,7 @@ export function getEthersContract(address: string, ABI: any, library: Web3Provid
 }
 
 // account is optional
-export function getCaverContract(address: string, ABI: any, library: Web3Provider, account?: string): CaverContract {
+export function getCaverContract(address: string, ABI: any): CaverContract {
   if (!isAddress(address) || address === AddressZero) {
     throw Error(`Invalid 'address' parameter '${address}'.`)
   }
@@ -114,11 +114,11 @@ export function getCaverContract(address: string, ABI: any, library: Web3Provide
 }
 
 export function getContract(useCaver: boolean, address: string, abi: any, library: Web3Provider, account?: string): CommonContract {
-  const ethersContract = new EthersCommonContract(getEthersContract(address, abi, library, account));
+  const ethersContract = getEthersContract(address, abi, library, account);
   
   return useCaver
-    ? new CaverCommonContract(getCaverContract(address, abi, library, account), ethersContract.interface)
-    : ethersContract;
+    ? new CaverCommonContract(getCaverContract(address, abi), ethersContract.interface, account)
+    : new EthersCommonContract(ethersContract);
 }
 
 // account is optional

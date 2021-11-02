@@ -4,7 +4,7 @@ import { abi as IUniswapV2PairABI } from '@uniswap/v2-core/build/IUniswapV2Pair.
 import { useMemo } from 'react';
 import { CaverContract, CommonContract } from 'utils/contract';
 
-import { useActiveWeb3React } from '.';
+import { useActiveCaverReact, useActiveWeb3React } from '.';
 import ENS_PUBLIC_RESOLVER_ABI from '../constants/abis/ens-public-resolver.json';
 import ENS_ABI from '../constants/abis/ens-registrar.json';
 import { ERC20_BYTES32_ABI } from '../constants/abis/erc20';
@@ -15,12 +15,15 @@ import { getCaverContract, getContract, getEthersContract } from '../utils';
 
 // returns null on errors
 function useContract(useCaver: boolean, address: string | undefined, ABI: any, withSignerIfPossible = true): CommonContract | null {
-  const { library, account, connector } = useActiveWeb3React()
+  const { library, account: web3Account } = useActiveWeb3React();
+  const { account: caverAccount } = useActiveCaverReact();
   // console.log('connector!', connector);
   // console.log('library!', library);
   // console.log('account!', account);
 
   return useMemo(() => {
+    const account = useCaver ? web3Account : caverAccount;
+
     if (!address || !ABI || !library) return null
     try {
       return getContract(useCaver, address, ABI, library, withSignerIfPossible && account ? account : undefined)
@@ -28,7 +31,7 @@ function useContract(useCaver: boolean, address: string | undefined, ABI: any, w
       console.error('Failed to get contract', error)
       return null
     }
-  }, [useCaver, address, ABI, library, withSignerIfPossible, account])
+  }, [useCaver, address, ABI, library, withSignerIfPossible, web3Account, caverAccount])
 }
 
 // returns null on errors
@@ -63,7 +66,19 @@ export function useWKLAYEthersContract(withSignerIfPossible?: boolean): Contract
   return useEthersContract(chainId ? WKLAY[chainId].address : undefined, WKLAY_ABI, withSignerIfPossible);
 }
 
-export function useENSRegistrarContract(withSignerIfPossible?: boolean): Contract | null {
+export function useENSRegistrarContract(useCaver: boolean, withSignerIfPossible?: boolean): CommonContract | null {
+  const { chainId } = useActiveWeb3React()
+  let address: string | undefined
+  if (chainId) {
+    switch (chainId) {
+      case ChainId.CYPRESS:
+      case ChainId.BAOBAB:
+    }
+  }
+  return useContract(useCaver, address, ENS_ABI, withSignerIfPossible);
+}
+
+export function useENSRegistrarEthersContract(withSignerIfPossible?: boolean): Contract | null {
   const { chainId } = useActiveWeb3React()
   let address: string | undefined
   if (chainId) {
@@ -73,6 +88,10 @@ export function useENSRegistrarContract(withSignerIfPossible?: boolean): Contrac
     }
   }
   return useEthersContract(address, ENS_ABI, withSignerIfPossible)
+}
+
+export function useENSResolverContract(useCaver: boolean, address: string | undefined, withSignerIfPossible?: boolean): CommonContract | null {
+  return useContract(useCaver, address, ENS_PUBLIC_RESOLVER_ABI, withSignerIfPossible)
 }
 
 export function useENSResolverEthersContract(address: string | undefined, withSignerIfPossible?: boolean): Contract | null {

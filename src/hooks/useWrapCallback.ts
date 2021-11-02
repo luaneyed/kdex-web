@@ -60,7 +60,7 @@ export default function useWrapCallback(
           sufficientBalance && inputAmount
             ? async () => {
                 try {
-                  const txReceipt = await wklayContract.withdraw(`0x${inputAmount.raw.toString(16)}`)
+                  const txReceipt = await wklayContract.methods.withdraw(`0x${inputAmount.raw.toString(16)}`).send({})
                   addTransaction(txReceipt, { summary: `Unwrap ${inputAmount.toSignificant(6)} WKLAY to KLAY` })
                 } catch (error) {
                   console.error('Could not withdraw', error)

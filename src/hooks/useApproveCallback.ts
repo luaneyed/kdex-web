@@ -111,7 +111,7 @@ export function useApproveCallback(
         console.error('Failed to approve token', error)
         throw error
       })
-  }, [account, approvalState, token, tokenContract, useCaver, amountToApprove, spender, addTransaction])
+  }, [account, approvalState, token, tokenContract, amountToApprove, spender, addTransaction]);
 
   return [approvalState, approve]
 }

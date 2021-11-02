@@ -5,11 +5,11 @@ import { useMemo } from 'react';
 import { useActiveWeb3React } from '.';
 import { useSelectedTokenList } from '../state/lists/hooks';
 import { NEVER_RELOAD, useSingleCallResult } from '../state/multicall/hooks';
+// eslint-disable-next-line import/no-cycle
 import { useUserAddedTokens } from '../state/user/hooks';
 import { isAddress } from '../utils';
 import { useBytes32TokenContract, useTokenContract } from './useContract';
 
-// eslint-disable-next-line import/no-cycle
 export function useAllTokens(): { [address: string]: Token } {
   const { chainId } = useActiveWeb3React()
   const userAddedTokens = useUserAddedTokens()

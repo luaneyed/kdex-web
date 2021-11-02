@@ -181,8 +181,10 @@ export function useSwapCallback(
           gasEstimate,
         } = successfulEstimation
 
-        return contract[methodName](...args, {
-          gasLimit: calculateGasMargin(gasEstimate),
+        console.log('before swapping', methodName, args, value, gasEstimate, contract);
+
+        return contract.methods[methodName](...args).send({
+          gasLimit: calculateGasMargin(gasEstimate).toNumber(),
           ...(value && !isZero(value) ? { value, from: account } : { from: account }),
         })
           .then((response: any) => {
