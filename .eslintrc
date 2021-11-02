@@ -33,6 +33,7 @@
     "@typescript-eslint/no-explicit-any": 0,
     "radix": 0,
     "import/no-extraneous-dependencies": 0,
+    "import/prefer-default-export": 0,
     "no-case-declarations": 0,
     "no-await-in-loop": 0,
     "no-param-reassign": 0,

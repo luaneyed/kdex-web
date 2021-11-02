@@ -1,12 +1,13 @@
-import React from 'react'
-import { createWeb3ReactRoot, Web3ReactProvider } from '@web3-react/core'
-import { createCaverJsReactRoot, CaverJsReactProvider } from '@sixnetwork/caverjs-react-core'
-import { Provider } from 'react-redux'
-import { ModalProvider } from '@pancakeswap-libs/uikit'
-import { NetworkContextName } from './constants'
-import store from './state'
-import { getCaverLibrary, getWeb3Library } from './utils/getLibrary'
-import { ThemeContextProvider } from './ThemeContext'
+import { ModalProvider } from '@pancakeswap-libs/uikit';
+import { CaverJsReactProvider, createCaverJsReactRoot } from '@sixnetwork/caverjs-react-core';
+import { createWeb3ReactRoot, Web3ReactProvider } from '@web3-react/core';
+import React from 'react';
+import { Provider } from 'react-redux';
+
+import { NetworkContextName } from './constants';
+import store from './state';
+import { ThemeContextProvider } from './ThemeContext';
+import { getCaverLibrary, getWeb3Library } from './utils/getLibrary';
 
 const Web3ProviderNetwork = createWeb3ReactRoot(NetworkContextName)
 const CaverJsProviderNetwork = createCaverJsReactRoot(NetworkContextName)
