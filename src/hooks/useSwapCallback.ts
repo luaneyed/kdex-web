@@ -1,13 +1,14 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { Contract } from '@ethersproject/contracts'
-import { JSBI, Percent, Router, SwapParameters, Trade, TradeType } from '@pancakeswap-libs/sdk'
-import { useMemo } from 'react'
-import { BIPS_BASE, DEFAULT_DEADLINE_FROM_NOW, INITIAL_ALLOWED_SLIPPAGE } from '../constants'
-import { useTransactionAdder } from '../state/transactions/hooks'
-import { calculateGasMargin, getRouterWeb3Contract, isAddress, shortenAddress } from '../utils'
-import isZero from '../utils/isZero'
-import { useActiveWeb3React } from './index'
-import useENS from './useENS'
+import { BigNumber } from '@ethersproject/bignumber';
+import { JSBI, Percent, Router, SwapParameters, Trade, TradeType } from '@pancakeswap-libs/sdk';
+import { useMemo } from 'react';
+import { CommonContract } from 'utils/contract';
+
+import { useActiveWeb3React } from '.';
+import { BIPS_BASE, DEFAULT_DEADLINE_FROM_NOW, INITIAL_ALLOWED_SLIPPAGE } from '../constants';
+import { useTransactionAdder } from '../state/transactions/hooks';
+import { calculateGasMargin, getRouterContract, isAddress, shortenAddress } from '../utils';
+import isZero from '../utils/isZero';
+import useENS from './useENS';
 
  enum SwapCallbackState {
   INVALID,
@@ -16,7 +17,7 @@ import useENS from './useENS'
 }
 
 interface SwapCall {
-  contract: Contract
+  contract: CommonContract
   parameters: SwapParameters
 }
 
@@ -43,7 +44,8 @@ function useSwapCallArguments(
   trade: Trade | undefined, // trade to execute, required
   allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
   deadline: number = DEFAULT_DEADLINE_FROM_NOW, // in seconds from now
-  recipientAddressOrName: string | null // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
+  recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
+  useCaver: boolean,
 ): SwapCall[] {
   const { account, chainId, library } = useActiveWeb3React()
 
@@ -53,7 +55,7 @@ function useSwapCallArguments(
   return useMemo(() => {
     if (!trade || !recipient || !library || !account || !chainId) return []
 
-    const contract: Contract | null = getRouterWeb3Contract(chainId, library, account)
+    const contract = getRouterContract(useCaver, chainId, library, account);
     if (!contract) {
       return []
     }
@@ -83,7 +85,7 @@ function useSwapCallArguments(
     }
 
     return swapMethods.map((parameters) => ({ parameters, contract }))
-  }, [account, allowedSlippage, chainId, deadline, library, recipient, trade])
+  }, [useCaver, account, allowedSlippage, chainId, deadline, library, recipient, trade])
 }
 
 // returns a function that will execute a swap, if the parameters are all valid
@@ -92,11 +94,12 @@ export function useSwapCallback(
   trade: Trade | undefined, // trade to execute, required
   allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
   deadline: number = DEFAULT_DEADLINE_FROM_NOW, // in seconds from now
-  recipientAddressOrName: string | null // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
+  recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
+  useCaver: boolean,
 ): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: string | null } {
   const { account, chainId, library } = useActiveWeb3React()
 
-  const swapCalls = useSwapCallArguments(trade, allowedSlippage, deadline, recipientAddressOrName)
+  const swapCalls = useSwapCallArguments(trade, allowedSlippage, deadline, recipientAddressOrName, useCaver);
 
   const addTransaction = useTransactionAdder()
 
@@ -125,7 +128,7 @@ export function useSwapCallback(
             } = call
             const options = !value || isZero(value) ? {} : { value }
 
-            return contract.estimateGas[methodName](...args, options)
+            return contract.methods[methodName](...args).estimateGas({ ...options, from: account })
               .then((gasEstimate) => {
                 return {
                   call,
@@ -135,7 +138,7 @@ export function useSwapCallback(
               .catch((gasError) => {
                 console.info('Gas estimate failed, trying eth_call to extract error', call)
 
-                return contract.callStatic[methodName](...args, options)
+                return contract.methods[methodName](...args).call({ ...options, from: account })
                   .then((result) => {
                     console.info('Unexpected successful call after failed estimate gas', call, gasError, result)
                     return { call, error: new Error('Unexpected issue with estimating the gas. Please try again.') }
@@ -160,8 +163,8 @@ export function useSwapCallback(
 
         // a successful estimation is a bignumber gas estimate and the next call is also a bignumber gas estimate
         const successfulEstimation = estimatedCalls.find(
-          (el, ix, list): el is SuccessfulCall =>
-            'gasEstimate' in el && (ix === list.length - 1 || 'gasEstimate' in list[ix + 1])
+          (call, i, list): call is SuccessfulCall =>
+            'gasEstimate' in call && (i === list.length - 1 || 'gasEstimate' in list[i + 1])
         )
 
         if (!successfulEstimation) {
@@ -178,8 +181,10 @@ export function useSwapCallback(
           gasEstimate,
         } = successfulEstimation
 
-        return contract[methodName](...args, {
-          gasLimit: calculateGasMargin(gasEstimate),
+        console.log('before swapping', methodName, args, value, gasEstimate, contract);
+
+        return contract.methods[methodName](...args).send({
+          gasLimit: calculateGasMargin(gasEstimate).toNumber(),
           ...(value && !isZero(value) ? { value, from: account } : { from: account }),
         })
           .then((response: any) => {

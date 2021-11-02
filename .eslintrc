@@ -12,7 +12,10 @@
     "jest": true
   },
 
-  "extends": "@pancakeswap-libs/eslint-config-pancake",
+  "extends": [
+    "@pancakeswap-libs/eslint-config-pancake",
+    "plugin:import/typescript"
+  ],
   "rules": {
     "no-console": ["warn", { "allow": ["info", "warn", "error"] }],
     "no-plusplus": 0,
@@ -21,6 +24,7 @@
     "camelcase": 0,
     "no-alert": 0,
     "no-underscore-dangle": 0,
+    "no-useless-constructor": 0,
     // Start temporary rules
     // These rules are here just to keep the lint error to 0 during the migration to the new rule set
     // They need to be removed and fixed as soon as possible

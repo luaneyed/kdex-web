@@ -1,40 +1,38 @@
-import React, { useCallback, useState } from 'react'
-import { BigNumber } from '@ethersproject/bignumber'
-import { TransactionResponse } from '@ethersproject/providers'
-import { Currency, currencyEquals, KLAY, TokenAmount, WKLAY } from '@pancakeswap-libs/sdk'
-import { Button, CardBody, AddIcon, Text as UIKitText } from '@pancakeswap-libs/uikit'
-import { RouteComponentProps } from 'react-router-dom'
-import { LightCard } from 'components/Card'
-import { AutoColumn, ColumnCenter } from 'components/Column'
-import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal'
-import CardNav from 'components/CardNav'
-import CurrencyInputPanel from 'components/CurrencyInputPanel'
-import DoubleCurrencyLogo from 'components/DoubleLogo'
-import { AddRemoveTabs } from 'components/NavigationTabs'
-import { MinimalPositionCard } from 'components/PositionCard'
-import Row, { RowBetween, RowFlat } from 'components/Row'
+import { BigNumber } from '@ethersproject/bignumber';
+import { Currency, currencyEquals, KLAY, TokenAmount, WKLAY } from '@pancakeswap-libs/sdk';
+import { AddIcon, Button, CardBody, Text as UIKitText } from '@pancakeswap-libs/uikit';
+import { LightCard } from 'components/Card';
+import CardNav from 'components/CardNav';
+import { AutoColumn, ColumnCenter } from 'components/Column';
+import ConnectWalletButton from 'components/ConnectWalletButton';
+import CurrencyInputPanel from 'components/CurrencyInputPanel';
+import DoubleCurrencyLogo from 'components/DoubleLogo';
+import { AddRemoveTabs } from 'components/NavigationTabs';
+import Pane from 'components/Pane';
+import { MinimalPositionCard } from 'components/PositionCard';
+import Row, { RowBetween, RowFlat } from 'components/Row';
+import TransactionConfirmationModal, { ConfirmationModalContent } from 'components/TransactionConfirmationModal';
+import { PairState } from 'data/Reserves';
+import { useActiveWeb3React } from 'hooks';
+import { useCurrency } from 'hooks/Tokens';
+import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback';
+import useI18n from 'hooks/useI18n';
+import React, { useCallback, useState } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
+import { Field } from 'state/mint/actions';
+import { useDerivedMintInfo, useMintActionHandlers, useMintState } from 'state/mint/hooks';
+import { useTransactionAdder } from 'state/transactions/hooks';
+import { useIsExpertMode, useUserDeadline, useUserSlippageTolerance } from 'state/user/hooks';
+import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from 'utils';
+import { currencyId } from 'utils/currencyId';
+import { maxAmountSpend } from 'utils/maxAmountSpend';
+import { wrappedCurrency } from 'utils/wrappedCurrency';
 
-import { PairState } from 'data/Reserves'
-import { useActiveWeb3React } from 'hooks'
-import { useCurrency } from 'hooks/Tokens'
-import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
-import { Field } from 'state/mint/actions'
-import { useDerivedMintInfo, useMintActionHandlers, useMintState } from 'state/mint/hooks'
-
-import { useTransactionAdder } from 'state/transactions/hooks'
-import { useIsExpertMode, useUserDeadline, useUserSlippageTolerance } from 'state/user/hooks'
-import { calculateGasMargin, calculateSlippageAmount, getRouterCaverContract, getRouterWeb3Contract } from 'utils'
-import { maxAmountSpend } from 'utils/maxAmountSpend'
-import { wrappedCurrency } from 'utils/wrappedCurrency'
-import { currencyId } from 'utils/currencyId'
-import Pane from 'components/Pane'
-import ConnectWalletButton from 'components/ConnectWalletButton'
-import useI18n from 'hooks/useI18n'
-import AppBody from '../AppBody'
-import { Dots, Wrapper } from '../Pool/styleds'
-import { ConfirmAddModalBottom } from './ConfirmAddModalBottom'
-import { PoolPriceBar } from './PoolPriceBar'
-import { ROUTER_ADDRESS } from '../../constants'
+import { ROUTER_ADDRESS } from '../../constants';
+import AppBody from '../AppBody';
+import { Dots, Wrapper } from '../Pool/styleds';
+import { ConfirmAddModalBottom } from './ConfirmAddModalBottom';
+import { PoolPriceBar } from './PoolPriceBar';
 
 export default function AddLiquidity({
   match: {
@@ -118,8 +116,7 @@ export default function AddLiquidity({
 
   async function onAdd() {
     if (!chainId || !library || !account) return
-    const router = getRouterWeb3Contract(chainId, library, account);
-    const caverRouter = getRouterCaverContract(chainId, library, account);
+    const router = getRouterContract(useCaver, chainId, library, account);
 
     const { [Field.CURRENCY_A]: parsedAmountA, [Field.CURRENCY_B]: parsedAmountB } = parsedAmounts
     if (!parsedAmountA || !parsedAmountB || !currencyA || !currencyB) {
@@ -167,19 +164,14 @@ export default function AddLiquidity({
 
     setAttemptingTxn(true)
     // const aa = await estimate(...args, value ? { value } : {})
-    const option = value ? { value } : {};
-    const estimation = useCaver
-      ? caverRouter.methods[methodName](...args).estimateGas({ from: account, ...option })
-      : router.estimateGas[methodName](...args, option);
+    const option = value ? { value: value.toString() } : {};
+    const estimation = router.methods[methodName](...args).estimateGas({ ...option, from: account });
 
     await estimation
       .then((estimatedGasLimit) => {
-        const gasLimit = calculateGasMargin(BigNumber.from(estimatedGasLimit.toString()));
-        const sentTransaction = useCaver
-          ? caverRouter.methods[methodName](...args).send({ ...option, gas: gasLimit, from: account })
-          : router[methodName](...args, { ...option, gasLimit });
+        const gasLimit = calculateGasMargin(BigNumber.from(estimatedGasLimit.toString())).toNumber();
 
-        return sentTransaction
+        return router.methods[methodName](...args).send({ ...option, gasLimit, from: account })
           .then((response) => {
           setAttemptingTxn(false)
 
@@ -189,7 +181,7 @@ export default function AddLiquidity({
           //   } and ${parsedAmounts[Field.CURRENCY_B]?.toSignificant(3)} ${currencies[Field.CURRENCY_B]?.symbol}`,
           // })
 
-          setTxHash(response.hash || response.transactionHash)
+          setTxHash(response.transactionHash)
         });
       })
       .catch((e) => {

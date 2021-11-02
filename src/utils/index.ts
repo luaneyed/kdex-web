@@ -8,6 +8,7 @@ import Caver, { Contract as CaverContract } from 'caver-js';
 
 import { ROUTER_ADDRESS } from '../constants';
 import { TokenAddressMap } from '../state/lists/hooks';
+import { CaverCommonContract, CommonContract, EthersCommonContract } from './contract';
 import { abi as IUniswapV2Router02ABI } from './kdexRouter.json';
 
 // const RPC_URL = 'kenn';
@@ -85,7 +86,7 @@ export function getProviderOrSigner(library: Web3Provider, account?: string): We
 }
 
 // account is optional
-export function getWeb3Contract(address: string, ABI: any, library: Web3Provider, account?: string): Contract {
+export function getEthersContract(address: string, ABI: any, library: Web3Provider, account?: string): Contract {
   if (!isAddress(address) || address === AddressZero) {
     throw Error(`Invalid 'address' parameter '${address}'.`)
   }
@@ -95,7 +96,7 @@ export function getWeb3Contract(address: string, ABI: any, library: Web3Provider
 }
 
 // account is optional
-export function getCaverContract(address: string, ABI: any, library: Web3Provider, account?: string): CaverContract {
+export function getCaverContract(address: string, ABI: any): CaverContract {
   if (!isAddress(address) || address === AddressZero) {
     throw Error(`Invalid 'address' parameter '${address}'.`)
   }
@@ -112,14 +113,17 @@ export function getCaverContract(address: string, ABI: any, library: Web3Provide
   // contract.options.gas = 3000000
 }
 
-// account is optional
-export function getRouterWeb3Contract(_: number, library: Web3Provider, account?: string): Contract {
-  return getWeb3Contract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
+export function getContract(useCaver: boolean, address: string, abi: any, library: Web3Provider, account?: string): CommonContract {
+  const ethersContract = getEthersContract(address, abi, library, account);
+  
+  return useCaver
+    ? new CaverCommonContract(getCaverContract(address, abi), ethersContract.interface, account)
+    : new EthersCommonContract(ethersContract);
 }
 
 // account is optional
-export function getRouterCaverContract(_: number, library: Web3Provider, account?: string): CaverContract {
-  return getCaverContract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
+export function getRouterContract(useCaver: boolean, _: number, library: Web3Provider, account?: string): CommonContract {
+  return getContract(useCaver, ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account);
 }
 
 export function escapeRegExp(string: string): string {

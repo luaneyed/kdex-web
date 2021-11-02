@@ -1,15 +1,15 @@
-import { TransactionResponse } from '@ethersproject/providers'
-import { useCallback, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useCallback, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { CommonTransactionReceipt } from 'utils/contract';
 
-import { useActiveWeb3React } from '../../hooks'
-import { AppDispatch, AppState } from '../index'
-import { addTransaction } from './actions'
-import { TransactionDetails } from './reducer'
+import { AppDispatch, AppState } from '..';
+import { useActiveWeb3React } from '../../hooks';
+import { addTransaction } from './actions';
+import { TransactionDetails } from './reducer';
 
 // helper that can take a ethers library transaction response and add it to the list of transactions
 export function useTransactionAdder(): (
-  response: TransactionResponse,
+  response: CommonTransactionReceipt,
   customData?: { summary?: string; approval?: { tokenAddress: string; spender: string } }
 ) => void {
   const { chainId, account } = useActiveWeb3React()
@@ -17,14 +17,13 @@ export function useTransactionAdder(): (
 
   return useCallback(
     (
-      response: TransactionResponse,
+      response: CommonTransactionReceipt,
       { summary, approval }: { summary?: string; approval?: { tokenAddress: string; spender: string } } = {}
     ) => {
       if (!account) return
       if (!chainId) return
 
-      const hash = response.hash ?? (response as any).transactionHash;  //  transactionHash on caver
-      console.log('hash!', hash);
+      const hash = response.transactionHash;
       // const { hash } = response
       if (!hash) {
         throw Error('No transaction hash found.')

@@ -2,7 +2,6 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { MaxUint256 } from '@ethersproject/constants';
 import { TransactionResponse } from '@ethersproject/providers';
 import { CurrencyAmount, KLAY, TokenAmount, Trade } from '@pancakeswap-libs/sdk';
-import AddressInputPanel from 'components/AddressInputPanel';
 import { useCallback, useMemo } from 'react';
 
 import { useActiveWeb3React } from '.';
@@ -12,7 +11,7 @@ import { Field } from '../state/swap/actions';
 import { useHasPendingApproval, useTransactionAdder } from '../state/transactions/hooks';
 import { calculateGasMargin } from '../utils';
 import { computeSlippageAdjustedAmounts } from '../utils/prices';
-import { useTokenCaverContract, useTokenWeb3Contract } from './useContract';
+import { useTokenContract } from './useContract';
 
 export enum ApprovalState {
   UNKNOWN,
@@ -46,11 +45,9 @@ export function useApproveCallback(
       : ApprovalState.APPROVED
   }, [amountToApprove, currentAllowance, pendingApproval, spender])
 
-  const tokenContract = useTokenWeb3Contract(token?.address)
-  const tokenCaverContract = useTokenCaverContract(token?.address)
-  const addTransaction = useTransactionAdder()
-
   const useCaver = true;
+  const tokenContract = useTokenContract(useCaver, token?.address);
+  const addTransaction = useTransactionAdder()
 
   const approve = useCallback(async (): Promise<void> => {
     if (approvalState !== ApprovalState.NOT_APPROVED) {
@@ -62,23 +59,18 @@ export function useApproveCallback(
       return
     }
 
-    let estimateApproveGas;
-    let sendApprove;
-    if (useCaver) {
-      if (!tokenCaverContract) {
-        console.error('tokenCaverContract is null')
-        return
-      }
-      estimateApproveGas = (_spender, amount) => tokenCaverContract.methods.approve(_spender, amount.toString()).estimateGas({ from: account });
-      sendApprove = (_spender, amount, gasLimit) => tokenCaverContract.methods.approve(_spender, amount).send({ from: account, gas: gasLimit });
-    } else {
-      if (!tokenContract) {
-        console.error('tokenContract is null')
-        return
-      }
-      estimateApproveGas = (_spender, amount) => tokenContract.estimateGas.approve(_spender, amount);
-      sendApprove = (_spender, amount, gasLimit) => tokenContract.approve(_spender, amount, { gasLimit });
+    if (!tokenContract) {
+      console.error('tokenContract is null')
+      return
     }
+
+    if (!account) {
+      console.error('no account');
+      return
+    }
+
+    const estimateApproveGas = (_spender, amount) => tokenContract.methods.approve(_spender, amount).estimateGas({ from: account });
+    const sendApprove = (_spender, amount, gasLimit) => tokenContract.methods.approve(_spender, amount).send({ from: account, gasLimit });
 
     if (!amountToApprove) {
       console.error('missing amount to approve')
@@ -107,7 +99,7 @@ export function useApproveCallback(
 
     // eslint-disable-next-line consistent-return
     return x
-      .then((response: TransactionResponse) => {
+      .then((response) => {
         console.log('approve respone!', response);
         addTransaction(response, {
           summary: `Approve ${amountToApprove.currency.symbol}`,
@@ -119,7 +111,7 @@ export function useApproveCallback(
         console.error('Failed to approve token', error)
         throw error
       })
-  }, [account, approvalState, token, tokenContract, tokenCaverContract, useCaver, amountToApprove, spender, addTransaction])
+  }, [account, approvalState, token, tokenContract, amountToApprove, spender, addTransaction]);
 
   return [approvalState, approve]
 }

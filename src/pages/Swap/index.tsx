@@ -78,13 +78,15 @@ const Swap = () => {
   const [deadline] = useUserDeadline()
   const [allowedSlippage] = useUserSlippageTolerance()
 
+  const useCaver = true;
   // swap state
   const { independentField, typedValue, recipient } = useSwapState()
   const { v2Trade, currencyBalances, parsedAmount, currencies, inputError: swapInputError } = useDerivedSwapInfo()
   const { wrapType, execute: onWrap, inputError: wrapInputError } = useWrapCallback(
     currencies[Field.INPUT],
     currencies[Field.OUTPUT],
-    typedValue
+    typedValue,
+    useCaver,
   )
   const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
   const trade = showWrap ? undefined : v2Trade
@@ -165,7 +167,8 @@ const Swap = () => {
     trade,
     allowedSlippage,
     deadline,
-    recipient
+    recipient,
+    useCaver,
   )
 
   const { priceImpactWithoutFee } = computeTradePriceBreakdown(trade)
