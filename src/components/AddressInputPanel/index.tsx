@@ -1,13 +1,14 @@
-import React, { useCallback } from 'react'
-import styled from 'styled-components'
-import { Text } from '@pancakeswap-libs/uikit'
-import useI18n from 'hooks/useI18n'
-import useENS from '../../hooks/useENS'
-import { useActiveWeb3React } from '../../hooks'
-import { ExternalLink } from '../Shared'
-import { AutoColumn } from '../Column'
-import { RowBetween } from '../Row'
-import { getKlaytnScopeLink } from '../../utils'
+import { Text } from '@pancakeswap-libs/uikit';
+import useI18n from 'hooks/useI18n';
+import React, { useCallback } from 'react';
+import styled from 'styled-components';
+
+import { useActiveWeb3Context } from '../../hooks';
+import useENS from '../../hooks/useENS';
+import { getKlaytnScopeLink } from '../../utils';
+import { AutoColumn } from '../Column';
+import { RowBetween } from '../Row';
+import { ExternalLink } from '../Shared';
 
 const InputPanel = styled.div`
   display: flex;
@@ -72,16 +73,18 @@ export default function AddressInputPanel({
   id,
   value,
   onChange,
+  useCaver,
 }: {
   id?: string
   // the typed string value
   value: string
   // triggers whenever the typed value changes
-  onChange: (value: string) => void
+  onChange: (value: string) => void,
+  useCaver: boolean,
 }) {
-  const { chainId } = useActiveWeb3React()
+  const { chainId } = useActiveWeb3Context(useCaver);
   const TranslateString = useI18n()
-  const { address, loading, name } = useENS(value)
+  const { address, loading, name } = useENS(useCaver, value);
 
   const handleInput = useCallback(
     (event) => {

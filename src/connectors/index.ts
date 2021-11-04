@@ -2,8 +2,9 @@ import { Web3Provider } from '@ethersproject/providers';
 import { ConnectorNames } from '@pancakeswap-libs/uikit';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
-import { KlipConnector } from '@sixnetwork/klip-connector'
+// import { KlipConnector } from '@sixnetwork/klip-connector'
 import { WalletLinkConnector } from '@web3-react/walletlink-connector';
+import { KlipConnector } from 'utils/klipConnector';
 
 import { KaikasConnector } from './KaikasConnector';
 import { NetworkConnector } from './NetworkConnector';
@@ -32,7 +33,7 @@ export const injected = new InjectedConnector({
 
 export const kaikasConnector = new KaikasConnector({ supportedChainIds: [1001] });
 // KlipConnector의 actiavte 구현이 엉망이라서 modal 기능 안 쓰고 직접 구현
-export const klipConnector = new KlipConnector({ supportedChainIds: [8217], showModal: () => { /** */ }, closeModal: () => { /** */ } });
+export const klipConnector = new KlipConnector({ supportedChainIds: [8217] });
 
 // mainnet only
 export const walletconnect = new WalletConnectConnector({

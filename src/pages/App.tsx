@@ -126,6 +126,8 @@ export default function App() {
 
   useGetDocumentTitlePrice()
 
+  const useCaver = true;
+
   return (
     <Suspense fallback={null}>
       <HashRouter>
@@ -134,9 +136,9 @@ export default function App() {
             value={{ selectedLanguage, setSelectedLanguage: handleLanguageSelect, translatedLanguage, setTranslatedLanguage }}
           >
             <TranslationsContext.Provider value={{ translations, setTranslations }}>
-              <Menu>
+              <Menu useCaver={useCaver}>
                 <BodyWrapper>
-                  <Popups />
+                  <Popups useCaver={useCaver} />
                   <Web3ReactManager>
                     <Switch>
                       <Route exact strict path="/swap" component={Swap} />

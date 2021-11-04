@@ -77,9 +77,10 @@ function TradeSummary({ trade, allowedSlippage }: { trade: Trade; allowedSlippag
 
 export interface AdvancedSwapDetailsProps {
   trade?: Trade
+  useCaver: boolean
 }
 
-export function AdvancedSwapDetails({ trade }: AdvancedSwapDetailsProps) {
+export function AdvancedSwapDetails({ trade, useCaver }: AdvancedSwapDetailsProps) {
   const [allowedSlippage] = useUserSlippageTolerance()
   const TranslateString = useI18n()
   const showRoute = Boolean(trade && trade.route.path.length > 2)
@@ -102,7 +103,7 @@ export function AdvancedSwapDetails({ trade }: AdvancedSwapDetailsProps) {
                     )}
                   />
                 </RowFixed>
-                <SwapRoute trade={trade} />
+                <SwapRoute trade={trade} useCaver={useCaver} />
               </AutoColumn>
             </>
           )}

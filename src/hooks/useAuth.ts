@@ -9,45 +9,50 @@ import {
   UserRejectedRequestError as UserRejectedRequestErrorWalletConnect,
   WalletConnectConnector,
 } from '@web3-react/walletconnect-connector';
-import { useKlipAuth } from 'components/KlipModal/useKlipAuth';
-import { connectorsByName } from 'connectors';
+import { useKlipModal } from 'components/KlipModal/useKlipModal';
+import { connectorsByName, klipConnector } from 'connectors';
 import { NoKaikasProviderError } from 'connectors/KaikasConnector';
 import useToast from 'hooks/useToast';
 import { useCallback } from 'react';
+import { authenticateKlip } from 'utils/klipAuth';
 
 const useAuth = () => {
   const web3Context = useWeb3React();
   const caverContext = useCaverJsReact();
-  const showKlipModal = useKlipAuth();
+  const authKlip = useKlipModal(() => authenticateKlip('kdex'));
   const { toastError } = useToast()
 
-  const login = useCallback((connectorID: ConnectorNames) => {
+  const login = useCallback(async (connectorID: ConnectorNames) => {
     const connector = connectorsByName[connectorID]
     if (connector) {
       if (connectorID === ConnectorNames.Klip) {
-        showKlipModal();
-      } else {
-        const context = connectorID === ConnectorNames.Kaikas ? caverContext : web3Context;
-        context.activate(connector, async (error: Error) => {
-          window.localStorage.removeItem(connectorLocalStorageKey)
-          if (error instanceof UnsupportedChainIdError) {
-            toastError('Unsupported Chain Id', 'Unsupported Chain Id Error. Check your chain Id.')
-          } else if (error instanceof NoEthereumProviderError || error instanceof NoKaikasProviderError) {
-            toastError('Provider Error', 'No provider was found')
-          } else if (
-            error instanceof UserRejectedRequestErrorInjected ||
-            error instanceof UserRejectedRequestErrorWalletConnect
-          ) {
-            if (connector instanceof WalletConnectConnector) {
-              const walletConnector = connector as WalletConnectConnector
-              walletConnector.walletConnectProvider = null
-            }
-            toastError('Authorization Error', 'Please authorize to access your account')
-          } else {
-            toastError(error.name, error.message)
-          }
-        })
+        const account = await authKlip();
+        if (account) {
+          klipConnector.setAccount(account);
+        } else return;
       }
+      
+      // const context = web3Context;
+      const context = (connectorID === ConnectorNames.Kaikas || connectorID === ConnectorNames.Klip) ? caverContext : web3Context;
+      context.activate(connector, async (error: Error) => {
+        window.localStorage.removeItem(connectorLocalStorageKey)
+        if (error instanceof UnsupportedChainIdError) {
+          toastError('Unsupported Chain Id', 'Unsupported Chain Id Error. Check your chain Id.')
+        } else if (error instanceof NoEthereumProviderError || error instanceof NoKaikasProviderError) {
+          toastError('Provider Error', 'No provider was found')
+        } else if (
+          error instanceof UserRejectedRequestErrorInjected ||
+          error instanceof UserRejectedRequestErrorWalletConnect
+        ) {
+          if (connector instanceof WalletConnectConnector) {
+            const walletConnector = connector as WalletConnectConnector
+            walletConnector.walletConnectProvider = null
+          }
+          toastError('Authorization Error', 'Please authorize to access your account')
+        } else {
+          toastError(error.name, error.message)
+        }
+      })
     } else {
       toastError("Can't find connector", 'The connector config is wrong')
     }

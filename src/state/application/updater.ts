@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { useActiveWeb3React } from '../../hooks'
-import useDebounce from '../../hooks/useDebounce'
-import useIsWindowVisible from '../../hooks/useIsWindowVisible'
-import { updateBlockNumber } from './actions'
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
-export default function Updater(): null {
-  const { library, chainId } = useActiveWeb3React()
+import { useActiveWeb3Context } from '../../hooks';
+import useDebounce from '../../hooks/useDebounce';
+import useIsWindowVisible from '../../hooks/useIsWindowVisible';
+import { updateBlockNumber } from './actions';
+
+export default function Updater({ useCaver }: { useCaver: boolean }): null {
+  const { library, chainId } = useActiveWeb3Context(useCaver);
   const dispatch = useDispatch()
 
   const windowVisible = useIsWindowVisible()

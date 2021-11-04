@@ -1,32 +1,32 @@
-import React, { useContext, useMemo } from 'react'
-import { ThemeContext } from 'styled-components'
-import { Pair } from '@pancakeswap-libs/sdk'
-import { Button, CardBody, Text } from '@pancakeswap-libs/uikit'
-import { Link } from 'react-router-dom'
-import CardNav from 'components/CardNav'
-import Question from 'components/QuestionHelper'
-import FullPositionCard from 'components/PositionCard'
-import { useTokenBalancesWithLoadingIndicator } from 'state/wallet/hooks'
-import { StyledInternalLink } from 'components/Shared'
-import { LightCard } from 'components/Card'
-import { RowBetween } from 'components/Row'
-import { AutoColumn } from 'components/Column'
+import { Pair } from '@pancakeswap-libs/sdk';
+import { Button, CardBody, Text } from '@pancakeswap-libs/uikit';
+import { LightCard } from 'components/Card';
+import CardNav from 'components/CardNav';
+import { AutoColumn } from 'components/Column';
+import PageHeader from 'components/PageHeader';
+import FullPositionCard from 'components/PositionCard';
+import Question from 'components/QuestionHelper';
+import { RowBetween } from 'components/Row';
+import { StyledInternalLink } from 'components/Shared';
+import { Dots } from 'components/swap/styleds';
+import { usePairs } from 'data/Reserves';
+import { useActiveWeb3Context } from 'hooks';
+import useI18n from 'hooks/useI18n';
+import React, { useContext, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { toV2LiquidityToken, useTrackedTokenPairs } from 'state/user/hooks';
+import { useTokenBalancesWithLoadingIndicator } from 'state/wallet/hooks';
+import { ThemeContext } from 'styled-components';
 
-import { useActiveWeb3React } from 'hooks'
-import { usePairs } from 'data/Reserves'
-import { toV2LiquidityToken, useTrackedTokenPairs } from 'state/user/hooks'
-import { Dots } from 'components/swap/styleds'
-import useI18n from 'hooks/useI18n'
-import PageHeader from 'components/PageHeader'
-import AppBody from '../AppBody'
+import AppBody from '../AppBody';
 
-export default function Pool() {
+export default function Pool({ useCaver }: { useCaver: boolean }) {
   const theme = useContext(ThemeContext)
-  const { account } = useActiveWeb3React()
+  const { account } = useActiveWeb3Context(useCaver);
   const TranslateString = useI18n()
 
   // fetch the user's balances of all tracked V2 LP tokens
-  const trackedTokenPairs = useTrackedTokenPairs()
+  const trackedTokenPairs = useTrackedTokenPairs(useCaver);
   const tokenPairsWithLiquidityTokens = useMemo(
     () => trackedTokenPairs.map((tokens) => ({ liquidityToken: toV2LiquidityToken(tokens), tokens })),
     [trackedTokenPairs]
@@ -35,6 +35,7 @@ export default function Pool() {
     tokenPairsWithLiquidityTokens,
   ])
   const [v2PairsBalances, fetchingV2PairBalances] = useTokenBalancesWithLoadingIndicator(
+    useCaver,
     account ?? undefined,
     liquidityTokens
   )
@@ -48,7 +49,7 @@ export default function Pool() {
     [tokenPairsWithLiquidityTokens, v2PairsBalances]
   )
 
-  const v2Pairs = usePairs(liquidityTokensWithBalances.map(({ tokens }) => tokens))
+  const v2Pairs = usePairs(liquidityTokensWithBalances.map(({ tokens }) => tokens), useCaver);
   const v2IsLoading =
     fetchingV2PairBalances || v2Pairs?.length < liquidityTokensWithBalances.length || v2Pairs?.some((V2Pair) => !V2Pair)
 
@@ -61,6 +62,7 @@ export default function Pool() {
         <PageHeader
           title={TranslateString(262, 'Liquidity')}
           description={TranslateString(1168, 'Add liquidity to receive LP tokens')}
+          useCaver={useCaver}
         >
           <Button id="join-pool-button" as={Link} to="/add/KLAY">
             {TranslateString(168, 'Add Liquidity')}
@@ -94,7 +96,7 @@ export default function Pool() {
               ) : allV2PairsWithLiquidity?.length > 0 ? (
                 <>
                   {allV2PairsWithLiquidity.map((v2Pair) => (
-                    <FullPositionCard key={v2Pair.liquidityToken.address} pair={v2Pair} />
+                    <FullPositionCard key={v2Pair.liquidityToken.address} pair={v2Pair} useCaver={useCaver} />
                   ))}
                 </>
               ) : (

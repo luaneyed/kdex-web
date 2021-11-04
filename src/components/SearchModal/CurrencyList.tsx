@@ -1,21 +1,22 @@
-import { Currency, CurrencyAmount, currencyEquals, KLAY, Token } from '@pancakeswap-libs/sdk'
-import React, { CSSProperties, MutableRefObject, useCallback, useMemo } from 'react'
-import { FixedSizeList } from 'react-window'
-import styled from 'styled-components'
-import { Text } from '@pancakeswap-libs/uikit'
-import { useActiveWeb3React } from '../../hooks'
-import { useSelectedTokenList, WrappedTokenInfo } from '../../state/lists/hooks'
-import { useAddUserToken, useRemoveUserAddedToken } from '../../state/user/hooks'
-import { useCurrencyBalance } from '../../state/wallet/hooks'
-import { LinkStyledButton } from '../Shared'
-import { useIsUserAddedToken } from '../../hooks/Tokens'
-import Column from '../Column'
-import { RowFixed } from '../Row'
-import CurrencyLogo from '../CurrencyLogo'
-import { MouseoverTooltip } from '../Tooltip'
-import { FadedSpan, MenuItem } from './styleds'
-import Loader from '../Loader'
-import { isTokenOnList } from '../../utils'
+import { Currency, CurrencyAmount, currencyEquals, KLAY, Token } from '@pancakeswap-libs/sdk';
+import { Text } from '@pancakeswap-libs/uikit';
+import { useActiveWeb3Context } from 'hooks';
+import React, { CSSProperties, MutableRefObject, useCallback, useMemo } from 'react';
+import { FixedSizeList } from 'react-window';
+import styled from 'styled-components';
+
+import { useIsUserAddedToken } from '../../hooks/Tokens';
+import { useSelectedTokenList, WrappedTokenInfo } from '../../state/lists/hooks';
+import { useAddUserToken, useRemoveUserAddedToken } from '../../state/user/hooks';
+import { useCurrencyBalance } from '../../state/wallet/hooks';
+import { isTokenOnList } from '../../utils';
+import Column from '../Column';
+import CurrencyLogo from '../CurrencyLogo';
+import Loader from '../Loader';
+import { RowFixed } from '../Row';
+import { LinkStyledButton } from '../Shared';
+import { MouseoverTooltip } from '../Tooltip';
+import { FadedSpan, MenuItem } from './styleds';
 
 function currencyKey(currency: Currency): string {
   return currency instanceof Token ? currency.address : currency === KLAY ? 'KLAY' : ''
@@ -86,19 +87,21 @@ function CurrencyRow({
   isSelected,
   otherSelected,
   style,
+  useCaver,
 }: {
   currency: Currency
   onSelect: () => void
   isSelected: boolean
   otherSelected: boolean
   style: CSSProperties
+  useCaver: boolean
 }) {
-  const { account, chainId } = useActiveWeb3React()
+  const { account, chainId } = useActiveWeb3Context(useCaver);
   const key = currencyKey(currency)
   const selectedTokenList = useSelectedTokenList()
   const isOnSelectedList = isTokenOnList(selectedTokenList, currency)
-  const customAdded = useIsUserAddedToken(currency)
-  const balance = useCurrencyBalance(account ?? undefined, currency)
+  const customAdded = useIsUserAddedToken(useCaver, currency);
+  const balance = useCurrencyBalance(useCaver, account ?? undefined, currency);
 
   const removeToken = useRemoveUserAddedToken()
   const addToken = useAddUserToken()
@@ -112,7 +115,7 @@ function CurrencyRow({
       disabled={isSelected}
       selected={otherSelected}
     >
-      <CurrencyLogo currency={currency} size="24px" />
+      <CurrencyLogo currency={currency} size="24px" useCaver={useCaver} />
       <Column>
         <Text title={currency.name}>{currency.symbol}</Text>
         <FadedSpan>
@@ -160,6 +163,7 @@ export default function CurrencyList({
   otherCurrency,
   fixedListRef,
   showKLAY,
+  useCaver,
 }: {
   height: number
   currencies: Currency[]
@@ -167,7 +171,8 @@ export default function CurrencyList({
   onCurrencySelect: (currency: Currency) => void
   otherCurrency?: Currency | null
   fixedListRef?: MutableRefObject<FixedSizeList | undefined>
-  showKLAY: boolean
+  showKLAY: boolean,
+  useCaver: boolean,
 }) {
   const itemData = useMemo(() => (showKLAY ? [Currency.KLAY, ...currencies] : [...currencies]), [currencies, showKLAY])
 
@@ -184,10 +189,11 @@ export default function CurrencyList({
           isSelected={isSelected}
           onSelect={handleSelect}
           otherSelected={otherSelected}
+          useCaver={useCaver}
         />
       )
     },
-    [onCurrencySelect, otherCurrency, selectedCurrency]
+    [useCaver, onCurrencySelect, otherCurrency, selectedCurrency]
   )
 
   const itemKey = useCallback((index: number, data: any) => currencyKey(data[index]), [])

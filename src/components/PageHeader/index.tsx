@@ -9,6 +9,7 @@ interface PageHeaderProps {
   title: ReactNode
   description?: ReactNode
   children?: ReactNode
+  useCaver: boolean
 }
 
 const StyledPageHeader = styled.div`
@@ -20,10 +21,10 @@ const Details = styled.div`
   flex: 1;
 `
 
-const PageHeader = ({ title, description, children }: PageHeaderProps) => {
+const PageHeader = ({ title, description, children, useCaver }: PageHeaderProps) => {
   const TranslateString = useI18n()
   const [onPresentSettings] = useModal(<SettingsModal translateString={TranslateString} />)
-  const [onPresentRecentTransactions] = useModal(<RecentTransactionsModal translateString={TranslateString} />)
+  const [onPresentRecentTransactions] = useModal(<RecentTransactionsModal translateString={TranslateString} useCaver={useCaver} />)
 
   return (
     <StyledPageHeader>

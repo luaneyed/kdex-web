@@ -7,7 +7,7 @@
     "@binance-chain/bsc-connector": "^1.0.0",
     "@crowdin/crowdin-api-client": "^1.8.16",
     "@ethersproject/experimental": "^5.0.1",
-    "@pancakeswap-libs/sdk": "https://github.com/luaneyed/kdex-sdk#5f8674dda69b522f2027ade68d2f9091b1ec3aa2",
+    "@pancakeswap-libs/sdk": "https://github.com/luaneyed/kdex-sdk#b0890c0e0ea5f3229d736ad77be35da21135ae20",
     "@pancakeswap-libs/uikit": "https://gitpkg.now.sh/luaneyed/kdex-toolkit/packages/pancake-uikit?1ca60a35d27a36d81bda8500951c22c566df66ba",
     "@popperjs/core": "^2.4.4",
     "@reach/dialog": "^0.10.3",

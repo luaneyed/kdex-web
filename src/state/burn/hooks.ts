@@ -1,23 +1,24 @@
-import { Currency, CurrencyAmount, JSBI, Pair, Percent, TokenAmount } from '@pancakeswap-libs/sdk'
-import { useCallback } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { usePair } from '../../data/Reserves'
-import { useTotalSupply } from '../../data/TotalSupply'
+import { Currency, CurrencyAmount, JSBI, Pair, Percent, TokenAmount } from '@pancakeswap-libs/sdk';
+import { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { useActiveWeb3React } from '../../hooks'
-import { wrappedCurrency } from '../../utils/wrappedCurrency'
-import { AppDispatch, AppState } from '../index'
-import { tryParseAmount } from '../swap/hooks'
-import { useTokenBalances } from '../wallet/hooks'
-import { Field, typeInput } from './actions'
+import { AppDispatch, AppState } from '..';
+import { usePair } from '../../data/Reserves';
+import { useTotalSupply } from '../../data/TotalSupply';
+import { useActiveWeb3Context } from '../../hooks';
+import { wrappedCurrency } from '../../utils/wrappedCurrency';
+import { tryParseAmount } from '../swap/hooks';
+import { useTokenBalances } from '../wallet/hooks';
+import { Field, typeInput } from './actions';
 
 export function useBurnState(): AppState['burn'] {
   return useSelector<AppState, AppState['burn']>(state => state.burn)
 }
 
 export function useDerivedBurnInfo(
+  useCaver: boolean,
   currencyA: Currency | undefined,
-  currencyB: Currency | undefined
+  currencyB: Currency | undefined,
 ): {
   pair?: Pair | null
   parsedAmounts: {
@@ -28,15 +29,15 @@ export function useDerivedBurnInfo(
   }
   error?: string
 } {
-  const { account, chainId } = useActiveWeb3React()
+  const { account, chainId } = useActiveWeb3Context(useCaver);
 
   const { independentField, typedValue } = useBurnState()
 
   // pair + totalsupply
-  const [, pair] = usePair(currencyA, currencyB)
+  const [, pair] = usePair(useCaver, currencyA, currencyB)
 
   // balances
-  const relevantTokenBalances = useTokenBalances(account ?? undefined, [pair?.liquidityToken])
+  const relevantTokenBalances = useTokenBalances(useCaver, account ?? undefined, [pair?.liquidityToken]);
   const userLiquidity: undefined | TokenAmount = relevantTokenBalances?.[pair?.liquidityToken?.address ?? '']
 
   const [tokenA, tokenB] = [wrappedCurrency(currencyA, chainId), wrappedCurrency(currencyB, chainId)]
@@ -47,7 +48,7 @@ export function useDerivedBurnInfo(
   }
 
   // liquidity values
-  const totalSupply = useTotalSupply(pair?.liquidityToken)
+  const totalSupply = useTotalSupply(useCaver, pair?.liquidityToken);
   const liquidityValueA =
     pair &&
     totalSupply &&

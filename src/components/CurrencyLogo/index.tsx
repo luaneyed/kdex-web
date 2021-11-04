@@ -25,12 +25,14 @@ export default function CurrencyLogo({
   currency,
   size = '24px',
   style,
+  useCaver,
 }: {
   currency?: Currency
   size?: string
   style?: React.CSSProperties
+  useCaver: boolean
 }) {
-  const uriLocations = useHttpLocations(currency instanceof WrappedTokenInfo ? currency.logoURI : undefined)
+  const uriLocations = useHttpLocations(useCaver, currency instanceof WrappedTokenInfo ? currency.logoURI : undefined);
 
   const srcs: string[] = useMemo(() => {
     if (currency === KLAY) return []

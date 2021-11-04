@@ -1,16 +1,18 @@
-import { Currency, CurrencyAmount, KLAY, JSBI, Token, TokenAmount } from '@pancakeswap-libs/sdk'
-import { useMemo } from 'react'
-import ERC20_INTERFACE from '../../constants/abis/erc20'
-import { useAllTokens } from '../../hooks/Tokens'
-import { useActiveWeb3React } from '../../hooks'
-import { useMulticallEthersContract } from '../../hooks/useContract'
-import { isAddress } from '../../utils'
-import { useSingleContractMultipleData, useMultipleContractSingleData } from '../multicall/hooks'
+import { Currency, CurrencyAmount, JSBI, KLAY, Token, TokenAmount } from '@pancakeswap-libs/sdk';
+import { useMemo } from 'react';
+
+import ERC20_INTERFACE from '../../constants/abis/erc20';
+import { useActiveWeb3Context } from '../../hooks';
+import { useAllTokens } from '../../hooks/Tokens';
+import { useMulticallEthersContract } from '../../hooks/useContract';
+import { isAddress } from '../../utils';
+import { useMultipleContractSingleData, useSingleContractMultipleData } from '../multicall/hooks';
 
 /**
  * Returns a map of the given addresses to their eventually consistent KLAY balances.
  */
 export function useKLAYBalances(
+  useCaver: boolean,
   uncheckedAddresses?: (string | undefined)[]
 ): { [address: string]: CurrencyAmount | undefined } {
   const multicallContract = useMulticallEthersContract()
@@ -27,6 +29,7 @@ export function useKLAYBalances(
   )
 
   const results = useSingleContractMultipleData(
+    useCaver,
     multicallContract,
     'getKlayBalance',
     addresses.map(address => [address])
@@ -47,6 +50,7 @@ export function useKLAYBalances(
  * Returns a map of token addresses to their eventually consistent token balances for a single account.
  */
 export function useTokenBalancesWithLoadingIndicator(
+  useCaver: boolean,
   address?: string,
   tokens?: (Token | undefined)[]
 ): [{ [tokenAddress: string]: TokenAmount | undefined }, boolean] {
@@ -57,7 +61,7 @@ export function useTokenBalancesWithLoadingIndicator(
 
   const validatedTokenAddresses = useMemo(() => validatedTokens.map(vt => vt.address), [validatedTokens])
 
-  const balances = useMultipleContractSingleData(validatedTokenAddresses, ERC20_INTERFACE, 'balanceOf', [address])
+  const balances = useMultipleContractSingleData(useCaver, validatedTokenAddresses, ERC20_INTERFACE, 'balanceOf', [address]);
 
   const anyLoading: boolean = useMemo(() => balances.some(callState => callState.loading), [balances])
 
@@ -81,20 +85,22 @@ export function useTokenBalancesWithLoadingIndicator(
 }
 
 export function useTokenBalances(
+  useCaver: boolean,
   address?: string,
   tokens?: (Token | undefined)[]
 ): { [tokenAddress: string]: TokenAmount | undefined } {
-  return useTokenBalancesWithLoadingIndicator(address, tokens)[0]
+  return useTokenBalancesWithLoadingIndicator(useCaver, address, tokens)[0]
 }
 
 // get the balance for a single token/account combo
-export function useTokenBalance(account?: string, token?: Token): TokenAmount | undefined {
-  const tokenBalances = useTokenBalances(account, [token])
+export function useTokenBalance(useCaver: boolean, account?: string, token?: Token): TokenAmount | undefined {
+  const tokenBalances = useTokenBalances(useCaver, account, [token])
   if (!token) return undefined
   return tokenBalances[token.address]
 }
 
 export function useCurrencyBalances(
+  useCaver: boolean,
   account?: string,
   currencies?: (Currency | undefined)[]
 ): (CurrencyAmount | undefined)[] {
@@ -102,9 +108,9 @@ export function useCurrencyBalances(
     currencies
   ])
 
-  const tokenBalances = useTokenBalances(account, tokens)
+  const tokenBalances = useTokenBalances(useCaver, account, tokens)
   const containsKLAY: boolean = useMemo(() => currencies?.some(currency => currency === KLAY) ?? false, [currencies])
-  const klayBalance = useKLAYBalances(containsKLAY ? [account] : [])
+  const klayBalance = useKLAYBalances(useCaver, containsKLAY ? [account] : []);
 
   return useMemo(
     () =>
@@ -118,15 +124,15 @@ export function useCurrencyBalances(
   )
 }
 
-export function useCurrencyBalance(account?: string, currency?: Currency): CurrencyAmount | undefined {
-  return useCurrencyBalances(account, [currency])[0]
+export function useCurrencyBalance(useCaver: boolean, account?: string, currency?: Currency): CurrencyAmount | undefined {
+  return useCurrencyBalances(useCaver, account, [currency])[0]
 }
 
 // mimics useAllBalances
-export function useAllTokenBalances(): { [tokenAddress: string]: TokenAmount | undefined } {
-  const { account } = useActiveWeb3React()
-  const allTokens = useAllTokens()
+export function useAllTokenBalances(useCaver: boolean): { [tokenAddress: string]: TokenAmount | undefined } {
+  const { account } = useActiveWeb3Context(useCaver);
+  const allTokens = useAllTokens(useCaver);
   const allTokensArray = useMemo(() => Object.values(allTokens ?? {}), [allTokens])
-  const balances = useTokenBalances(account ?? undefined, allTokensArray)
+  const balances = useTokenBalances(useCaver, account ?? undefined, allTokensArray)
   return balances ?? {}
 }

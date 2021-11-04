@@ -3,11 +3,12 @@ import { JSBI, Percent, Router, SwapParameters, Trade, TradeType } from '@pancak
 import { useMemo } from 'react';
 import { CommonContract } from 'utils/contract';
 
-import { useActiveWeb3React } from '.';
+import { useActiveWeb3Context } from '.';
 import { BIPS_BASE, DEFAULT_DEADLINE_FROM_NOW, INITIAL_ALLOWED_SLIPPAGE } from '../constants';
 import { useTransactionAdder } from '../state/transactions/hooks';
-import { calculateGasMargin, getRouterContract, isAddress, shortenAddress } from '../utils';
+import { calculateGasMargin, isAddress, shortenAddress } from '../utils';
 import isZero from '../utils/isZero';
+import { useRouterContract } from './useContract';
 import useENS from './useENS';
 
  enum SwapCallbackState {
@@ -47,18 +48,15 @@ function useSwapCallArguments(
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
   useCaver: boolean,
 ): SwapCall[] {
-  const { account, chainId, library } = useActiveWeb3React()
+  const { account, chainId } = useActiveWeb3Context(useCaver);
 
-  const { address: recipientAddress } = useENS(recipientAddressOrName)
+  const { address: recipientAddress } = useENS(useCaver, recipientAddressOrName);
   const recipient = recipientAddressOrName === null ? account : recipientAddress
 
-  return useMemo(() => {
-    if (!trade || !recipient || !library || !account || !chainId) return []
+  const contract = useRouterContract(useCaver);
 
-    const contract = getRouterContract(useCaver, chainId, library, account);
-    if (!contract) {
-      return []
-    }
+  return useMemo(() => {
+    if (!trade || !recipient || !contract || !chainId) return []
 
     const swapMethods = []
 
@@ -85,7 +83,7 @@ function useSwapCallArguments(
     }
 
     return swapMethods.map((parameters) => ({ parameters, contract }))
-  }, [useCaver, account, allowedSlippage, chainId, deadline, library, recipient, trade])
+  }, [contract, allowedSlippage, chainId, deadline, recipient, trade])
 }
 
 // returns a function that will execute a swap, if the parameters are all valid
@@ -97,17 +95,17 @@ export function useSwapCallback(
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
   useCaver: boolean,
 ): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: string | null } {
-  const { account, chainId, library } = useActiveWeb3React()
+  const { account, chainId } = useActiveWeb3Context(useCaver);
 
   const swapCalls = useSwapCallArguments(trade, allowedSlippage, deadline, recipientAddressOrName, useCaver);
 
-  const addTransaction = useTransactionAdder()
+  const addTransaction = useTransactionAdder(useCaver);
 
-  const { address: recipientAddress } = useENS(recipientAddressOrName)
+  const { address: recipientAddress } = useENS(useCaver, recipientAddressOrName);
   const recipient = recipientAddressOrName === null ? account : recipientAddress
 
   return useMemo(() => {
-    if (!trade || !library || !account || !chainId) {
+    if (!trade || !account || !chainId) {
       return { state: SwapCallbackState.INVALID, callback: null, error: 'Missing dependencies' }
     }
     if (!recipient) {
@@ -222,7 +220,7 @@ export function useSwapCallback(
       },
       error: null,
     }
-  }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, addTransaction])
+  }, [trade, account, chainId, recipient, recipientAddressOrName, swapCalls, addTransaction])
 }
 
 export default useSwapCallback

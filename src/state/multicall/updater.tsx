@@ -1,20 +1,21 @@
-import { Contract } from '@ethersproject/contracts'
-import { useEffect, useMemo, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useActiveWeb3React } from '../../hooks'
-import { useMulticallEthersContract } from '../../hooks/useContract'
-import useDebounce from '../../hooks/useDebounce'
-import chunkArray from '../../utils/chunkArray'
-import { CancelledError, retry, RetryableError } from '../../utils/retry'
-import { useBlockNumber } from '../application/hooks'
-import { AppDispatch, AppState } from '../index'
+import { Contract } from '@ethersproject/contracts';
+import { useEffect, useMemo, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { AppDispatch, AppState } from '..';
+import { useActiveWeb3Context } from '../../hooks';
+import { useMulticallEthersContract } from '../../hooks/useContract';
+import useDebounce from '../../hooks/useDebounce';
+import chunkArray from '../../utils/chunkArray';
+import { CancelledError, retry, RetryableError } from '../../utils/retry';
+import { useBlockNumber } from '../application/hooks';
 import {
   Call,
   errorFetchingMulticallResults,
   fetchingMulticallResults,
   parseCallKey,
   updateMulticallResults,
-} from './actions'
+} from './actions';
 
 // chunk calls so we do not exceed the gas limit
 const CALL_CHUNK_SIZE = 500
@@ -111,13 +112,13 @@ export function outdatedListeningKeys(
   })
 }
 
-export default function Updater(): null {
+export default function Updater({ useCaver }: { useCaver: boolean }): null {
   const dispatch = useDispatch<AppDispatch>()
   const state = useSelector<AppState, AppState['multicall']>((s) => s.multicall)
   // wait for listeners to settle before triggering updates
   const debouncedListeners = useDebounce(state.callListeners, 100)
-  const latestBlockNumber = useBlockNumber()
-  const { chainId } = useActiveWeb3React()
+  const latestBlockNumber = useBlockNumber(useCaver);
+  const { chainId } = useActiveWeb3Context(useCaver);
   const multicallContract = useMulticallEthersContract()
   const cancellations = useRef<{ blockNumber: number; cancellations: (() => void)[] }>()
 

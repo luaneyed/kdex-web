@@ -1,15 +1,14 @@
-import { Currency, CurrencyAmount, Pair, Token, Trade } from '@pancakeswap-libs/sdk'
-import flatMap from 'lodash.flatmap'
-import { useMemo } from 'react'
+import { Currency, CurrencyAmount, Pair, Token, Trade } from '@pancakeswap-libs/sdk';
+import flatMap from 'lodash.flatmap';
+import { useMemo } from 'react';
 
-import { BASES_TO_CHECK_TRADES_AGAINST, CUSTOM_BASES } from '../constants'
-import { PairState, usePairs } from '../data/Reserves'
-import { wrappedCurrency } from '../utils/wrappedCurrency'
+import { useActiveWeb3Context } from '.';
+import { BASES_TO_CHECK_TRADES_AGAINST, CUSTOM_BASES } from '../constants';
+import { PairState, usePairs } from '../data/Reserves';
+import { wrappedCurrency } from '../utils/wrappedCurrency';
 
-import { useActiveWeb3React } from './index'
-
-function useAllCommonPairs(currencyA?: Currency, currencyB?: Currency): Pair[] {
-  const { chainId } = useActiveWeb3React()
+function useAllCommonPairs(useCaver: boolean, currencyA?: Currency, currencyB?: Currency): Pair[] {
+  const { chainId } = useActiveWeb3Context(useCaver);
 
   // Base tokens for building intermediary trading routes
   const bases: Token[] = useMemo(() => (chainId ? BASES_TO_CHECK_TRADES_AGAINST[chainId] : []), [chainId])
@@ -62,7 +61,7 @@ function useAllCommonPairs(currencyA?: Currency, currencyB?: Currency): Pair[] {
     [tokenA, tokenB, bases, basePairs, chainId]
   )
 
-  const allPairs = usePairs(allPairCombinations)
+  const allPairs = usePairs(allPairCombinations, useCaver);
 
   // only pass along valid pairs, non-duplicated pairs
   return useMemo(
@@ -84,8 +83,8 @@ function useAllCommonPairs(currencyA?: Currency, currencyB?: Currency): Pair[] {
 /**
  * Returns the best trade for the exact amount of tokens in to the given token out
  */
-export function useTradeExactIn(currencyAmountIn?: CurrencyAmount, currencyOut?: Currency): Trade | null {
-  const allowedPairs = useAllCommonPairs(currencyAmountIn?.currency, currencyOut)
+export function useTradeExactIn(useCaver: boolean, currencyAmountIn?: CurrencyAmount, currencyOut?: Currency): Trade | null {
+  const allowedPairs = useAllCommonPairs(useCaver, currencyAmountIn?.currency, currencyOut)
 
   return useMemo(() => {
     if (currencyAmountIn && currencyOut && allowedPairs.length > 0) {
@@ -100,8 +99,8 @@ export function useTradeExactIn(currencyAmountIn?: CurrencyAmount, currencyOut?:
 /**
  * Returns the best trade for the token in to the exact amount of token out
  */
-export function useTradeExactOut(currencyIn?: Currency, currencyAmountOut?: CurrencyAmount): Trade | null {
-  const allowedPairs = useAllCommonPairs(currencyIn, currencyAmountOut?.currency)
+export function useTradeExactOut(useCaver: boolean, currencyIn?: Currency, currencyAmountOut?: CurrencyAmount): Trade | null {
+  const allowedPairs = useAllCommonPairs(useCaver, currencyIn, currencyAmountOut?.currency)
 
   return useMemo(() => {
     if (currencyIn && currencyAmountOut && allowedPairs.length > 0) {

@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const KlipModal: React.FC<Props> = ({ requestKey, expirationTime, onDismiss = () => { console.log('klipModal dismiss!!') } }) => {
-  const [leftMs, setLeftMs] = useState(0);
+  const [leftMs, setLeftMs] = useState(expirationTime - Date.now());
   
   useEffect(() => {
     console.log('ue!', new Date(expirationTime));
@@ -30,7 +30,7 @@ export const KlipModal: React.FC<Props> = ({ requestKey, expirationTime, onDismi
       reader or the KakaoTalk app.
     </Text>
     <Flex justifyContent="center">
-      Left time : {Math.floor(leftMs / 60000)} : {leftMs % 60000}
+      Left time : {Math.floor(leftMs / 60000)} : {Math.floor(leftMs % 60000 / 1000)}
     </Flex>
   </Modal>;
 }

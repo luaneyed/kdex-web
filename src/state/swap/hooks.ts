@@ -1,21 +1,22 @@
-import { parseUnits } from '@ethersproject/units'
-import { Currency, CurrencyAmount, KLAY, JSBI, Token, TokenAmount, Trade } from '@pancakeswap-libs/sdk'
-import { ParsedQs } from 'qs'
-import { useCallback, useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import useENS from '../../hooks/useENS'
-import { useActiveWeb3React } from '../../hooks'
-import { useCurrency } from '../../hooks/Tokens'
-import { useTradeExactIn, useTradeExactOut } from '../../hooks/Trades'
-import useParsedQueryString from '../../hooks/useParsedQueryString'
-import { isAddress } from '../../utils'
-import { AppDispatch, AppState } from '../index'
-import { useCurrencyBalances } from '../wallet/hooks'
-import { Field, replaceSwapState, selectCurrency, setRecipient, switchCurrencies, typeInput } from './actions'
-import { SwapState } from './reducer'
+import { parseUnits } from '@ethersproject/units';
+import { Currency, CurrencyAmount, JSBI, KLAY, Token, TokenAmount, Trade } from '@pancakeswap-libs/sdk';
+import { ParsedQs } from 'qs';
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { useUserSlippageTolerance } from '../user/hooks'
-import { computeSlippageAdjustedAmounts } from '../../utils/prices'
+import { AppDispatch, AppState } from '..';
+import { isBaobab } from '../../constants';
+import { useActiveWeb3Context } from '../../hooks';
+import { useCurrency } from '../../hooks/Tokens';
+import { useTradeExactIn, useTradeExactOut } from '../../hooks/Trades';
+import useENS from '../../hooks/useENS';
+import useParsedQueryString from '../../hooks/useParsedQueryString';
+import { isAddress } from '../../utils';
+import { computeSlippageAdjustedAmounts } from '../../utils/prices';
+import { useUserSlippageTolerance } from '../user/hooks';
+import { useCurrencyBalances } from '../wallet/hooks';
+import { Field, replaceSwapState, selectCurrency, setRecipient, switchCurrencies, typeInput } from './actions';
+import { SwapState } from './reducer';
 
 export function useSwapState(): AppState['swap'] {
   return useSelector<AppState, AppState['swap']>((state) => state.swap)
@@ -86,11 +87,17 @@ export function tryParseAmount(value?: string, currency?: Currency): CurrencyAmo
   return undefined
 }
 
-const BAD_RECIPIENT_ADDRESSES: string[] = [
-  '0xA0acE51272FD35A9AFA42C2694Ee27A390831Ee9', // v2 factory
-  '0xBAE324Fb546240E6Cd5Dbf423d6b2c83b4d8CC58', // v2 router 01
-  '0xecDC29C1A9C286C771686301554C219D4dDaA93e', // v2 router 02
-]
+const BAD_RECIPIENT_ADDRESSES: string[] = isBaobab
+  ? [
+    '0xA0acE51272FD35A9AFA42C2694Ee27A390831Ee9', // v2 factory
+    '0xBAE324Fb546240E6Cd5Dbf423d6b2c83b4d8CC58', // v2 router 01
+    '0xecDC29C1A9C286C771686301554C219D4dDaA93e', // v2 router 02
+  ]
+  : [
+    '0xBAE324Fb546240E6Cd5Dbf423d6b2c83b4d8CC58', // v2 factory
+    '0x9F405A0A22a2158345cDa22CC1881579b1aDD85E', // v2 router 01
+    '0x24694eAe27074E5b5325E0b7Bb4d4a64BC479ae0', // v2 router 02
+  ];
 
 /**
  * Returns true if any of the pairs or tokens in a trade have the given checksummed address
@@ -105,14 +112,14 @@ function involvesAddress(trade: Trade, checksummedAddress: string): boolean {
 }
 
 // from the current swap inputs, compute the best trade and return it.
-export function useDerivedSwapInfo(): {
+export function useDerivedSwapInfo(useCaver: boolean): {
   currencies: { [field in Field]?: Currency }
   currencyBalances: { [field in Field]?: CurrencyAmount }
   parsedAmount: CurrencyAmount | undefined
   v2Trade: Trade | undefined
   inputError?: string
 } {
-  const { account } = useActiveWeb3React()
+  const { account } = useActiveWeb3Context(useCaver);
 
   const {
     independentField,
@@ -122,12 +129,12 @@ export function useDerivedSwapInfo(): {
     recipient,
   } = useSwapState()
 
-  const inputCurrency = useCurrency(inputCurrencyId)
-  const outputCurrency = useCurrency(outputCurrencyId)
-  const recipientLookup = useENS(recipient ?? undefined)
+  const inputCurrency = useCurrency(useCaver, inputCurrencyId)
+  const outputCurrency = useCurrency(useCaver, outputCurrencyId)
+  const recipientLookup = useENS(useCaver, recipient ?? undefined);
   const to: string | null = (recipient === null ? account : recipientLookup.address) ?? null
 
-  const relevantTokenBalances = useCurrencyBalances(account ?? undefined, [
+  const relevantTokenBalances = useCurrencyBalances(useCaver, account ?? undefined, [
     inputCurrency ?? undefined,
     outputCurrency ?? undefined,
   ])
@@ -135,8 +142,8 @@ export function useDerivedSwapInfo(): {
   const isExactIn: boolean = independentField === Field.INPUT
   const parsedAmount = tryParseAmount(typedValue, (isExactIn ? inputCurrency : outputCurrency) ?? undefined)
 
-  const bestTradeExactIn = useTradeExactIn(isExactIn ? parsedAmount : undefined, outputCurrency ?? undefined)
-  const bestTradeExactOut = useTradeExactOut(inputCurrency ?? undefined, !isExactIn ? parsedAmount : undefined)
+  const bestTradeExactIn = useTradeExactIn(useCaver, isExactIn ? parsedAmount : undefined, outputCurrency ?? undefined);
+  const bestTradeExactOut = useTradeExactOut(useCaver, inputCurrency ?? undefined, !isExactIn ? parsedAmount : undefined);
 
   const v2Trade = isExactIn ? bestTradeExactIn : bestTradeExactOut
 
@@ -254,10 +261,10 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
 }
 
 // updates the swap state to use the defaults for a given network
-export function useDefaultsFromURLSearch():
+export function useDefaultsFromURLSearch(useCaver: boolean):
   | { inputCurrencyId: string | undefined; outputCurrencyId: string | undefined }
   | undefined {
-  const { chainId } = useActiveWeb3React()
+  const { chainId } = useActiveWeb3Context(useCaver);
   const dispatch = useDispatch<AppDispatch>()
   const parsedQs = useParsedQueryString()
   const [result, setResult] = useState<

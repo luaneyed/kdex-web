@@ -1,11 +1,12 @@
-import { useCallback, useMemo } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { useActiveWeb3React } from '../../hooks'
-import { addPopup, PopupContent, removePopup, toggleWalletModal, toggleSettingsMenu } from './actions'
-import { AppState } from '../index'
+import { useCallback, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-export function useBlockNumber(): number | undefined {
-  const { chainId } = useActiveWeb3React()
+import { AppState } from '..';
+import { useActiveWeb3Context } from '../../hooks';
+import { addPopup, PopupContent, removePopup, toggleSettingsMenu, toggleWalletModal } from './actions';
+
+export function useBlockNumber(useCaver: boolean): number | undefined {
+  const { chainId } = useActiveWeb3Context(useCaver);
 
   return useSelector((state: AppState) => state.application.blockNumber[chainId ?? -1])
 }

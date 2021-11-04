@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { CommonContract } from 'utils/contract';
 
 import { AppDispatch, AppState } from '..';
-import { useActiveWeb3React } from '../../hooks';
+import { useActiveWeb3Context } from '../../hooks';
 import { useBlockNumber } from '../application/hooks';
 import { addMulticallListeners, Call, ListenerOptions, parseCallKey, removeMulticallListeners, toCallKey } from './actions';
 
@@ -44,8 +44,8 @@ export const NEVER_RELOAD: ListenerOptions = {
 }
 
 // the lowest level call for subscribing to contract data
-function useCallsData(calls: (Call | undefined)[], options?: ListenerOptions): CallResult[] {
-  const { chainId } = useActiveWeb3React()
+function useCallsData(useCaver: boolean, calls: (Call | undefined)[], options?: ListenerOptions): CallResult[] {
+  const { chainId } = useActiveWeb3Context(useCaver);
   const callResults = useSelector<AppState, AppState['multicall']['callResults']>(
     (state) => state.multicall.callResults
   )
@@ -155,6 +155,7 @@ function toCallState(
 }
 
 export function useSingleContractMultipleData(
+  useCaver: boolean,
   contract: Contract | null | undefined,
   methodName: string,
   callInputs: OptionalMethodInputs[],
@@ -175,9 +176,9 @@ export function useSingleContractMultipleData(
     [callInputs, contract, fragment]
   )
 
-  const results = useCallsData(calls, options)
+  const results = useCallsData(useCaver, calls, options)
 
-  const latestBlockNumber = useBlockNumber()
+  const latestBlockNumber = useBlockNumber(useCaver);
 
   return useMemo(() => {
     return results.map((result) => toCallState(result, contract?.interface, fragment, latestBlockNumber))
@@ -185,6 +186,7 @@ export function useSingleContractMultipleData(
 }
 
 export function useMultipleContractSingleData(
+  useCaver: boolean,
   addresses: (string | undefined)[],
   contractInterface: Interface,
   methodName: string,
@@ -215,9 +217,9 @@ export function useMultipleContractSingleData(
     [addresses, callData, fragment]
   )
 
-  const results = useCallsData(calls, options)
+  const results = useCallsData(useCaver, calls, options)
 
-  const latestBlockNumber = useBlockNumber()
+  const latestBlockNumber = useBlockNumber(useCaver);
 
   return useMemo(() => {
     return results.map((result) => toCallState(result, contractInterface, fragment, latestBlockNumber))
@@ -225,6 +227,7 @@ export function useMultipleContractSingleData(
 }
 
 export function useSingleCallResult(
+  useCaver: boolean,
   contract: CommonContract | null | undefined,
   methodName: string,
   inputs?: OptionalMethodInputs,
@@ -243,8 +246,8 @@ export function useSingleCallResult(
       : []
   }, [contract, fragment, inputs])
 
-  const result = useCallsData(calls, options)[0]
-  const latestBlockNumber = useBlockNumber()
+  const result = useCallsData(useCaver, calls, options)[0]
+  const latestBlockNumber = useBlockNumber(useCaver);
 
   return useMemo(() => {
     return toCallState(result, contract?.interface, fragment, latestBlockNumber)

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import Cookies from 'js-cookie'
-import { useActiveWeb3React } from 'hooks'
+import { useActiveWeb3Context } from 'hooks';
+import Cookies from 'js-cookie';
+import { useEffect, useState } from 'react';
 
 const initialState = {
   profileLink: 'https://pancakeswap.finance/profile',
@@ -10,9 +10,9 @@ const initialState = {
 /**
  * Note - this will only work if the app is on the same domain
  */
-const useGetLocalProfile = () => {
+const useGetLocalProfile = (useCaver: boolean) => {
   const [profile, setProfile] = useState(initialState)
-  const { account } = useActiveWeb3React()
+  const { account } = useActiveWeb3Context(useCaver);
 
   useEffect(() => {
     if (account) {

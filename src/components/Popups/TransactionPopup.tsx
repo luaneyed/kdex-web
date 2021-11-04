@@ -1,12 +1,13 @@
-import React, { useContext } from 'react'
-import { AlertCircle, CheckCircle } from 'react-feather'
-import { Text } from '@pancakeswap-libs/uikit'
-import styled, { ThemeContext } from 'styled-components'
-import { useActiveWeb3React } from '../../hooks'
-import { getKlaytnScopeLink } from '../../utils'
-import { ExternalLink } from '../Shared'
-import { AutoColumn } from '../Column'
-import { AutoRow } from '../Row'
+import { Text } from '@pancakeswap-libs/uikit';
+import React, { useContext } from 'react';
+import { AlertCircle, CheckCircle } from 'react-feather';
+import styled, { ThemeContext } from 'styled-components';
+
+import { useActiveWeb3Context } from '../../hooks';
+import { getKlaytnScopeLink } from '../../utils';
+import { AutoColumn } from '../Column';
+import { AutoRow } from '../Row';
+import { ExternalLink } from '../Shared';
 
 const RowNoFlex = styled(AutoRow)`
   flex-wrap: nowrap;
@@ -16,12 +17,14 @@ export default function TransactionPopup({
   hash,
   success,
   summary,
+  useCaver,
 }: {
   hash: string
   success?: boolean
   summary?: string
+  useCaver: boolean
 }) {
-  const { chainId } = useActiveWeb3React()
+  const { chainId } = useActiveWeb3Context(useCaver);
 
   const theme = useContext(ThemeContext)
 

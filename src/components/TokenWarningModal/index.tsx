@@ -1,18 +1,19 @@
-import { Token } from '@pancakeswap-libs/sdk'
-import { transparentize } from 'polished'
-import { Button, Text } from '@pancakeswap-libs/uikit'
-import React, { useCallback, useMemo, useState } from 'react'
-import styled from 'styled-components'
-import { AlertTriangle } from 'react-feather'
-import useI18n from 'hooks/useI18n'
-import { useActiveWeb3React } from '../../hooks'
-import { useAllTokens } from '../../hooks/Tokens'
-import { getKlaytnScopeLink, shortenAddress } from '../../utils'
-import { ExternalLink } from '../Shared'
-import CurrencyLogo from '../CurrencyLogo'
-import Modal from '../Modal'
-import { AutoRow, RowBetween } from '../Row'
-import { AutoColumn } from '../Column'
+import { Token } from '@pancakeswap-libs/sdk';
+import { Button, Text } from '@pancakeswap-libs/uikit';
+import useI18n from 'hooks/useI18n';
+import { transparentize } from 'polished';
+import React, { useCallback, useMemo, useState } from 'react';
+import { AlertTriangle } from 'react-feather';
+import styled from 'styled-components';
+
+import { useActiveWeb3Context } from '../../hooks';
+import { useAllTokens } from '../../hooks/Tokens';
+import { getKlaytnScopeLink, shortenAddress } from '../../utils';
+import { AutoColumn } from '../Column';
+import CurrencyLogo from '../CurrencyLogo';
+import Modal from '../Modal';
+import { AutoRow, RowBetween } from '../Row';
+import { ExternalLink } from '../Shared';
 
 const Wrapper = styled.div<{ error: boolean }>`
   background: ${({ theme }) => transparentize(0.6, theme.colors.tertiary)};
@@ -36,15 +37,16 @@ const StyledWarningIcon = styled(AlertTriangle)`
 
 interface TokenWarningCardProps {
   token?: Token
+  useCaver: boolean
 }
 
-function TokenWarningCard({ token }: TokenWarningCardProps) {
-  const { chainId } = useActiveWeb3React()
+function TokenWarningCard({ token, useCaver }: TokenWarningCardProps) {
+  const { chainId } = useActiveWeb3Context(useCaver);
   const TranslateString = useI18n()
   const tokenSymbol = token?.symbol?.toLowerCase() ?? ''
   const tokenName = token?.name?.toLowerCase() ?? ''
 
-  const allTokens = useAllTokens()
+  const allTokens = useAllTokens(useCaver);
 
   const duplicateNameOrSymbol = useMemo(() => {
     if (!token || !chainId) return false
@@ -64,7 +66,7 @@ function TokenWarningCard({ token }: TokenWarningCardProps) {
     <Wrapper error={duplicateNameOrSymbol}>
       <AutoRow gap="6px">
         <AutoColumn gap="24px">
-          <CurrencyLogo currency={token} size="16px" />
+          <CurrencyLogo currency={token} size="16px" useCaver={useCaver} />
           <div> </div>
         </AutoColumn>
         <AutoColumn gap="10px" justify="flex-start">
@@ -90,10 +92,12 @@ export default function TokenWarningModal({
   isOpen,
   tokens,
   onConfirm,
+  useCaver,
 }: {
   isOpen: boolean
   tokens: Token[]
   onConfirm: () => void
+  useCaver: boolean
 }) {
   const [understandChecked, setUnderstandChecked] = useState(false)
   const toggleUnderstand = useCallback(() => setUnderstandChecked((uc) => !uc), [])
@@ -122,7 +126,7 @@ export default function TokenWarningModal({
           </Text>
           <Text>{TranslateString(1134, 'If you purchase an arbitrary token, you may be unable to sell it back.')}</Text>
           {tokens.map((token) => {
-            return <TokenWarningCard key={token.address} token={token} />
+            return <TokenWarningCard key={token.address} token={token} useCaver={useCaver} />
           })}
           <RowBetween>
             <div>

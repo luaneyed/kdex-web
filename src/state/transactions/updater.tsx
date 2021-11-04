@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useActiveWeb3React } from '../../hooks'
-import { useAddPopup, useBlockNumber } from '../application/hooks'
-import { AppDispatch, AppState } from '../index'
-import { checkedTransaction, finalizeTransaction } from './actions'
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { AppDispatch, AppState } from '..';
+import { useActiveWeb3Context } from '../../hooks';
+import { useAddPopup, useBlockNumber } from '../application/hooks';
+import { checkedTransaction, finalizeTransaction } from './actions';
 
 export function shouldCheck(
   lastBlockNumber: number,
@@ -26,10 +27,10 @@ export function shouldCheck(
   return true
 }
 
-export default function Updater(): null {
-  const { chainId, library } = useActiveWeb3React()
+export default function Updater({ useCaver }: { useCaver: boolean }): null {
+  const { chainId, library } = useActiveWeb3Context(useCaver);
 
-  const lastBlockNumber = useBlockNumber()
+  const lastBlockNumber = useBlockNumber(useCaver);
 
   const dispatch = useDispatch<AppDispatch>()
   const state = useSelector<AppState, AppState['transactions']>((s) => s.transactions)

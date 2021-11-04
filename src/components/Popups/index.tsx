@@ -42,7 +42,7 @@ const FixedPopupColumn = styled(AutoColumn)`
   }
 `
 
-export default function Popups() {
+export default function Popups({ useCaver }: { useCaver: boolean }) {
   // get all popups
   const activePopups = useActivePopups()
 
@@ -50,7 +50,7 @@ export default function Popups() {
     <>
       <FixedPopupColumn gap="20px">
         {activePopups.map((item) => (
-          <PopupItem key={item.key} content={item.content} popKey={item.key} removeAfterMs={item.removeAfterMs} />
+          <PopupItem key={item.key} content={item.content} popKey={item.key} removeAfterMs={item.removeAfterMs} useCaver={useCaver} />
         ))}
       </FixedPopupColumn>
       <MobilePopupWrapper height={activePopups?.length > 0 ? 'fit-content' : 0}>
@@ -59,7 +59,7 @@ export default function Popups() {
             .slice(0)
             .reverse()
             .map((item) => (
-              <PopupItem key={item.key} content={item.content} popKey={item.key} removeAfterMs={item.removeAfterMs} />
+              <PopupItem key={item.key} content={item.content} popKey={item.key} removeAfterMs={item.removeAfterMs} useCaver={useCaver} />
             ))}
         </MobilePopupInner>
       </MobilePopupWrapper>

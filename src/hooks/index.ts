@@ -1,16 +1,39 @@
-import { Web3Provider } from '@ethersproject/providers'
-import { ChainId } from '@pancakeswap-libs/sdk'
-import { connectorLocalStorageKey } from '@pancakeswap-libs/uikit'
-import { useCaverJsReact } from '@sixnetwork/caverjs-react-core'
-import { CaverJsReactContextInterface } from '@sixnetwork/caverjs-react-core/dist/types'
-import { useWeb3React as useWeb3ReactCore } from '@web3-react/core'
+import { TransactionReceipt, Web3Provider } from '@ethersproject/providers';
+import { ChainId } from '@pancakeswap-libs/sdk';
+import { connectorLocalStorageKey } from '@pancakeswap-libs/uikit';
+import { useCaverJsReact } from '@sixnetwork/caverjs-react-core';
+import { CaverJsReactContextInterface } from '@sixnetwork/caverjs-react-core/dist/types';
+import { useWeb3React as useWeb3ReactCore } from '@web3-react/core';
+import { Web3ReactContextInterface } from '@web3-react/core/dist/types';
+import { BigNumber } from 'ethers';
+import { CaverProvider } from 'klaytn-providers';
+import { useEffect, useState } from 'react';
+import { isMobile } from 'react-device-detect';
+
+import { injected } from '../connectors';
+import { NetworkContextName } from '../constants';
+
 // eslint-disable-next-line import/no-unresolved
-import { Web3ReactContextInterface } from '@web3-react/core/dist/types'
-import { CaverProvider } from 'klaytn-providers'
-import { useEffect, useState } from 'react'
-import { isMobile } from 'react-device-detect'
-import { injected } from '../connectors'
-import { NetworkContextName } from '../constants'
+export function useActiveWeb3Context(useCaver: boolean) {
+  const web3 = useActiveWeb3React();
+  const caver = useActiveCaverReact();
+  const context = useCaver ? caver : web3;
+
+  const { account, chainId, library }  = context;
+  
+  const lib = library ? {
+    getBlockNumber: library.getBlockNumber,
+    on: (eventName, listener) => library.on(eventName, listener),
+    removeListener: (eventName, listener) => library.removeListener(eventName, listener),
+    getTransactionReceipt: async (transactionHash: string | Promise<string>): Promise<TransactionReceipt> => {
+      const r = await library.getTransactionReceipt(transactionHash);
+      return Object.assign(r, { gasUsed: BigNumber.from(r.gasUsed.toString()), cumulativeGasUsed: BigNumber.from(r.cumulativeGasUsed.toString()) });
+    },
+    send: (method: string, params: any[]) => library.send(method, params),
+  } : undefined;
+
+  return { account, chainId, library: lib };
+}
 
 export function useActiveWeb3React(): Web3ReactContextInterface<Web3Provider> & { chainId?: ChainId } {
   const context = useWeb3ReactCore<Web3Provider>();
@@ -27,7 +50,8 @@ export function useActiveCaverReact(): CaverJsReactContextInterface<CaverProvide
 
 
 export function useEagerConnect() {
-  const { activate, active } = useWeb3ReactCore() // specifically using useWeb3ReactCore because of what this hook does
+  // const { activate, active } = useWeb3ReactCore() // specifically using useWeb3ReactCore because of what this hook does
+  const { activate, active } = useCaverJsReact() // specifically using useWeb3ReactCore because of what this hook does
   const [tried, setTried] = useState(false)
 
   useEffect(() => {
@@ -62,7 +86,8 @@ export function useEagerConnect() {
  * and out after checking what network theyre on
  */
 export function useInactiveListener(suppress = false) {
-  const { active, error, activate } = useWeb3ReactCore() // specifically using useWeb3React because of what this hook does
+  // const { active, error, activate } = useWeb3ReactCore() // specifically using useWeb3React because of what this hook does
+  const { active, error, activate } = useCaverJsReact() // specifically using useWeb3React because of what this hook does
 
   useEffect(() => {
     const { klaytn } = window
