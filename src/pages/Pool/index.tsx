@@ -38,7 +38,7 @@ export default function Pool() {
   const [v2PairsBalances, fetchingV2PairBalances] = useTokenBalancesWithLoadingIndicator(
     useCaver,
     account ?? undefined,
-    liquidityTokens
+    liquidityTokens,
   )
 
   // fetch the reserves for all V2 pools in which the user has a balance

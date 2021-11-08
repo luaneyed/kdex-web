@@ -24,7 +24,6 @@ export function getEthersContract(address: string, ABI: any, library: Web3Provid
     throw Error(`Invalid 'address' parameter '${address}'.`)
   }
 
-  console.log('new web3 Contract!');
   return new Contract(address, ABI, getProviderOrSigner(library, account) as any)
 }
 
@@ -37,7 +36,6 @@ export function getCaverContract(address: string, ABI: any): CaverContract {
   // console.log('new caver Contract!', caver.account, caver.abi);
 
   const { caver } = window;
-  console.log('new caver contract!', caver);
   /* eslint-disable-next-line new-cap */
   return new caver.klay.Contract(
     ABI,

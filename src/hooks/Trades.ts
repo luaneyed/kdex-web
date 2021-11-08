@@ -9,7 +9,6 @@ import { wrappedCurrency } from '../utils/wrappedCurrency';
 
 function useAllCommonPairs(useCaver: boolean, currencyA?: Currency, currencyB?: Currency): Pair[] {
   const { chainId } = useActiveWeb3Context(useCaver);
-  console.log('useAllCommonPairs', chainId);
 
   // Base tokens for building intermediary trading routes
   const bases: Token[] = useMemo(() => (chainId ? BASES_TO_CHECK_TRADES_AGAINST[chainId] : []), [chainId])

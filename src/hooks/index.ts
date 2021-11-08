@@ -25,9 +25,9 @@ export function useActiveWeb3Context(useCaver: boolean) {
     getBlockNumber: () => library.getBlockNumber(),
     on: (eventName, listener) => library.on(eventName, listener),
     removeListener: (eventName, listener) => library.removeListener(eventName, listener),
-    getTransactionReceipt: async (transactionHash: string | Promise<string>): Promise<TransactionReceipt> => {
+    getTransactionReceipt: async (transactionHash: string | Promise<string>): Promise<Omit<TransactionReceipt, 'cumulativeGasUsed'>> => {
       const r = await library.getTransactionReceipt(transactionHash);
-      return Object.assign(r, { gasUsed: BigNumber.from(r.gasUsed.toString()), cumulativeGasUsed: BigNumber.from(r.cumulativeGasUsed.toString()) });
+      return Object.assign(r, { gasUsed: BigNumber.from(r.gasUsed.toString()) });
     },
     send: (method: string, params: any[]) => library.send(method, params),
   } : undefined, [library]);

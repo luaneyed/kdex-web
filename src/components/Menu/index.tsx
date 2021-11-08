@@ -23,8 +23,6 @@ const Menu: React.FC<{ useCaver: boolean }> = (props) => {
   const { useCaver } = props;
   const profile = useGetLocalProfile(useCaver);
 
-  console.log('aaa!');
-
   return (
     <>
     <UikitMenu

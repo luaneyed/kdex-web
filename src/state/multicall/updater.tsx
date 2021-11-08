@@ -34,17 +34,19 @@ async function fetchChunk(
   let resultsBlockNumber
   let returnData
   try {
-    [resultsBlockNumber, returnData] = await multicallContract.methods.aggregate(
+    const result = await multicallContract.methods.aggregate(
       chunk.map((obj) => [obj.address, obj.callData])
     ).call({})
+    resultsBlockNumber = result[0];
+    returnData = result[1];
   } catch (error) {
     console.info('Failed to fetch chunk inside retry', error)
     throw error
   }
-  if (resultsBlockNumber.toNumber() < minBlockNumber) {
+  if (Number(resultsBlockNumber) < minBlockNumber) {
     throw new RetryableError('Fetched for old block number')
   }
-  return { results: returnData, blockNumber: resultsBlockNumber.toNumber() }
+  return { results: returnData, blockNumber: Number(resultsBlockNumber) }
 }
 
 /**
