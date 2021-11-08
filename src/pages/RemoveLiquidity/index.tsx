@@ -109,7 +109,7 @@ export default function RemoveLiquidity({
     const liquidityAmount = parsedAmounts[Field.LIQUIDITY]
     if (!liquidityAmount) throw new Error('missing liquidity amount')
     // try to gather a signature for permission
-    const nonce = await pairContract.methods.nonces(account).call();
+    const nonce = await pairContract.methods.nonces(account).call({});
 
     const deadlineForSignature: number = Math.ceil(Date.now() / 1000) + deadline
 

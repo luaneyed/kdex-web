@@ -113,7 +113,7 @@ class MiniRpcProvider implements AsyncSendable {
     request: { jsonrpc: '2.0'; id: number | string | null; method: string; params?: any },
     callback: (error: any, response: any) => void
   ): void => {
-    console.log('MiniRpcProvider.sendAsync called!', request, callback);
+    // console.log('MiniRpcProvider.sendAsync called!', request, callback);
     this.request(request.method, request.params)
       .then((result) => callback(null, { jsonrpc: '2.0', id: request.id, result }))
       .catch((error) => callback(error, null))
@@ -123,7 +123,7 @@ class MiniRpcProvider implements AsyncSendable {
     method: string | { method: string; params: unknown[] },
     params?: any
   ): Promise<unknown> => {
-    console.log('MiniRpcProvider.request called!', method, params);
+    // console.log('MiniRpcProvider.request called!', method, params);
     if (typeof method !== 'string') {
       return this.request(method.method, method.params)
     }

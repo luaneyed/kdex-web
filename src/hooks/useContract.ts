@@ -4,7 +4,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { ChainId, WKLAY } from '@pancakeswap-libs/sdk';
 import { abi as IUniswapV2PairABI } from '@uniswap/v2-core/build/IUniswapV2Pair.json';
 import Caver, { Contract as CaverContract } from 'caver-js';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { getProviderOrSigner, isAddress } from 'utils';
 import { CaverCommonContract, CommonContract, EthersCommonContract } from 'utils/contract';
 
@@ -47,11 +47,11 @@ export function getCaverContract(address: string, ABI: any): CaverContract {
 }
 
 // returns null on errors
-function useContract(useCaver: boolean, address: string | undefined, ABI: any, withSignerIfPossible = true): CommonContract | null {
+export function useContractGetter(useCaver: boolean) {
   const { library, account: web3Account } = useActiveWeb3React();
   const { account: caverAccount } = useActiveCaverReact();
 
-  return useMemo(() => {
+  return useCallback((address: string | undefined, ABI: any, withSignerIfPossible = true): CommonContract | null => {
     const account = (useCaver ? web3Account : caverAccount) ?? undefined;
 
     if (!address || !ABI || !library) return null
@@ -65,7 +65,30 @@ function useContract(useCaver: boolean, address: string | undefined, ABI: any, w
       console.error('Failed to get contract', error)
       return null
     }
-  }, [useCaver, address, ABI, library, withSignerIfPossible, web3Account, caverAccount])
+  }, [useCaver, library, web3Account, caverAccount])
+}
+
+// returns null on errors
+export function useContract(useCaver: boolean, address: string | undefined, ABI: any, withSignerIfPossible = true): CommonContract | null {
+  return useContractGetter(useCaver)(address, ABI, withSignerIfPossible);
+  // const { library, account: web3Account } = useActiveWeb3React();
+  // const { account: caverAccount } = useActiveCaverReact();
+
+  // return useMemo(() => {
+  //   const account = (useCaver ? web3Account : caverAccount) ?? undefined;
+
+  //   if (!address || !ABI || !library) return null
+  //   try {
+  //     const ethersContract = getEthersContract(address, ABI, library, withSignerIfPossible && account ? account : undefined);
+      
+  //     return useCaver
+  //       ? new CaverCommonContract(getCaverContract(address, ABI), ethersContract.interface, account)
+  //       : new EthersCommonContract(ethersContract);
+  //   } catch (error) {
+  //     console.error('Failed to get contract', error)
+  //     return null
+  //   }
+  // }, [useCaver, address, ABI, library, withSignerIfPossible, web3Account, caverAccount])
 }
 
 // account is optional

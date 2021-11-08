@@ -218,7 +218,7 @@ export function ListSelect({ onDismiss, onBack, useCaver }: { useCaver: boolean,
     setListUrlInput(e.target.value)
     setAddError(null)
   }, [])
-  const fetchList = useFetchListCallback()
+  const fetchList = useFetchListCallback(useCaver);
 
   const handleAddList = useCallback(() => {
     if (adding) return

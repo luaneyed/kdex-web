@@ -17,7 +17,7 @@ export default function Updater({ useCaver }: { useCaver: boolean }): null {
 
   const isWindowVisible = useIsWindowVisible()
 
-  const fetchList = useFetchListCallback()
+  const fetchList = useFetchListCallback(useCaver);
 
   const fetchAllListsCallback = useCallback(() => {
     if (!isWindowVisible) return

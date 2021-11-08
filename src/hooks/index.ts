@@ -7,7 +7,7 @@ import { useWeb3React as useWeb3ReactCore } from '@web3-react/core';
 import { Web3ReactContextInterface } from '@web3-react/core/dist/types';
 import { BigNumber } from 'ethers';
 import { CaverProvider } from 'klaytn-providers';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { isMobile } from 'react-device-detect';
 
 import { injected } from '../connectors';
@@ -21,8 +21,8 @@ export function useActiveWeb3Context(useCaver: boolean) {
 
   const { account, chainId, library }  = context;
   
-  const lib = library ? {
-    getBlockNumber: library.getBlockNumber,
+  const lib = useMemo(() => library ? {
+    getBlockNumber: () => library.getBlockNumber(),
     on: (eventName, listener) => library.on(eventName, listener),
     removeListener: (eventName, listener) => library.removeListener(eventName, listener),
     getTransactionReceipt: async (transactionHash: string | Promise<string>): Promise<TransactionReceipt> => {
@@ -30,7 +30,7 @@ export function useActiveWeb3Context(useCaver: boolean) {
       return Object.assign(r, { gasUsed: BigNumber.from(r.gasUsed.toString()), cumulativeGasUsed: BigNumber.from(r.cumulativeGasUsed.toString()) });
     },
     send: (method: string, params: any[]) => library.send(method, params),
-  } : undefined;
+  } : undefined, [library]);
 
   return { account, chainId, library: lib };
 }

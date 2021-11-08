@@ -1,6 +1,9 @@
 import { Contract } from '@ethersproject/contracts'
 import { Provider } from '@ethersproject/providers'
 import { namehash } from 'ethers/lib/utils'
+import { getCaverContract, useContract, useContractGetter } from 'hooks/useContract'
+import { CaverProvider } from 'klaytn-providers'
+import { useCallback } from 'react'
 
 const REGISTRAR_ABI = [
   {
@@ -59,9 +62,29 @@ function resolverContract(resolverAddress: string, provider: Provider): Contract
  * @param ensName to resolve
  * @param provider provider to use to fetch the data
  */
-export default async function resolveENSContentHash(ensName: string, provider: Provider): Promise<string> {
+export default async function resolveENSContentHashEthers(ensName: string, provider: Provider): Promise<string> {
   const ensRegistrarContract = new Contract(REGISTRAR_ADDRESS, REGISTRAR_ABI, provider)
   const hash = namehash(ensName)
   const resolverAddress = await ensRegistrarContract.resolver(hash)
   return resolverContract(resolverAddress, provider).contenthash(hash)
+}
+
+/**
+ * Fetches and decodes the result of an ENS contenthash lookup on mainnet to a URI
+ * @param ensName to resolve
+ * @param provider provider to use to fetch the data
+ */
+export function useENSResolver(useCaver: boolean) {
+  const contractGetter = useContractGetter(useCaver);
+  const ensRegistrarContract = contractGetter(REGISTRAR_ADDRESS, REGISTRAR_ABI);
+
+  return useCallback(
+    async (ensName: string) => {
+      const hash = namehash(ensName)
+      const resolverAddress = await ensRegistrarContract?.methods.resolver(hash).call({});
+      const resolverContract2 = contractGetter(resolverAddress, RESOLVER_ABI);
+      return resolverContract2?.methods.contenthash(hash).call({});
+    },
+    [contractGetter, ensRegistrarContract?.methods],
+  );
 }
