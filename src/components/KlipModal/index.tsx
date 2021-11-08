@@ -1,4 +1,5 @@
 import { Flex, Modal, Text } from '@pancakeswap-libs/uikit';
+// eslint-disable-next-line import/no-unresolved
 import QRCode from 'qrcode.react';
 import React, { useEffect, useState } from 'react';
 

@@ -8,6 +8,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { ArrowDown, Plus } from 'react-feather';
 import { RouteComponentProps } from 'react-router';
 import styled, { ThemeContext } from 'styled-components';
+import { CommonContract } from 'utils/contract';
 
 import { AutoColumn, ColumnCenter } from '../../components/Column';
 import CurrencyInputPanel from '../../components/CurrencyInputPanel';
@@ -24,7 +25,7 @@ import { ROUTER_ADDRESS } from '../../constants';
 import { useActiveWeb3Context } from '../../hooks';
 import { useCurrency } from '../../hooks/Tokens';
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback';
-import { useRouterContract } from '../../hooks/useContract';
+import { usePairContract, useRouterContract } from '../../hooks/useContract';
 import { Field } from '../../state/burn/actions';
 import { useBurnActionHandlers, useBurnState, useDerivedBurnInfo } from '../../state/burn/hooks';
 import { useTransactionAdder } from '../../state/transactions/hooks';
