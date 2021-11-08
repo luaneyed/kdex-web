@@ -1,12 +1,12 @@
-import { Contract } from '@ethersproject/contracts';
 import { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { AppDispatch, AppState } from '..';
 import { useActiveWeb3Context } from '../../hooks';
-import { useMulticallEthersContract } from '../../hooks/useContract';
+import { useMulticallContract } from '../../hooks/useContract';
 import useDebounce from '../../hooks/useDebounce';
 import chunkArray from '../../utils/chunkArray';
+import { CommonContract } from '../../utils/contract';
 import { CancelledError, retry, RetryableError } from '../../utils/retry';
 import { useBlockNumber } from '../application/hooks';
 import {
@@ -27,16 +27,16 @@ const CALL_CHUNK_SIZE = 500
  * @param minBlockNumber minimum block number of the result set
  */
 async function fetchChunk(
-  multicallContract: Contract,
+  multicallContract: CommonContract,
   chunk: Call[],
   minBlockNumber: number
 ): Promise<{ results: string[]; blockNumber: number }> {
   let resultsBlockNumber
   let returnData
   try {
-    [resultsBlockNumber, returnData] = await multicallContract.aggregate(
+    [resultsBlockNumber, returnData] = await multicallContract.methods.aggregate(
       chunk.map((obj) => [obj.address, obj.callData])
-    )
+    ).call({})
   } catch (error) {
     console.info('Failed to fetch chunk inside retry', error)
     throw error
@@ -119,7 +119,7 @@ export default function Updater({ useCaver }: { useCaver: boolean }): null {
   const debouncedListeners = useDebounce(state.callListeners, 100)
   const latestBlockNumber = useBlockNumber(useCaver);
   const { chainId } = useActiveWeb3Context(useCaver);
-  const multicallContract = useMulticallEthersContract()
+  const multicallContract = useMulticallContract(useCaver);
   const cancellations = useRef<{ blockNumber: number; cancellations: (() => void)[] }>()
 
   const listeningKeys: { [callKey: string]: number } = useMemo(() => {

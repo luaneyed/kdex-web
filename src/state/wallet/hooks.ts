@@ -1,10 +1,10 @@
 import { Currency, CurrencyAmount, JSBI, KLAY, Token, TokenAmount } from '@pancakeswap-libs/sdk';
+import { useMulticallContract } from 'hooks/useContract';
 import { useMemo } from 'react';
 
 import ERC20_INTERFACE from '../../constants/abis/erc20';
 import { useActiveWeb3Context } from '../../hooks';
 import { useAllTokens } from '../../hooks/Tokens';
-import { useMulticallEthersContract } from '../../hooks/useContract';
 import { isAddress } from '../../utils';
 import { useMultipleContractSingleData, useSingleContractMultipleData } from '../multicall/hooks';
 
@@ -15,7 +15,7 @@ export function useKLAYBalances(
   useCaver: boolean,
   uncheckedAddresses?: (string | undefined)[]
 ): { [address: string]: CurrencyAmount | undefined } {
-  const multicallContract = useMulticallEthersContract()
+  const multicallContract = useMulticallContract(useCaver);
 
   const addresses: string[] = useMemo(
     () =>

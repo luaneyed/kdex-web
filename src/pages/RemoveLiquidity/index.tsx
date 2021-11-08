@@ -1,6 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { splitSignature } from '@ethersproject/bytes';
-import { Contract } from '@ethersproject/contracts';
 import { Currency, currencyEquals, KLAY, Percent, WKLAY } from '@pancakeswap-libs/sdk';
 import { Button, Flex, Text } from '@pancakeswap-libs/uikit';
 import ConnectWalletButton from 'components/ConnectWalletButton';
@@ -25,7 +24,7 @@ import { ROUTER_ADDRESS } from '../../constants';
 import { useActiveWeb3Context } from '../../hooks';
 import { useCurrency } from '../../hooks/Tokens';
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback';
-import { usePairContract, useRouterContract } from '../../hooks/useContract';
+import { useRouterContract } from '../../hooks/useContract';
 import { Field } from '../../state/burn/actions';
 import { useBurnActionHandlers, useBurnState, useDerivedBurnInfo } from '../../state/burn/hooks';
 import { useTransactionAdder } from '../../state/transactions/hooks';
@@ -99,7 +98,7 @@ export default function RemoveLiquidity({
   const atMaxAmount = parsedAmounts[Field.LIQUIDITY_PERCENT]?.equalTo(new Percent('1'))
 
   // pair contract
-  const pairContract: Contract | null = usePairContract(pair?.liquidityToken?.address)
+  const pairContract: CommonContract | null = usePairContract(useCaver, pair?.liquidityToken?.address)
 
   // allowance handling
   const [signatureData, setSignatureData] = useState<{ v: number; r: string; s: string; deadline: number } | null>(null)
@@ -109,7 +108,7 @@ export default function RemoveLiquidity({
     const liquidityAmount = parsedAmounts[Field.LIQUIDITY]
     if (!liquidityAmount) throw new Error('missing liquidity amount')
     // try to gather a signature for permission
-    const nonce = await pairContract.nonces(account)
+    const nonce = await pairContract.methods.nonces(account).call();
 
     const deadlineForSignature: number = Math.ceil(Date.now() / 1000) + deadline
 

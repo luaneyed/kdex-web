@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import { getProviderOrSigner, isAddress } from 'utils';
 import { CaverCommonContract, CommonContract, EthersCommonContract } from 'utils/contract';
 
-import { useActiveCaverReact, useActiveWeb3React } from '.';
+import { useActiveCaverReact, useActiveWeb3Context, useActiveWeb3React } from '.';
 import { ROUTER_ADDRESS } from '../constants';
 import ENS_PUBLIC_RESOLVER_ABI from '../constants/abis/ens-public-resolver.json';
 import ENS_ABI from '../constants/abis/ens-registrar.json';
@@ -68,24 +68,6 @@ function useContract(useCaver: boolean, address: string | undefined, ABI: any, w
   }, [useCaver, address, ABI, library, withSignerIfPossible, web3Account, caverAccount])
 }
 
-// returns null on errors
-function useEthersContract(address: string | undefined, ABI: any, withSignerIfPossible = true): Contract | null {
-  const { library, account, connector } = useActiveWeb3React()
-  // console.log('connector!', connector);
-  // console.log('library!', library);
-  // console.log('account!', account);
-
-  return useMemo(() => {
-    if (!address || !ABI || !library) return null
-    try {
-      return getEthersContract(address, ABI, library, withSignerIfPossible && account ? account : undefined)
-    } catch (error) {
-      console.error('Failed to get contract', error)
-      return null
-    }
-  }, [address, ABI, library, withSignerIfPossible, account])
-}
-
 // account is optional
 export function useRouterContract(useCaver: boolean): CommonContract | null {
   return useContract(useCaver, ROUTER_ADDRESS, IUniswapV2Router02ABI);
@@ -96,17 +78,12 @@ export function useTokenContract(useCaver: boolean, tokenAddress?: string, withS
 }
 
 export function useWKLAYContract(useCaver: boolean, withSignerIfPossible?: boolean): CommonContract | null {
-  const { chainId } = useActiveWeb3React();
+  const { chainId } = useActiveWeb3Context(useCaver);
   return useContract(useCaver, chainId ? WKLAY[chainId].address : undefined, WKLAY_ABI, withSignerIfPossible);
 }
 
-export function useWKLAYEthersContract(withSignerIfPossible?: boolean): Contract | null {
-  const { chainId } = useActiveWeb3React();
-  return useEthersContract(chainId ? WKLAY[chainId].address : undefined, WKLAY_ABI, withSignerIfPossible);
-}
-
 export function useENSRegistrarContract(useCaver: boolean, withSignerIfPossible?: boolean): CommonContract | null {
-  const { chainId } = useActiveWeb3React()
+  const { chainId } = useActiveWeb3Context(useCaver);
   let address: string | undefined
   if (chainId) {
     switch (chainId) {
@@ -117,35 +94,19 @@ export function useENSRegistrarContract(useCaver: boolean, withSignerIfPossible?
   return useContract(useCaver, address, ENS_ABI, withSignerIfPossible);
 }
 
-export function useENSRegistrarEthersContract(withSignerIfPossible?: boolean): Contract | null {
-  const { chainId } = useActiveWeb3React()
-  let address: string | undefined
-  if (chainId) {
-    switch (chainId) {
-      case ChainId.CYPRESS:
-      case ChainId.BAOBAB:
-    }
-  }
-  return useEthersContract(address, ENS_ABI, withSignerIfPossible)
-}
-
 export function useENSResolverContract(useCaver: boolean, address: string | undefined, withSignerIfPossible?: boolean): CommonContract | null {
   return useContract(useCaver, address, ENS_PUBLIC_RESOLVER_ABI, withSignerIfPossible)
-}
-
-export function useENSResolverEthersContract(address: string | undefined, withSignerIfPossible?: boolean): Contract | null {
-  return useEthersContract(address, ENS_PUBLIC_RESOLVER_ABI, withSignerIfPossible)
 }
 
 export function useBytes32TokenContract(useCaver: boolean, tokenAddress?: string, withSignerIfPossible?: boolean): CommonContract | null {
   return useContract(useCaver, tokenAddress, ERC20_BYTES32_ABI, withSignerIfPossible)
 }
 
-export function usePairContract(pairAddress?: string, withSignerIfPossible?: boolean): Contract | null {
-  return useEthersContract(pairAddress, IUniswapV2PairABI, withSignerIfPossible)
+export function usePairContract(useCaver: boolean, pairAddress?: string, withSignerIfPossible?: boolean): CommonContract | null {
+  return useContract(useCaver, pairAddress, IUniswapV2PairABI, withSignerIfPossible);
 }
 
-export function useMulticallEthersContract(): Contract | null {
-  const { chainId } = useActiveWeb3React()
-  return useEthersContract(chainId && MULTICALL_NETWORKS[chainId], MULTICALL_ABI, false)
+export function useMulticallContract(useCaver: boolean): CommonContract | null {
+  const { chainId } = useActiveWeb3Context(useCaver);
+  return useContract(useCaver, chainId && MULTICALL_NETWORKS[chainId], MULTICALL_ABI, false);
 }

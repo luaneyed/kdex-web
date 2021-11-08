@@ -156,7 +156,7 @@ function toCallState(
 
 export function useSingleContractMultipleData(
   useCaver: boolean,
-  contract: Contract | null | undefined,
+  contract: CommonContract | null | undefined,
   methodName: string,
   callInputs: OptionalMethodInputs[],
   options?: ListenerOptions
