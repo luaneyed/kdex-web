@@ -93,7 +93,8 @@ export const PINNED_PAIRS: { readonly [chainId in ChainId]?: [Token, Token][] } 
   ],
 }
 
-export const NetworkContextName = 'NETWORK'
+export const Web3NetworkContextName = 'WEB3-NETWORK'
+export const CaverNetworkContextName = 'CAVER-NETWORK'
 
 // default allowed slippage, in bips
 export const INITIAL_ALLOWED_SLIPPAGE = 80

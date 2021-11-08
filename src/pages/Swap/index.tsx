@@ -37,7 +37,8 @@ import { computeTradePriceBreakdown, warningSeverity } from 'utils/prices';
 import { INITIAL_ALLOWED_SLIPPAGE } from '../../constants';
 import AppBody from '../AppBody';
 
-const Swap = ({ useCaver }: { useCaver: boolean }) => {
+const Swap = () => {
+  const useCaver = true;
   const loadedUrlParams = useDefaultsFromURLSearch(useCaver);
   const TranslateString = useI18n()
 

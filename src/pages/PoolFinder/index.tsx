@@ -24,7 +24,8 @@ enum Fields {
   TOKEN1 = 1,
 }
 
-export default function PoolFinder({ useCaver }: { useCaver: boolean }) {
+export default function PoolFinder() {
+  const useCaver = true;
   const { account } = useActiveWeb3Context(useCaver);
 
   const [showSearch, setShowSearch] = useState<boolean>(false)

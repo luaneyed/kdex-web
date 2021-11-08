@@ -4,13 +4,13 @@ import { createWeb3ReactRoot, Web3ReactProvider } from '@web3-react/core';
 import React from 'react';
 import { Provider } from 'react-redux';
 
-import { NetworkContextName } from './constants';
+import { CaverNetworkContextName, Web3NetworkContextName } from './constants';
 import store from './state';
 import { ThemeContextProvider } from './ThemeContext';
 import { getCaverLibrary, getWeb3Library } from './utils/getLibrary';
 
-const Web3ProviderNetwork = createWeb3ReactRoot(NetworkContextName)
-const CaverJsProviderNetwork = createCaverJsReactRoot(NetworkContextName)
+const Web3ProviderNetwork = createWeb3ReactRoot(Web3NetworkContextName);
+const CaverJsProviderNetwork = createCaverJsReactRoot(CaverNetworkContextName);
 
 const Providers: React.FC = ({ children }) =>
 <Web3ReactProvider getLibrary={getWeb3Library}>

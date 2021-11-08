@@ -194,6 +194,7 @@ export function useMultipleContractSingleData(
   options?: ListenerOptions
 ): CallState[] {
   const fragment = useMemo(() => contractInterface.getFunction(methodName), [contractInterface, methodName])
+  console.log('fragment', fragment);
   const callData: string | undefined = useMemo(
     () =>
       fragment && isValidMethodArgs(callInputs)

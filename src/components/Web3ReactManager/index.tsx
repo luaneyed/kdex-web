@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 import { network } from '../../connectors';
-import { NetworkContextName } from '../../constants';
+import { CaverNetworkContextName } from '../../constants';
 import { useEagerConnect, useInactiveListener } from '../../hooks';
 import Loader from '../Loader';
 
@@ -22,9 +22,9 @@ const Message = styled.h2`
 export default function Web3ReactManager({ children }: { children: JSX.Element }) {
   const { t } = useTranslation()
   // const { active } = useWeb3React()
-  // const { active: networkActive, error: networkError, activate: activateNetwork } = useWeb3React(NetworkContextName)
+  // const { active: networkActive, error: networkError, activate: activateNetwork } = useWeb3React(Web3NetworkContextName);
   const { active } = useCaverJsReact()
-  const { active: networkActive, error: networkError, activate: activateNetwork } = useCaverJsReact(NetworkContextName)
+  const { active: networkActive, error: networkError, activate: activateNetwork } = useCaverJsReact(CaverNetworkContextName);
 
   // try to eagerly connect to an injected provider, if it exists and has granted access already
   const triedEager = useEagerConnect()

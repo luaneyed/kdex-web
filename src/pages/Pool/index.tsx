@@ -20,7 +20,8 @@ import { ThemeContext } from 'styled-components';
 
 import AppBody from '../AppBody';
 
-export default function Pool({ useCaver }: { useCaver: boolean }) {
+export default function Pool() {
+  const useCaver = true;
   const theme = useContext(ThemeContext)
   const { account } = useActiveWeb3Context(useCaver);
   const TranslateString = useI18n()
