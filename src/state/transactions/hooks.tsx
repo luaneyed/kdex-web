@@ -8,11 +8,11 @@ import { addTransaction } from './actions';
 import { TransactionDetails } from './reducer';
 
 // helper that can take a ethers library transaction response and add it to the list of transactions
-export function useTransactionAdder(useCaver: boolean): (
+export function useTransactionAdder(): (
   response: CommonTransactionReceipt,
   customData?: { summary?: string; approval?: { tokenAddress: string; spender: string } }
 ) => void {
-  const { chainId, account } = useActiveWeb3Context(useCaver);
+  const { chainId, account } = useActiveWeb3Context();
   const dispatch = useDispatch<AppDispatch>()
 
   return useCallback(
@@ -35,16 +35,16 @@ export function useTransactionAdder(useCaver: boolean): (
 }
 
 // returns all the transactions for the current chain
-export function useAllTransactions(useCaver: boolean): { [txHash: string]: TransactionDetails } {
-  const { chainId } = useActiveWeb3Context(useCaver);
+export function useAllTransactions(): { [txHash: string]: TransactionDetails } {
+  const { chainId } = useActiveWeb3Context();
 
   const state = useSelector<AppState, AppState['transactions']>((s) => s.transactions)
 
   return chainId ? state[chainId] ?? {} : {}
 }
 
-export function useIsTransactionPending(useCaver: boolean, transactionHash?: string): boolean {
-  const transactions = useAllTransactions(useCaver);
+export function useIsTransactionPending(transactionHash?: string): boolean {
+  const transactions = useAllTransactions();
 
   if (!transactionHash || !transactions[transactionHash]) return false
 
@@ -60,8 +60,8 @@ export function isTransactionRecent(tx: TransactionDetails): boolean {
 }
 
 // returns whether a token has a pending approval transaction
-export function useHasPendingApproval(useCaver: boolean, tokenAddress: string | undefined, spender: string | undefined): boolean {
-  const allTransactions = useAllTransactions(useCaver);
+export function useHasPendingApproval(tokenAddress: string | undefined, spender: string | undefined): boolean {
+  const allTransactions = useAllTransactions();
   return useMemo(
     () =>
       typeof tokenAddress === 'string' &&

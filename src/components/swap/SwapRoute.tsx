@@ -5,7 +5,7 @@ import { Flex, Text } from '@pancakeswap-libs/uikit'
 import { ThemeContext } from 'styled-components'
 import CurrencyLogo from '../CurrencyLogo'
 
-export default memo(function SwapRoute({ trade, useCaver }: { useCaver: boolean, trade: Trade }) {
+export default memo(function SwapRoute({ trade }: { trade: Trade }) {
   const theme = useContext(ThemeContext)
   return (
     <Flex
@@ -23,7 +23,7 @@ export default memo(function SwapRoute({ trade, useCaver }: { useCaver: boolean,
           // eslint-disable-next-line react/no-array-index-key
           <Fragment key={i}>
             <Flex my="0.5rem" alignItems="center" style={{ flexShrink: 0 }}>
-              <CurrencyLogo currency={token} size="1.5rem" useCaver={useCaver} />
+              <CurrencyLogo currency={token} size="1.5rem" />
               <Text fontSize="14px" color="text" ml="0.5rem">
                 {token.symbol}
               </Text>

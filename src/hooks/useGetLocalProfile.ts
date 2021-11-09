@@ -10,9 +10,9 @@ const initialState = {
 /**
  * Note - this will only work if the app is on the same domain
  */
-const useGetLocalProfile = (useCaver: boolean) => {
+const useGetLocalProfile = () => {
   const [profile, setProfile] = useState(initialState)
-  const { account } = useActiveWeb3Context(useCaver);
+  const { account } = useActiveWeb3Context();
 
   useEffect(() => {
     if (account) {

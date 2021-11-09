@@ -14,9 +14,11 @@ import { connectorsByName, klipConnector } from 'connectors';
 import { NoKaikasProviderError } from 'connectors/KaikasConnector';
 import useToast from 'hooks/useToast';
 import { useCallback } from 'react';
+import { useWalletType, WalletType } from 'state/atoms';
 import { authenticateKlip } from 'utils/klipAuth';
 
 const useAuth = () => {
+  const [, setWalletType] = useWalletType();
   const web3Context = useWeb3React();
   const caverContext = useCaverJsReact();
   const authKlip = useKlipModal(() => authenticateKlip('kdex'));
@@ -52,7 +54,14 @@ const useAuth = () => {
         } else {
           toastError(error.name, error.message)
         }
-      })
+      });
+      if (connectorID === ConnectorNames.Kaikas) {
+        setWalletType(WalletType.Kaikas);
+      } else if (connectorID === ConnectorNames.Klip) {
+        setWalletType(WalletType.Klip);
+      } else {
+        setWalletType(WalletType.MetaMask);
+      }
     } else {
       toastError("Can't find connector", 'The connector config is wrong')
     }
@@ -64,6 +73,7 @@ const useAuth = () => {
     logout: () => {
       web3Context.deactivate();
       caverContext.deactivate();
+      setWalletType(null);
     },
   };
 }

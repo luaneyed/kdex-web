@@ -158,8 +158,8 @@ export function useRemoveUserAddedToken(): (chainId: number, address: string) =>
   )
 }
 
-export function useUserAddedTokens(useCaver: boolean): Token[] {
-  const { chainId } = useActiveWeb3Context(useCaver);
+export function useUserAddedTokens(): Token[] {
+  const { chainId } = useActiveWeb3Context();
   const serializedTokensMap = useSelector<AppState, AppState['user']['tokens']>(({ user: { tokens } }) => tokens)
 
   return useMemo(() => {
@@ -198,9 +198,9 @@ export function toV2LiquidityToken([tokenA, tokenB]: [Token, Token]): Token {
 /**
  * Returns all the pairs of tokens that are tracked by the user for the current chain ID.
  */
-export function useTrackedTokenPairs(useCaver: boolean): [Token, Token][] {
-  const { chainId } = useActiveWeb3Context(useCaver);
-  const tokens = useAllTokens(useCaver);
+export function useTrackedTokenPairs(): [Token, Token][] {
+  const { chainId } = useActiveWeb3Context();
+  const tokens = useAllTokens();
 
   // pinned pairs
   const pinnedPairs = useMemo(() => (chainId ? PINNED_PAIRS[chainId] ?? [] : []), [chainId])

@@ -5,8 +5,8 @@ import { AppState } from '..';
 import { useActiveWeb3Context } from '../../hooks';
 import { addPopup, PopupContent, removePopup, toggleSettingsMenu, toggleWalletModal } from './actions';
 
-export function useBlockNumber(useCaver: boolean): number | undefined {
-  const { chainId } = useActiveWeb3Context(useCaver);
+export function useBlockNumber(): number | undefined {
+  const { chainId } = useActiveWeb3Context();
 
   return useSelector((state: AppState) => state.application.blockNumber[chainId ?? -1])
 }

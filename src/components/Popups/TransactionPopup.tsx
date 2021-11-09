@@ -17,14 +17,12 @@ export default function TransactionPopup({
   hash,
   success,
   summary,
-  useCaver,
 }: {
   hash: string
   success?: boolean
   summary?: string
-  useCaver: boolean
 }) {
-  const { chainId } = useActiveWeb3Context(useCaver);
+  const { chainId } = useActiveWeb3Context();
 
   const theme = useContext(ThemeContext)
 

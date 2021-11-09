@@ -7,8 +7,8 @@ import { BASES_TO_CHECK_TRADES_AGAINST, CUSTOM_BASES } from '../constants';
 import { PairState, usePairs } from '../data/Reserves';
 import { wrappedCurrency } from '../utils/wrappedCurrency';
 
-function useAllCommonPairs(useCaver: boolean, currencyA?: Currency, currencyB?: Currency): Pair[] {
-  const { chainId } = useActiveWeb3Context(useCaver);
+function useAllCommonPairs(currencyA?: Currency, currencyB?: Currency): Pair[] {
+  const { chainId } = useActiveWeb3Context();
 
   // Base tokens for building intermediary trading routes
   const bases: Token[] = useMemo(() => (chainId ? BASES_TO_CHECK_TRADES_AGAINST[chainId] : []), [chainId])
@@ -61,7 +61,7 @@ function useAllCommonPairs(useCaver: boolean, currencyA?: Currency, currencyB?: 
     [tokenA, tokenB, bases, basePairs, chainId]
   )
 
-  const allPairs = usePairs(allPairCombinations, useCaver);
+  const allPairs = usePairs(allPairCombinations);
 
   // only pass along valid pairs, non-duplicated pairs
   return useMemo(
@@ -83,8 +83,8 @@ function useAllCommonPairs(useCaver: boolean, currencyA?: Currency, currencyB?: 
 /**
  * Returns the best trade for the exact amount of tokens in to the given token out
  */
-export function useTradeExactIn(useCaver: boolean, currencyAmountIn?: CurrencyAmount, currencyOut?: Currency): Trade | null {
-  const allowedPairs = useAllCommonPairs(useCaver, currencyAmountIn?.currency, currencyOut)
+export function useTradeExactIn(currencyAmountIn?: CurrencyAmount, currencyOut?: Currency): Trade | null {
+  const allowedPairs = useAllCommonPairs(currencyAmountIn?.currency, currencyOut)
 
   return useMemo(() => {
     if (currencyAmountIn && currencyOut && allowedPairs.length > 0) {
@@ -99,8 +99,8 @@ export function useTradeExactIn(useCaver: boolean, currencyAmountIn?: CurrencyAm
 /**
  * Returns the best trade for the token in to the exact amount of token out
  */
-export function useTradeExactOut(useCaver: boolean, currencyIn?: Currency, currencyAmountOut?: CurrencyAmount): Trade | null {
-  const allowedPairs = useAllCommonPairs(useCaver, currencyIn, currencyAmountOut?.currency)
+export function useTradeExactOut(currencyIn?: Currency, currencyAmountOut?: CurrencyAmount): Trade | null {
+  const allowedPairs = useAllCommonPairs(currencyIn, currencyAmountOut?.currency)
 
   return useMemo(() => {
     if (currencyIn && currencyAmountOut && allowedPairs.length > 0) {

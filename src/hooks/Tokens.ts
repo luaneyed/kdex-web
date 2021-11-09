@@ -10,9 +10,9 @@ import { useUserAddedTokens } from '../state/user/hooks';
 import { isAddress } from '../utils';
 import { useBytes32TokenContract, useTokenContract } from './useContract';
 
-export function useAllTokens(useCaver: boolean): { [address: string]: Token } {
-  const { chainId } = useActiveWeb3Context(useCaver);
-  const userAddedTokens = useUserAddedTokens(useCaver);
+export function useAllTokens(): { [address: string]: Token } {
+  const { chainId } = useActiveWeb3Context();
+  const userAddedTokens = useUserAddedTokens();
   const allTokens = useSelectedTokenList()
 
   return useMemo(() => {
@@ -34,8 +34,8 @@ export function useAllTokens(useCaver: boolean): { [address: string]: Token } {
 }
 
 // Check if currency is included in custom list from user storage
-export function useIsUserAddedToken(useCaver: boolean, currency: Currency): boolean {
-  const userAddedTokens = useUserAddedTokens(useCaver);
+export function useIsUserAddedToken(currency: Currency): boolean {
+  const userAddedTokens = useUserAddedTokens();
   return !!userAddedTokens.find((token) => currencyEquals(currency, token))
 }
 
@@ -52,26 +52,25 @@ function parseStringOrBytes32(str: string | undefined, bytes32: string | undefin
 // undefined if invalid or does not exist
 // null if loading
 // otherwise returns the token
-export function useToken(useCaver: boolean, tokenAddress?: string): Token | undefined | null {
-  const { chainId } = useActiveWeb3Context(useCaver);
-  const tokens = useAllTokens(useCaver);
+export function useToken(tokenAddress?: string): Token | undefined | null {
+  const { chainId } = useActiveWeb3Context();
+  const tokens = useAllTokens();
 
   const address = isAddress(tokenAddress)
-  const tokenContract = useTokenContract(useCaver, address || undefined, false);
-  const tokenContractBytes32 = useBytes32TokenContract(useCaver, address || undefined, false);
+  const tokenContract = useTokenContract(address || undefined, false);
+  const tokenContractBytes32 = useBytes32TokenContract(address || undefined, false);
   const token: Token | undefined = address ? tokens[address] : undefined
 
-  const tokenName = useSingleCallResult(useCaver, token ? undefined : tokenContract, 'name', undefined, NEVER_RELOAD);
+  const tokenName = useSingleCallResult(token ? undefined : tokenContract, 'name', undefined, NEVER_RELOAD);
   const tokenNameBytes32 = useSingleCallResult(
-    useCaver,
     token ? undefined : tokenContractBytes32,
     'name',
     undefined,
     NEVER_RELOAD
   )
-  const symbol = useSingleCallResult(useCaver, token ? undefined : tokenContract, 'symbol', undefined, NEVER_RELOAD)
-  const symbolBytes32 = useSingleCallResult(useCaver, token ? undefined : tokenContractBytes32, 'symbol', undefined, NEVER_RELOAD)
-  const decimals = useSingleCallResult(useCaver, token ? undefined : tokenContract, 'decimals', undefined, NEVER_RELOAD)
+  const symbol = useSingleCallResult(token ? undefined : tokenContract, 'symbol', undefined, NEVER_RELOAD)
+  const symbolBytes32 = useSingleCallResult(token ? undefined : tokenContractBytes32, 'symbol', undefined, NEVER_RELOAD)
+  const decimals = useSingleCallResult(token ? undefined : tokenContract, 'decimals', undefined, NEVER_RELOAD)
 
   return useMemo(() => {
     if (token) return token
@@ -102,8 +101,8 @@ export function useToken(useCaver: boolean, tokenAddress?: string): Token | unde
   ])
 }
 
-export function useCurrency(useCaver: boolean, currencyId: string | undefined): Currency | null | undefined {
+export function useCurrency(currencyId: string | undefined): Currency | null | undefined {
   const isKLAY = currencyId?.toUpperCase() === 'KLAY'
-  const token = useToken(useCaver, isKLAY ? undefined : currencyId)
+  const token = useToken(isKLAY ? undefined : currencyId);
   return isKLAY ? KLAY : token
 }

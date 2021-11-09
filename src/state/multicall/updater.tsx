@@ -114,14 +114,14 @@ export function outdatedListeningKeys(
   })
 }
 
-export default function Updater({ useCaver }: { useCaver: boolean }): null {
+export default function Updater(): null {
   const dispatch = useDispatch<AppDispatch>()
   const state = useSelector<AppState, AppState['multicall']>((s) => s.multicall)
   // wait for listeners to settle before triggering updates
   const debouncedListeners = useDebounce(state.callListeners, 100)
-  const latestBlockNumber = useBlockNumber(useCaver);
-  const { chainId } = useActiveWeb3Context(useCaver);
-  const multicallContract = useMulticallContract(useCaver);
+  const latestBlockNumber = useBlockNumber();
+  const { chainId } = useActiveWeb3Context();
+  const multicallContract = useMulticallContract();
   const cancellations = useRef<{ blockNumber: number; cancellations: (() => void)[] }>()
 
   const listeningKeys: { [callKey: string]: number } = useMemo(() => {

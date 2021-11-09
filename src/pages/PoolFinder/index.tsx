@@ -25,8 +25,7 @@ enum Fields {
 }
 
 export default function PoolFinder() {
-  const useCaver = true;
-  const { account } = useActiveWeb3Context(useCaver);
+  const { account } = useActiveWeb3Context();
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [activeField, setActiveField] = useState<number>(Fields.TOKEN1)
@@ -34,7 +33,7 @@ export default function PoolFinder() {
   const [currency0, setCurrency0] = useState<Currency | null>(KLAY)
   const [currency1, setCurrency1] = useState<Currency | null>(null)
 
-  const [pairState, pair] = usePair(useCaver, currency0 ?? undefined, currency1 ?? undefined)
+  const [pairState, pair] = usePair(currency0 ?? undefined, currency1 ?? undefined)
   const addPair = usePairAdder()
 
   const TranslateString = useI18n()
@@ -53,7 +52,7 @@ export default function PoolFinder() {
         JSBI.equal(pair.reserve1.raw, JSBI.BigInt(0))
     )
 
-  const position: TokenAmount | undefined = useTokenBalance(useCaver, account ?? undefined, pair?.liquidityToken)
+  const position: TokenAmount | undefined = useTokenBalance(account ?? undefined, pair?.liquidityToken)
   const hasPosition = Boolean(position && JSBI.greaterThan(position.raw, JSBI.BigInt(0)))
 
   const handleCurrencySelect = useCallback(
@@ -93,7 +92,7 @@ export default function PoolFinder() {
                 setShowSearch(true)
                 setActiveField(Fields.TOKEN0)
               }}
-              startIcon={currency0 ? <CurrencyLogo currency={currency0} style={{ marginRight: '.5rem' }} useCaver={useCaver} /> : null}
+              startIcon={currency0 ? <CurrencyLogo currency={currency0} style={{ marginRight: '.5rem' }} /> : null}
               endIcon={<ChevronDownIcon width="24px" color="white" />}
               width="100%"
             >
@@ -109,7 +108,7 @@ export default function PoolFinder() {
                 setShowSearch(true)
                 setActiveField(Fields.TOKEN1)
               }}
-              startIcon={currency1 ? <CurrencyLogo currency={currency1} style={{ marginRight: '.5rem' }} useCaver={useCaver} /> : null}
+              startIcon={currency1 ? <CurrencyLogo currency={currency1} style={{ marginRight: '.5rem' }} /> : null}
               endIcon={<ChevronDownIcon width="24px" color="white" />}
               width="100%"
             >
@@ -127,7 +126,7 @@ export default function PoolFinder() {
             {currency0 && currency1 ? (
               pairState === PairState.EXISTS ? (
                 hasPosition && pair ? (
-                  <MinimalPositionCard pair={pair} useCaver={useCaver} />
+                  <MinimalPositionCard pair={pair} />
                 ) : (
                   <LightCard padding="45px 10px">
                     <AutoColumn gap="sm" justify="center">
@@ -176,7 +175,6 @@ export default function PoolFinder() {
             onDismiss={handleSearchDismiss}
             showCommonBases
             selectedCurrency={(activeField === Fields.TOKEN0 ? currency1 : currency0) ?? undefined}
-            useCaver={useCaver}
           />
         </CardBody>
       </AppBody>

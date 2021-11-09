@@ -12,7 +12,6 @@ interface ConfirmationModalProps {
   content: () => React.ReactNode
   attemptingTxn: boolean
   pendingText: string
-  useCaver: boolean
 }
 
 const TransactionConfirmationModal = ({
@@ -22,9 +21,8 @@ const TransactionConfirmationModal = ({
   hash,
   pendingText,
   content,
-  useCaver,
 }: ConfirmationModalProps) => {
-  const { chainId } = useActiveWeb3Context(useCaver);
+  const { chainId } = useActiveWeb3Context();
 
   if (!chainId) return null
 

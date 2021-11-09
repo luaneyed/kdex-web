@@ -13,7 +13,6 @@ export function ConfirmAddModalBottom({
   parsedAmounts,
   poolTokenPercentage,
   onAdd,
-  useCaver,
 }: {
   noLiquidity?: boolean
   price?: Fraction
@@ -21,21 +20,20 @@ export function ConfirmAddModalBottom({
   parsedAmounts: { [field in Field]?: CurrencyAmount }
   poolTokenPercentage?: Percent
   onAdd: () => void
-  useCaver: boolean
 }) {
   return (
     <>
       <RowBetween>
         <Text>{currencies[Field.CURRENCY_A]?.symbol} Deposited</Text>
         <RowFixed>
-          <CurrencyLogo currency={currencies[Field.CURRENCY_A]} style={{ marginRight: '8px' }} useCaver={useCaver} />
+          <CurrencyLogo currency={currencies[Field.CURRENCY_A]} style={{ marginRight: '8px' }} />
           <Text>{parsedAmounts[Field.CURRENCY_A]?.toSignificant(6)}</Text>
         </RowFixed>
       </RowBetween>
       <RowBetween>
         <Text>{currencies[Field.CURRENCY_B]?.symbol} Deposited</Text>
         <RowFixed>
-          <CurrencyLogo currency={currencies[Field.CURRENCY_B]} style={{ marginRight: '8px' }} useCaver={useCaver} />
+          <CurrencyLogo currency={currencies[Field.CURRENCY_B]} style={{ marginRight: '8px' }} />
           <Text>{parsedAmounts[Field.CURRENCY_B]?.toSignificant(6)}</Text>
         </RowFixed>
       </RowBetween>

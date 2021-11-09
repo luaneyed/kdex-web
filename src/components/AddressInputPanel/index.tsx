@@ -73,18 +73,16 @@ export default function AddressInputPanel({
   id,
   value,
   onChange,
-  useCaver,
 }: {
   id?: string
   // the typed string value
   value: string
   // triggers whenever the typed value changes
   onChange: (value: string) => void,
-  useCaver: boolean,
 }) {
-  const { chainId } = useActiveWeb3Context(useCaver);
+  const { chainId } = useActiveWeb3Context();
   const TranslateString = useI18n()
-  const { address, loading, name } = useENS(useCaver, value);
+  const { address, loading, name } = useENS(value);
 
   const handleInput = useCallback(
     (event) => {

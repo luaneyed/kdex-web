@@ -16,6 +16,7 @@ import { ERC20_BYTES32_ABI } from '../constants/abis/erc20';
 import ERC20_ABI from '../constants/abis/erc20.json';
 import WKLAY_ABI from '../constants/abis/wklay.json';
 import { MULTICALL_ABI, MULTICALL_NETWORKS } from '../constants/multicall';
+import { useWalletType, WalletType } from '../state/atoms';
 import { abi as IUniswapV2Router02ABI } from '../utils/kdexRouter.json';
 
 // account is optional
@@ -45,7 +46,9 @@ export function getCaverContract(address: string, ABI: any): CaverContract {
 }
 
 // returns null on errors
-export function useContractGetter(useCaver: boolean) {
+export function useContractGetter() {
+  const [walletType] = useWalletType();
+  const useCaver = walletType !== WalletType.MetaMask;
   const { library, account: web3Account } = useActiveWeb3React();
   const { account: caverAccount } = useActiveCaverReact();
 
@@ -67,8 +70,8 @@ export function useContractGetter(useCaver: boolean) {
 }
 
 // returns null on errors
-export function useContract(useCaver: boolean, address: string | undefined, ABI: any, withSignerIfPossible = true): CommonContract | null {
-  return useContractGetter(useCaver)(address, ABI, withSignerIfPossible);
+export function useContract(address: string | undefined, ABI: any, withSignerIfPossible = true): CommonContract | null {
+  return useContractGetter()(address, ABI, withSignerIfPossible);
   // const { library, account: web3Account } = useActiveWeb3React();
   // const { account: caverAccount } = useActiveCaverReact();
 
@@ -90,21 +93,21 @@ export function useContract(useCaver: boolean, address: string | undefined, ABI:
 }
 
 // account is optional
-export function useRouterContract(useCaver: boolean): CommonContract | null {
-  return useContract(useCaver, ROUTER_ADDRESS, IUniswapV2Router02ABI);
+export function useRouterContract(): CommonContract | null {
+  return useContract(ROUTER_ADDRESS, IUniswapV2Router02ABI);
 }
 
-export function useTokenContract(useCaver: boolean, tokenAddress?: string, withSignerIfPossible?: boolean): CommonContract | null {
-  return useContract(useCaver, tokenAddress, ERC20_ABI, withSignerIfPossible);
+export function useTokenContract(tokenAddress?: string, withSignerIfPossible?: boolean): CommonContract | null {
+  return useContract(tokenAddress, ERC20_ABI, withSignerIfPossible);
 }
 
-export function useWKLAYContract(useCaver: boolean, withSignerIfPossible?: boolean): CommonContract | null {
-  const { chainId } = useActiveWeb3Context(useCaver);
-  return useContract(useCaver, chainId ? WKLAY[chainId].address : undefined, WKLAY_ABI, withSignerIfPossible);
+export function useWKLAYContract(withSignerIfPossible?: boolean): CommonContract | null {
+  const { chainId } = useActiveWeb3Context();
+  return useContract(chainId ? WKLAY[chainId].address : undefined, WKLAY_ABI, withSignerIfPossible);
 }
 
-export function useENSRegistrarContract(useCaver: boolean, withSignerIfPossible?: boolean): CommonContract | null {
-  const { chainId } = useActiveWeb3Context(useCaver);
+export function useENSRegistrarContract(withSignerIfPossible?: boolean): CommonContract | null {
+  const { chainId } = useActiveWeb3Context();
   let address: string | undefined
   if (chainId) {
     switch (chainId) {
@@ -112,22 +115,22 @@ export function useENSRegistrarContract(useCaver: boolean, withSignerIfPossible?
       case ChainId.BAOBAB:
     }
   }
-  return useContract(useCaver, address, ENS_ABI, withSignerIfPossible);
+  return useContract(address, ENS_ABI, withSignerIfPossible);
 }
 
-export function useENSResolverContract(useCaver: boolean, address: string | undefined, withSignerIfPossible?: boolean): CommonContract | null {
-  return useContract(useCaver, address, ENS_PUBLIC_RESOLVER_ABI, withSignerIfPossible)
+export function useENSResolverContract(address: string | undefined, withSignerIfPossible?: boolean): CommonContract | null {
+  return useContract(address, ENS_PUBLIC_RESOLVER_ABI, withSignerIfPossible)
 }
 
-export function useBytes32TokenContract(useCaver: boolean, tokenAddress?: string, withSignerIfPossible?: boolean): CommonContract | null {
-  return useContract(useCaver, tokenAddress, ERC20_BYTES32_ABI, withSignerIfPossible)
+export function useBytes32TokenContract(tokenAddress?: string, withSignerIfPossible?: boolean): CommonContract | null {
+  return useContract(tokenAddress, ERC20_BYTES32_ABI, withSignerIfPossible)
 }
 
-export function usePairContract(useCaver: boolean, pairAddress?: string, withSignerIfPossible?: boolean): CommonContract | null {
-  return useContract(useCaver, pairAddress, IUniswapV2PairABI, withSignerIfPossible);
+export function usePairContract(pairAddress?: string, withSignerIfPossible?: boolean): CommonContract | null {
+  return useContract(pairAddress, IUniswapV2PairABI, withSignerIfPossible);
 }
 
-export function useMulticallContract(useCaver: boolean): CommonContract | null {
-  const { chainId } = useActiveWeb3Context(useCaver);
-  return useContract(useCaver, chainId && MULTICALL_NETWORKS[chainId], MULTICALL_ABI, false);
+export function useMulticallContract(): CommonContract | null {
+  const { chainId } = useActiveWeb3Context();
+  return useContract(chainId && MULTICALL_NETWORKS[chainId], MULTICALL_ABI, false);
 }

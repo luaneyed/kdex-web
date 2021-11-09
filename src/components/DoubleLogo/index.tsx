@@ -16,7 +16,6 @@ interface DoubleCurrencyLogoProps {
   size?: number
   currency0?: Currency
   currency1?: Currency
-  useCaver: boolean
 }
 
 const HigherLogo = styled(CurrencyLogo)`
@@ -32,12 +31,11 @@ export default function DoubleCurrencyLogo({
   currency1,
   size = 16,
   margin = false,
-  useCaver,
 }: DoubleCurrencyLogoProps) {
   return (
     <Wrapper sizeraw={size} margin={margin}>
-      {currency0 && <HigherLogo currency={currency0} size={`${size.toString()  }px`} useCaver={useCaver} />}
-      {currency1 && <CoveredLogo currency={currency1} size={`${size.toString()  }px`} sizeraw={size} useCaver={useCaver} />}
+      {currency0 && <HigherLogo currency={currency0} size={`${size.toString()  }px`} />}
+      {currency1 && <CoveredLogo currency={currency1} size={`${size.toString()  }px`} sizeraw={size} />}
     </Wrapper>
   )
 }

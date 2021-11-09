@@ -54,9 +54,8 @@ export default function RemoveLiquidity({
     params: { currencyIdA, currencyIdB },
   },
 }: RouteComponentProps<{ currencyIdA: string; currencyIdB: string }>) {
-  const useCaver = true;
-  const [currencyA, currencyB] = [useCurrency(useCaver, currencyIdA) ?? undefined, useCurrency(useCaver, currencyIdB) ?? undefined]
-  const { account, chainId, library } = useActiveWeb3Context(useCaver);
+  const [currencyA, currencyB] = [useCurrency(currencyIdA) ?? undefined, useCurrency(currencyIdB) ?? undefined]
+  const { account, chainId, library } = useActiveWeb3Context();
   const TranslateString = useI18n()
   const [tokenA, tokenB] = useMemo(() => [wrappedCurrency(currencyA, chainId), wrappedCurrency(currencyB, chainId)], [
     currencyA,
@@ -68,7 +67,7 @@ export default function RemoveLiquidity({
 
   // burn state
   const { independentField, typedValue } = useBurnState()
-  const { pair, parsedAmounts, error } = useDerivedBurnInfo(useCaver, currencyA ?? undefined, currencyB ?? undefined);
+  const { pair, parsedAmounts, error } = useDerivedBurnInfo(currencyA ?? undefined, currencyB ?? undefined);
   const { onUserInput: _onUserInput } = useBurnActionHandlers()
   const isValid = !error
 
@@ -99,11 +98,11 @@ export default function RemoveLiquidity({
   const atMaxAmount = parsedAmounts[Field.LIQUIDITY_PERCENT]?.equalTo(new Percent('1'))
 
   // pair contract
-  const pairContract: CommonContract | null = usePairContract(useCaver, pair?.liquidityToken?.address)
+  const pairContract: CommonContract | null = usePairContract(pair?.liquidityToken?.address)
 
   // allowance handling
   const [signatureData, setSignatureData] = useState<{ v: number; r: string; s: string; deadline: number } | null>(null)
-  const [approval, approveCallback] = useApproveCallback(useCaver, parsedAmounts[Field.LIQUIDITY], ROUTER_ADDRESS)
+  const [approval, approveCallback] = useApproveCallback(parsedAmounts[Field.LIQUIDITY], ROUTER_ADDRESS)
   async function onAttemptToApprove() {
     if (!pairContract || !pair || !library) throw new Error('missing dependencies')
     const liquidityAmount = parsedAmounts[Field.LIQUIDITY]
@@ -185,9 +184,9 @@ export default function RemoveLiquidity({
   const onCurrencyBInput = useCallback((val: string): void => onUserInput(Field.CURRENCY_B, val), [onUserInput])
 
   // tx sending
-  const addTransaction = useTransactionAdder(useCaver);
+  const addTransaction = useTransactionAdder();
 
-  const router = useRouterContract(useCaver);
+  const router = useRouterContract();
 
   async function onRemove() {
     if (!chainId || !router || !account) throw new Error('missing dependencies')
@@ -331,7 +330,7 @@ export default function RemoveLiquidity({
         <RowBetween align="flex-end">
           <Text fontSize="24px">{parsedAmounts[Field.CURRENCY_A]?.toSignificant(6)}</Text>
           <RowFixed gap="4px">
-            <CurrencyLogo currency={currencyA} size="24px" useCaver={useCaver} />
+            <CurrencyLogo currency={currencyA} size="24px" />
             <Text fontSize="24px" style={{ marginLeft: '10px' }}>
               {currencyA?.symbol}
             </Text>
@@ -343,7 +342,7 @@ export default function RemoveLiquidity({
         <RowBetween align="flex-end">
           <Text fontSize="24px">{parsedAmounts[Field.CURRENCY_B]?.toSignificant(6)}</Text>
           <RowFixed gap="4px">
-            <CurrencyLogo currency={currencyB} size="24px" useCaver={useCaver} />
+            <CurrencyLogo currency={currencyB} size="24px" />
             <Text fontSize="24px" style={{ marginLeft: '10px' }}>
               {currencyB?.symbol}
             </Text>
@@ -365,7 +364,7 @@ export default function RemoveLiquidity({
         <RowBetween>
           <Text color="textSubtle">{`LP ${currencyA?.symbol}/${currencyB?.symbol}`} Burned</Text>
           <RowFixed>
-            <DoubleCurrencyLogo currency0={currencyA} currency1={currencyB} margin useCaver={useCaver} />
+            <DoubleCurrencyLogo currency0={currencyA} currency1={currencyB} margin />
             <Text>{parsedAmounts[Field.LIQUIDITY]?.toSignificant(6)}</Text>
           </RowFixed>
         </RowBetween>
@@ -465,7 +464,6 @@ export default function RemoveLiquidity({
               />
             )}
             pendingText={pendingText}
-            useCaver={useCaver}
           />
           <AutoColumn gap="md">
             <Body>
@@ -535,7 +533,7 @@ export default function RemoveLiquidity({
                       <RowBetween>
                         <Text fontSize="24px">{formattedAmounts[Field.CURRENCY_A] || '-'}</Text>
                         <RowFixed>
-                          <CurrencyLogo currency={currencyA} style={{ marginRight: '12px' }} useCaver={useCaver} />
+                          <CurrencyLogo currency={currencyA} style={{ marginRight: '12px' }} />
                           <Text fontSize="24px" id="remove-liquidity-tokena-symbol">
                             {currencyA?.symbol}
                           </Text>
@@ -544,7 +542,7 @@ export default function RemoveLiquidity({
                       <RowBetween>
                         <Text fontSize="24px">{formattedAmounts[Field.CURRENCY_B] || '-'}</Text>
                         <RowFixed>
-                          <CurrencyLogo currency={currencyB} style={{ marginRight: '12px' }} useCaver={useCaver} />
+                          <CurrencyLogo currency={currencyB} style={{ marginRight: '12px' }} />
                           <Text fontSize="24px" id="remove-liquidity-tokenb-symbol">
                             {currencyB?.symbol}
                           </Text>
@@ -590,7 +588,6 @@ export default function RemoveLiquidity({
                     currency={pair?.liquidityToken}
                     pair={pair}
                     id="liquidity-amount"
-                    useCaver={useCaver}
                   />
                   <ColumnCenter>
                     <ArrowDown size="16" color={theme.colors.textSubtle} />
@@ -605,7 +602,6 @@ export default function RemoveLiquidity({
                     label="Output"
                     onCurrencySelect={handleSelectCurrencyA}
                     id="remove-liquidity-tokena"
-                    useCaver={useCaver}
                   />
                   <ColumnCenter>
                     <Plus size="16" color={theme.colors.textSubtle} />
@@ -620,7 +616,6 @@ export default function RemoveLiquidity({
                     label="Output"
                     onCurrencySelect={handleSelectCurrencyB}
                     id="remove-liquidity-tokenb"
-                    useCaver={useCaver}
                   />
                 </>
               )}
@@ -682,7 +677,7 @@ export default function RemoveLiquidity({
 
       {pair ? (
         <AutoColumn style={{ minWidth: '20rem', marginTop: '1rem' }}>
-          <MinimalPositionCard showUnwrapped={oneCurrencyIsWKLAY} pair={pair} useCaver={useCaver} />
+          <MinimalPositionCard showUnwrapped={oneCurrencyIsWKLAY} pair={pair} />
         </AutoColumn>
       ) : null}
     </>

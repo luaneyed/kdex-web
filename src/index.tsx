@@ -27,10 +27,10 @@ ReactDOM.render(
   <StrictMode>
     <Providers>
       <>
-        <ListsUpdater useCaver={true} />
-        <ApplicationUpdater useCaver={true} />
-        <TransactionUpdater useCaver={true} />
-        <MulticallUpdater useCaver={true} />
+        <ListsUpdater />
+        <ApplicationUpdater />
+        <TransactionUpdater />
+        <MulticallUpdater />
         <ToastListener />
       </>
       <ResetCSS />

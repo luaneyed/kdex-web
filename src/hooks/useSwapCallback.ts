@@ -46,14 +46,13 @@ function useSwapCallArguments(
   allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
   deadline: number = DEFAULT_DEADLINE_FROM_NOW, // in seconds from now
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
-  useCaver: boolean,
 ): SwapCall[] {
-  const { account, chainId } = useActiveWeb3Context(useCaver);
+  const { account, chainId } = useActiveWeb3Context();
 
-  const { address: recipientAddress } = useENS(useCaver, recipientAddressOrName);
+  const { address: recipientAddress } = useENS(recipientAddressOrName);
   const recipient = recipientAddressOrName === null ? account : recipientAddress
 
-  const contract = useRouterContract(useCaver);
+  const contract = useRouterContract();
 
   return useMemo(() => {
     if (!trade || !recipient || !contract || !chainId) return []
@@ -93,15 +92,14 @@ export function useSwapCallback(
   allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
   deadline: number = DEFAULT_DEADLINE_FROM_NOW, // in seconds from now
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
-  useCaver: boolean,
 ): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: string | null } {
-  const { account, chainId } = useActiveWeb3Context(useCaver);
+  const { account, chainId } = useActiveWeb3Context();
 
-  const swapCalls = useSwapCallArguments(trade, allowedSlippage, deadline, recipientAddressOrName, useCaver);
+  const swapCalls = useSwapCallArguments(trade, allowedSlippage, deadline, recipientAddressOrName);
 
-  const addTransaction = useTransactionAdder(useCaver);
+  const addTransaction = useTransactionAdder();
 
-  const { address: recipientAddress } = useENS(useCaver, recipientAddressOrName);
+  const { address: recipientAddress } = useENS(recipientAddressOrName);
   const recipient = recipientAddressOrName === null ? account : recipientAddress
 
   return useMemo(() => {

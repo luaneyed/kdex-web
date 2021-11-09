@@ -21,13 +21,12 @@ import { ThemeContext } from 'styled-components';
 import AppBody from '../AppBody';
 
 export default function Pool() {
-  const useCaver = true;
   const theme = useContext(ThemeContext)
-  const { account } = useActiveWeb3Context(useCaver);
+  const { account } = useActiveWeb3Context();
   const TranslateString = useI18n()
 
   // fetch the user's balances of all tracked V2 LP tokens
-  const trackedTokenPairs = useTrackedTokenPairs(useCaver);
+  const trackedTokenPairs = useTrackedTokenPairs();
   const tokenPairsWithLiquidityTokens = useMemo(
     () => trackedTokenPairs.map((tokens) => ({ liquidityToken: toV2LiquidityToken(tokens), tokens })),
     [trackedTokenPairs]
@@ -36,7 +35,6 @@ export default function Pool() {
     tokenPairsWithLiquidityTokens,
   ])
   const [v2PairsBalances, fetchingV2PairBalances] = useTokenBalancesWithLoadingIndicator(
-    useCaver,
     account ?? undefined,
     liquidityTokens,
   )
@@ -50,7 +48,7 @@ export default function Pool() {
     [tokenPairsWithLiquidityTokens, v2PairsBalances]
   )
 
-  const v2Pairs = usePairs(liquidityTokensWithBalances.map(({ tokens }) => tokens), useCaver);
+  const v2Pairs = usePairs(liquidityTokensWithBalances.map(({ tokens }) => tokens));
   const v2IsLoading =
     fetchingV2PairBalances || v2Pairs?.length < liquidityTokensWithBalances.length || v2Pairs?.some((V2Pair) => !V2Pair)
 
@@ -63,7 +61,6 @@ export default function Pool() {
         <PageHeader
           title={TranslateString(262, 'Liquidity')}
           description={TranslateString(1168, 'Add liquidity to receive LP tokens')}
-          useCaver={useCaver}
         >
           <Button id="join-pool-button" as={Link} to="/add/KLAY">
             {TranslateString(168, 'Add Liquidity')}
@@ -97,7 +94,7 @@ export default function Pool() {
               ) : allV2PairsWithLiquidity?.length > 0 ? (
                 <>
                   {allV2PairsWithLiquidity.map((v2Pair) => (
-                    <FullPositionCard key={v2Pair.liquidityToken.address} pair={v2Pair} useCaver={useCaver} />
+                    <FullPositionCard key={v2Pair.liquidityToken.address} pair={v2Pair} />
                   ))}
                 </>
               ) : (

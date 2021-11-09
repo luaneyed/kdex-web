@@ -34,7 +34,6 @@ interface CurrencySearchProps {
   otherSelectedCurrency?: Currency | null
   showCommonBases?: boolean
   onChangeList: () => void
-  useCaver: boolean
 }
 
 export function CurrencySearch({
@@ -45,27 +44,26 @@ export function CurrencySearch({
   onDismiss,
   isOpen,
   onChangeList,
-  useCaver,
 }: CurrencySearchProps) {
   const { t } = useTranslation()
-  const { chainId } = useActiveWeb3Context(useCaver);
+  const { chainId } = useActiveWeb3Context();
   const theme = useContext(ThemeContext)
 
   const fixedList = useRef<FixedSizeList>()
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [invertSearchOrder, setInvertSearchOrder] = useState<boolean>(false)
-  const allTokens = useAllTokens(useCaver);
+  const allTokens = useAllTokens();
 
   // if they input an address, use it
   const isAddressSearch = isAddress(searchQuery)
-  const searchToken = useToken(useCaver, searchQuery);
+  const searchToken = useToken(searchQuery);
 
   const showKLAY: boolean = useMemo(() => {
     const s = searchQuery.toLowerCase().trim()
     return s === '' || s === 'k' || s === 'kl' || s === 'kla' || s === 'klay'
   }, [searchQuery])
 
-  const tokenComparator = useTokenComparator(useCaver, invertSearchOrder);
+  const tokenComparator = useTokenComparator(invertSearchOrder);
 
   const audioPlay = useSelector<AppState, AppState['user']['audioPlay']>((state) => state.user.audioPlay)
 
@@ -165,7 +163,7 @@ export function CurrencySearch({
           onKeyDown={handleEnter}
         />
         {showCommonBases && (
-          <CommonBases chainId={chainId} onSelect={handleCurrencySelect} selectedCurrency={selectedCurrency} useCaver={useCaver} />
+          <CommonBases chainId={chainId} onSelect={handleCurrencySelect} selectedCurrency={selectedCurrency} />
         )}
         <RowBetween>
           <Text fontSize="14px">{TranslateString(126, 'Token name')}</Text>
@@ -186,7 +184,6 @@ export function CurrencySearch({
               otherCurrency={otherSelectedCurrency}
               selectedCurrency={selectedCurrency}
               fixedListRef={fixedList}
-              useCaver={useCaver}
             />
           )}
         </AutoSizer>
@@ -204,7 +201,6 @@ export function CurrencySearch({
                       style={{ marginRight: 12 }}
                       logoURI={selectedListInfo.current.logoURI}
                       alt={`${selectedListInfo.current.name} list logo`}
-                      useCaver={useCaver}
                     />
                   ) : null}
                   <Text id="currency-search-selected-list-name">{selectedListInfo.current.name}</Text>

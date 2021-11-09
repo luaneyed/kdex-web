@@ -37,16 +37,15 @@ const StyledWarningIcon = styled(AlertTriangle)`
 
 interface TokenWarningCardProps {
   token?: Token
-  useCaver: boolean
 }
 
-function TokenWarningCard({ token, useCaver }: TokenWarningCardProps) {
-  const { chainId } = useActiveWeb3Context(useCaver);
+function TokenWarningCard({ token }: TokenWarningCardProps) {
+  const { chainId } = useActiveWeb3Context();
   const TranslateString = useI18n()
   const tokenSymbol = token?.symbol?.toLowerCase() ?? ''
   const tokenName = token?.name?.toLowerCase() ?? ''
 
-  const allTokens = useAllTokens(useCaver);
+  const allTokens = useAllTokens();
 
   const duplicateNameOrSymbol = useMemo(() => {
     if (!token || !chainId) return false
@@ -66,7 +65,7 @@ function TokenWarningCard({ token, useCaver }: TokenWarningCardProps) {
     <Wrapper error={duplicateNameOrSymbol}>
       <AutoRow gap="6px">
         <AutoColumn gap="24px">
-          <CurrencyLogo currency={token} size="16px" useCaver={useCaver} />
+          <CurrencyLogo currency={token} size="16px" />
           <div> </div>
         </AutoColumn>
         <AutoColumn gap="10px" justify="flex-start">
@@ -92,12 +91,10 @@ export default function TokenWarningModal({
   isOpen,
   tokens,
   onConfirm,
-  useCaver,
 }: {
   isOpen: boolean
   tokens: Token[]
   onConfirm: () => void
-  useCaver: boolean
 }) {
   const [understandChecked, setUnderstandChecked] = useState(false)
   const toggleUnderstand = useCallback(() => setUnderstandChecked((uc) => !uc), [])
@@ -126,7 +123,7 @@ export default function TokenWarningModal({
           </Text>
           <Text>{TranslateString(1134, 'If you purchase an arbitrary token, you may be unable to sell it back.')}</Text>
           {tokens.map((token) => {
-            return <TokenWarningCard key={token.address} token={token} useCaver={useCaver} />
+            return <TokenWarningCard key={token.address} token={token} />
           })}
           <RowBetween>
             <div>

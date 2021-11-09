@@ -27,10 +27,10 @@ export function shouldCheck(
   return true
 }
 
-export default function Updater({ useCaver }: { useCaver: boolean }): null {
-  const { chainId, library } = useActiveWeb3Context(useCaver);
+export default function Updater(): null {
+  const { chainId, library } = useActiveWeb3Context();
 
-  const lastBlockNumber = useBlockNumber(useCaver);
+  const lastBlockNumber = useBlockNumber();
 
   const dispatch = useDispatch<AppDispatch>()
   const state = useSelector<AppState, AppState['transactions']>((s) => s.transactions)

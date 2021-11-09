@@ -24,14 +24,13 @@ export default function useWrapCallback(
   inputCurrency: Currency | undefined,
   outputCurrency: Currency | undefined,
   typedValue: string | undefined,
-  useCaver: boolean,
 ): { wrapType: WrapType; execute?: undefined | (() => Promise<void>); inputError?: string } {
-  const { chainId, account } = useActiveWeb3Context(useCaver);
-  const wklayContract = useWKLAYContract(useCaver);
-  const balance = useCurrencyBalance(useCaver, account ?? undefined, inputCurrency)
+  const { chainId, account } = useActiveWeb3Context();
+  const wklayContract = useWKLAYContract();
+  const balance = useCurrencyBalance(account ?? undefined, inputCurrency)
   // we can always parse the amount typed as the input currency, since wrapping is 1:1
   const inputAmount = useMemo(() => tryParseAmount(typedValue, inputCurrency), [inputCurrency, typedValue])
-  const addTransaction = useTransactionAdder(useCaver);
+  const addTransaction = useTransactionAdder();
 
   return useMemo(() => {
     if (!wklayContract || !chainId || !inputCurrency || !outputCurrency) return NOT_APPLICABLE

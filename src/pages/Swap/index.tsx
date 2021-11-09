@@ -38,14 +38,13 @@ import { INITIAL_ALLOWED_SLIPPAGE } from '../../constants';
 import AppBody from '../AppBody';
 
 const Swap = () => {
-  const useCaver = true;
-  const loadedUrlParams = useDefaultsFromURLSearch(useCaver);
+  const loadedUrlParams = useDefaultsFromURLSearch();
   const TranslateString = useI18n()
 
   // token warning stuff
   const [loadedInputCurrency, loadedOutputCurrency] = [
-    useCurrency(useCaver, loadedUrlParams?.inputCurrencyId),
-    useCurrency(useCaver, loadedUrlParams?.outputCurrencyId),
+    useCurrency(loadedUrlParams?.inputCurrencyId),
+    useCurrency(loadedUrlParams?.outputCurrencyId),
   ]
   const [dismissTokenWarning, setDismissTokenWarning] = useState<boolean>(false)
   const [transactionWarning, setTransactionWarning] = useState<{
@@ -70,7 +69,7 @@ const Swap = () => {
     })
   }
 
-  const { account } = useActiveWeb3Context(useCaver);
+  const { account } = useActiveWeb3Context();
   const theme = useContext(ThemeContext)
 
   const [isExpertMode] = useExpertModeManager()
@@ -81,12 +80,11 @@ const Swap = () => {
   
   // swap state
   const { independentField, typedValue, recipient } = useSwapState()
-  const { v2Trade, currencyBalances, parsedAmount, currencies, inputError: swapInputError } = useDerivedSwapInfo(useCaver);
+  const { v2Trade, currencyBalances, parsedAmount, currencies, inputError: swapInputError } = useDerivedSwapInfo();
   const { wrapType, execute: onWrap, inputError: wrapInputError } = useWrapCallback(
     currencies[Field.INPUT],
     currencies[Field.OUTPUT],
     typedValue,
-    useCaver,
   )
   const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
   const trade = showWrap ? undefined : v2Trade
@@ -147,7 +145,7 @@ const Swap = () => {
   const noRoute = !route
 
   // check whether the user has approved the router on the input token
-  const [approval, approveCallback] = useApproveCallbackFromTrade(useCaver, trade, allowedSlippage)
+  const [approval, approveCallback] = useApproveCallbackFromTrade(trade, allowedSlippage)
 
   // check if user has gone through approval process, used to show two step buttons, reset on token change
   const [approvalSubmitted, setApprovalSubmitted] = useState<boolean>(false)
@@ -168,7 +166,6 @@ const Swap = () => {
     allowedSlippage,
     deadline,
     recipient,
-    useCaver,
   )
 
   const { priceImpactWithoutFee } = computeTradePriceBreakdown(trade)
@@ -281,7 +278,6 @@ const Swap = () => {
         isOpen={urlLoadedTokens.length > 0 && !dismissTokenWarning}
         tokens={urlLoadedTokens}
         onConfirm={handleConfirmTokenWarning}
-        useCaver={useCaver}
       />
       <SyrupWarningModal
         isOpen={transactionWarning.selectedToken === 'SYRUP'}
@@ -304,12 +300,10 @@ const Swap = () => {
             onConfirm={handleSwap}
             swapErrorMessage={swapErrorMessage}
             onDismiss={handleConfirmDismiss}
-            useCaver={useCaver}
           />
           <PageHeader
             title={TranslateString(8, 'Exchange')}
             description={TranslateString(1192, 'Trade tokens in an instant')}
-            useCaver={useCaver}
           />
           <CardBody>
             <AutoColumn gap="md">
@@ -327,7 +321,6 @@ const Swap = () => {
                 onCurrencySelect={handleInputSelect}
                 otherCurrency={currencies[Field.OUTPUT]}
                 id="swap-currency-input"
-                useCaver={useCaver}
               />
               <AutoColumn justify="space-between">
                 <AutoRow justify={isExpertMode ? 'space-between' : 'center'} style={{ padding: '0 1rem' }}>
@@ -364,7 +357,6 @@ const Swap = () => {
                 onCurrencySelect={handleOutputSelect}
                 otherCurrency={currencies[Field.INPUT]}
                 id="swap-currency-output"
-                useCaver={useCaver}
               />
 
               {recipient !== null && !showWrap ? (
@@ -377,7 +369,7 @@ const Swap = () => {
                       - Remove send
                     </LinkStyledButton>
                   </AutoRow>
-                  <AddressInputPanel id="recipient" value={recipient} onChange={onChangeRecipient} useCaver={useCaver} />
+                  <AddressInputPanel id="recipient" value={recipient} onChange={onChangeRecipient} />
                 </>
               ) : null}
 
@@ -492,7 +484,7 @@ const Swap = () => {
           </CardBody>
         </Wrapper>
       </AppBody>
-      <AdvancedSwapDetailsDropdown trade={trade} useCaver={useCaver} />
+      <AdvancedSwapDetailsDropdown trade={trade} />
     </>
   )
 }

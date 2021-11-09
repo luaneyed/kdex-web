@@ -10,14 +10,14 @@ import useIsWindowVisible from '../../hooks/useIsWindowVisible';
 import { addPopup } from '../application/actions';
 import { acceptListUpdate } from './actions';
 
-export default function Updater({ useCaver }: { useCaver: boolean }): null {
-  const { library } = useActiveWeb3Context(useCaver);
+export default function Updater(): null {
+  const { library } = useActiveWeb3Context();
   const dispatch = useDispatch<AppDispatch>()
   const lists = useSelector<AppState, AppState['lists']['byUrl']>((state) => state.lists.byUrl)
 
   const isWindowVisible = useIsWindowVisible()
 
-  const fetchList = useFetchListCallback(useCaver);
+  const fetchList = useFetchListCallback();
 
   const fetchAllListsCallback = useCallback(() => {
     if (!isWindowVisible) return

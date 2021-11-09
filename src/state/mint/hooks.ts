@@ -19,7 +19,6 @@ export function useMintState(): AppState['mint'] {
 }
 
 export function useDerivedMintInfo(
-  useCaver: boolean,
   currencyA: Currency | undefined,
   currencyB: Currency | undefined,
 ): {
@@ -35,7 +34,7 @@ export function useDerivedMintInfo(
   poolTokenPercentage?: Percent
   error?: string
 } {
-  const { account, chainId } = useActiveWeb3Context(useCaver);
+  const { account, chainId } = useActiveWeb3Context();
 
   const { independentField, typedValue, otherTypedValue } = useMintState()
 
@@ -51,14 +50,14 @@ export function useDerivedMintInfo(
   )
 
   // pair
-  const [pairState, pair] = usePair(useCaver, currencies[Field.CURRENCY_A], currencies[Field.CURRENCY_B])
-  const totalSupply = useTotalSupply(useCaver, pair?.liquidityToken);
+  const [pairState, pair] = usePair(currencies[Field.CURRENCY_A], currencies[Field.CURRENCY_B])
+  const totalSupply = useTotalSupply(pair?.liquidityToken);
 
   const noLiquidity: boolean =
     pairState === PairState.NOT_EXISTS || Boolean(totalSupply && JSBI.equal(totalSupply.raw, ZERO))
 
   // balances
-  const balances = useCurrencyBalances(useCaver, account ?? undefined, [
+  const balances = useCurrencyBalances(account ?? undefined, [
     currencies[Field.CURRENCY_A],
     currencies[Field.CURRENCY_B],
   ])

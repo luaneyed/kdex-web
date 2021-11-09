@@ -33,19 +33,18 @@ interface PositionCardProps {
   pair: Pair
   // eslint-disable-next-line react/no-unused-prop-types
   showUnwrapped?: boolean
-  useCaver: boolean
 }
 
-export function MinimalPositionCard({ pair, showUnwrapped = false, useCaver }: PositionCardProps) {
-  const { account } = useActiveWeb3Context(useCaver);
+export function MinimalPositionCard({ pair, showUnwrapped = false }: PositionCardProps) {
+  const { account } = useActiveWeb3Context();
 
   const currency0 = showUnwrapped ? pair.token0 : unwrappedToken(pair.token0)
   const currency1 = showUnwrapped ? pair.token1 : unwrappedToken(pair.token1)
 
   const [showMore, setShowMore] = useState(false)
 
-  const userPoolBalance = useTokenBalance(useCaver, account ?? undefined, pair.liquidityToken)
-  const totalPoolTokens = useTotalSupply(useCaver, pair.liquidityToken);
+  const userPoolBalance = useTokenBalance(account ?? undefined, pair.liquidityToken)
+  const totalPoolTokens = useTotalSupply(pair.liquidityToken);
 
   const [token0Deposited, token1Deposited] =
     !!pair &&
@@ -74,7 +73,7 @@ export function MinimalPositionCard({ pair, showUnwrapped = false, useCaver }: P
               </FixedHeightRow>
               <FixedHeightRow onClick={() => setShowMore(!showMore)}>
                 <RowFixed>
-                  <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin size={20} useCaver={useCaver} />
+                  <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin size={20} />
                   <Text fontSize="14px">
                     {currency0.symbol}/{currency1.symbol}
                   </Text>
@@ -117,16 +116,16 @@ export function MinimalPositionCard({ pair, showUnwrapped = false, useCaver }: P
   )
 }
 
-export default function FullPositionCard({ pair, useCaver }: PositionCardProps) {
-  const { account } = useActiveWeb3Context(useCaver);
+export default function FullPositionCard({ pair }: PositionCardProps) {
+  const { account } = useActiveWeb3Context();
 
   const currency0 = unwrappedToken(pair.token0)
   const currency1 = unwrappedToken(pair.token1)
 
   const [showMore, setShowMore] = useState(false)
 
-  const userPoolBalance = useTokenBalance(useCaver, account ?? undefined, pair.liquidityToken)
-  const totalPoolTokens = useTotalSupply(useCaver, pair.liquidityToken);
+  const userPoolBalance = useTokenBalance(account ?? undefined, pair.liquidityToken)
+  const totalPoolTokens = useTotalSupply(pair.liquidityToken);
 
   const poolTokenPercentage =
     !!userPoolBalance && !!totalPoolTokens && JSBI.greaterThanOrEqual(totalPoolTokens.raw, userPoolBalance.raw)
@@ -150,7 +149,7 @@ export default function FullPositionCard({ pair, useCaver }: PositionCardProps) 
       <AutoColumn gap="12px">
         <FixedHeightRow onClick={() => setShowMore(!showMore)} style={{ cursor: 'pointer' }}>
           <RowFixed>
-            <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin size={20} useCaver={useCaver} />
+            <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin size={20} />
             <Text>{!currency0 || !currency1 ? <Dots>Loading</Dots> : `${currency0.symbol}/${currency1.symbol}`}</Text>
           </RowFixed>
           <RowFixed>
@@ -170,7 +169,7 @@ export default function FullPositionCard({ pair, useCaver }: PositionCardProps) 
               {token0Deposited ? (
                 <RowFixed>
                   <Text ml="6px">{token0Deposited?.toSignificant(6)}</Text>
-                  <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency0} useCaver={useCaver} />
+                  <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency0} />
                 </RowFixed>
               ) : (
                 '-'
@@ -184,7 +183,7 @@ export default function FullPositionCard({ pair, useCaver }: PositionCardProps) 
               {token1Deposited ? (
                 <RowFixed>
                   <Text ml="6px">{token1Deposited?.toSignificant(6)}</Text>
-                  <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency1} useCaver={useCaver} />
+                  <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency1} />
                 </RowFixed>
               ) : (
                 '-'

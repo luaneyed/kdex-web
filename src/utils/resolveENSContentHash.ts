@@ -74,8 +74,8 @@ export default async function resolveENSContentHashEthers(ensName: string, provi
  * @param ensName to resolve
  * @param provider provider to use to fetch the data
  */
-export function useENSResolver(useCaver: boolean) {
-  const contractGetter = useContractGetter(useCaver);
+export function useENSResolver() {
+  const contractGetter = useContractGetter();
   const ensRegistrarContract = contractGetter(REGISTRAR_ADDRESS, REGISTRAR_ABI);
 
   return useCallback(

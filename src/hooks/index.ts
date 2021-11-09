@@ -9,12 +9,15 @@ import { BigNumber } from 'ethers';
 import { CaverProvider } from 'klaytn-providers';
 import { useEffect, useMemo, useState } from 'react';
 import { isMobile } from 'react-device-detect';
+import { useWalletType, WalletType } from 'state/atoms';
 
 import { injected } from '../connectors';
 import { CaverNetworkContextName, Web3NetworkContextName } from '../constants';
 
 // eslint-disable-next-line import/no-unresolved
-export function useActiveWeb3Context(useCaver: boolean) {
+export function useActiveWeb3Context() {
+  const [walletType] = useWalletType();
+  const useCaver = walletType !== WalletType.MetaMask;
   const web3 = useActiveWeb3React();
   const caver = useActiveCaverReact();
   const context = useCaver ? caver : web3;

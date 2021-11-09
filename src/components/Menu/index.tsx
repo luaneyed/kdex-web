@@ -12,7 +12,7 @@ import React, { useContext } from 'react';
 import { LUAN } from '../../constants';
 import links from './config';
 
-const Menu: React.FC<{ useCaver: boolean }> = (props) => {
+const Menu: React.FC = (props) => {
   const web3 = useWeb3React();
   const caver = useCaverJsReact();
   const { login, logout } = useAuth();
@@ -20,8 +20,7 @@ const Menu: React.FC<{ useCaver: boolean }> = (props) => {
   const { isDark, toggleTheme } = useTheme()
   const priceData = useGetPriceData()
   const cakePriceUsd = priceData ? Number(priceData.data[LUAN.address].price) : undefined
-  const { useCaver } = props;
-  const profile = useGetLocalProfile(useCaver);
+  const profile = useGetLocalProfile();
 
   return (
     <>

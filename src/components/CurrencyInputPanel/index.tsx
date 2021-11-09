@@ -83,7 +83,6 @@ interface CurrencyInputPanelProps {
   otherCurrency?: Currency | null
   id: string
   showCommonBases?: boolean,
-  useCaver: boolean,
 }
 export default function CurrencyInputPanel({
   value,
@@ -100,11 +99,10 @@ export default function CurrencyInputPanel({
   otherCurrency,
   id,
   showCommonBases,
-  useCaver,
 }: CurrencyInputPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
-  const { account } = useActiveWeb3Context(useCaver);
-  const selectedCurrencyBalance = useCurrencyBalance(useCaver, account ?? undefined, currency ?? undefined)
+  const { account } = useActiveWeb3Context();
+  const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
   const TranslateString = useI18n()
   const translatedLabel = label || TranslateString(132, 'Input')
   const handleDismissSearch = useCallback(() => {
@@ -155,9 +153,9 @@ export default function CurrencyInputPanel({
           >
             <Aligner>
               {pair ? (
-                <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={16} margin useCaver={useCaver} />
+                <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={16} margin />
               ) : currency ? (
-                <CurrencyLogo currency={currency} size="24px" style={{ marginRight: '8px' }} useCaver={useCaver} />
+                <CurrencyLogo currency={currency} size="24px" style={{ marginRight: '8px' }} />
               ) : null}
               {pair ? (
                 <Text id="pair">
@@ -186,7 +184,6 @@ export default function CurrencyInputPanel({
           selectedCurrency={currency}
           otherSelectedCurrency={otherCurrency}
           showCommonBases={showCommonBases}
-          useCaver={useCaver}
         />
       )}
     </InputPanel>

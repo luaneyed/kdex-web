@@ -16,8 +16,8 @@ export enum PairState {
   INVALID
 }
 
-export function usePairs(currencies: [Currency | undefined, Currency | undefined][], useCaver: boolean): [PairState, Pair | null][] {
-  const { chainId } = useActiveWeb3Context(useCaver);
+export function usePairs(currencies: [Currency | undefined, Currency | undefined][]): [PairState, Pair | null][] {
+  const { chainId } = useActiveWeb3Context();
 
   const tokens = useMemo(
     () =>
@@ -36,7 +36,7 @@ export function usePairs(currencies: [Currency | undefined, Currency | undefined
     [tokens]
   )
 
-  const results = useMultipleContractSingleData(useCaver, pairAddresses, PAIR_INTERFACE, 'getReserves')
+  const results = useMultipleContractSingleData(pairAddresses, PAIR_INTERFACE, 'getReserves')
 
   return useMemo(() => {
     return results.map((result, i) => {
@@ -57,6 +57,6 @@ export function usePairs(currencies: [Currency | undefined, Currency | undefined
   }, [results, tokens])
 }
 
-export function usePair(useCaver: boolean, tokenA?: Currency, tokenB?: Currency): [PairState, Pair | null] {
-  return usePairs([[tokenA, tokenB]], useCaver)[0]
+export function usePair(tokenA?: Currency, tokenB?: Currency): [PairState, Pair | null] {
+  return usePairs([[tokenA, tokenB]])[0]
 }

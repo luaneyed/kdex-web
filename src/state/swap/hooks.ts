@@ -112,14 +112,14 @@ function involvesAddress(trade: Trade, checksummedAddress: string): boolean {
 }
 
 // from the current swap inputs, compute the best trade and return it.
-export function useDerivedSwapInfo(useCaver: boolean): {
+export function useDerivedSwapInfo(): {
   currencies: { [field in Field]?: Currency }
   currencyBalances: { [field in Field]?: CurrencyAmount }
   parsedAmount: CurrencyAmount | undefined
   v2Trade: Trade | undefined
   inputError?: string
 } {
-  const { account } = useActiveWeb3Context(useCaver);
+  const { account } = useActiveWeb3Context();
 
   const {
     independentField,
@@ -129,12 +129,12 @@ export function useDerivedSwapInfo(useCaver: boolean): {
     recipient,
   } = useSwapState()
 
-  const inputCurrency = useCurrency(useCaver, inputCurrencyId)
-  const outputCurrency = useCurrency(useCaver, outputCurrencyId)
-  const recipientLookup = useENS(useCaver, recipient ?? undefined);
+  const inputCurrency = useCurrency(inputCurrencyId)
+  const outputCurrency = useCurrency(outputCurrencyId)
+  const recipientLookup = useENS(recipient ?? undefined);
   const to: string | null = (recipient === null ? account : recipientLookup.address) ?? null
 
-  const relevantTokenBalances = useCurrencyBalances(useCaver, account ?? undefined, [
+  const relevantTokenBalances = useCurrencyBalances(account ?? undefined, [
     inputCurrency ?? undefined,
     outputCurrency ?? undefined,
   ])
@@ -142,8 +142,8 @@ export function useDerivedSwapInfo(useCaver: boolean): {
   const isExactIn: boolean = independentField === Field.INPUT
   const parsedAmount = tryParseAmount(typedValue, (isExactIn ? inputCurrency : outputCurrency) ?? undefined)
 
-  const bestTradeExactIn = useTradeExactIn(useCaver, isExactIn ? parsedAmount : undefined, outputCurrency ?? undefined);
-  const bestTradeExactOut = useTradeExactOut(useCaver, inputCurrency ?? undefined, !isExactIn ? parsedAmount : undefined);
+  const bestTradeExactIn = useTradeExactIn(isExactIn ? parsedAmount : undefined, outputCurrency ?? undefined);
+  const bestTradeExactOut = useTradeExactOut(inputCurrency ?? undefined, !isExactIn ? parsedAmount : undefined);
 
   const v2Trade = isExactIn ? bestTradeExactIn : bestTradeExactOut
 
@@ -261,10 +261,10 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
 }
 
 // updates the swap state to use the defaults for a given network
-export function useDefaultsFromURLSearch(useCaver: boolean):
+export function useDefaultsFromURLSearch():
   | { inputCurrencyId: string | undefined; outputCurrencyId: string | undefined }
   | undefined {
-  const { chainId } = useActiveWeb3Context(useCaver);
+  const { chainId } = useActiveWeb3Context();
   const dispatch = useDispatch<AppDispatch>()
   const parsedQs = useParsedQueryString()
   const [result, setResult] = useState<

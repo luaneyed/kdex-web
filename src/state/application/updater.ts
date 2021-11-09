@@ -6,8 +6,8 @@ import useDebounce from '../../hooks/useDebounce';
 import useIsWindowVisible from '../../hooks/useIsWindowVisible';
 import { updateBlockNumber } from './actions';
 
-export default function Updater({ useCaver }: { useCaver: boolean }): null {
-  const { library, chainId } = useActiveWeb3Context(useCaver);
+export default function Updater(): null {
+  const { library, chainId } = useActiveWeb3Context();
   const dispatch = useDispatch()
 
   const windowVisible = useIsWindowVisible()

@@ -8,9 +8,9 @@ import { fetchTokenList } from '../state/lists/actions';
 import getTokenList from '../utils/getTokenList';
 import resolveENSContentHashEthers, { useENSResolver } from '../utils/resolveENSContentHash';
 
-export function useFetchListCallback(useCaver: boolean): (listUrl: string) => Promise<TokenList> {
+export function useFetchListCallback(): (listUrl: string) => Promise<TokenList> {
   const dispatch = useDispatch<AppDispatch>()
-  const ensResolver = useENSResolver(useCaver);
+  const ensResolver = useENSResolver();
 
   // const ensResolver = useCallback(
   //   (ensName: string) => {

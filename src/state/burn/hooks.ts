@@ -16,7 +16,6 @@ export function useBurnState(): AppState['burn'] {
 }
 
 export function useDerivedBurnInfo(
-  useCaver: boolean,
   currencyA: Currency | undefined,
   currencyB: Currency | undefined,
 ): {
@@ -29,15 +28,15 @@ export function useDerivedBurnInfo(
   }
   error?: string
 } {
-  const { account, chainId } = useActiveWeb3Context(useCaver);
+  const { account, chainId } = useActiveWeb3Context();
 
   const { independentField, typedValue } = useBurnState()
 
   // pair + totalsupply
-  const [, pair] = usePair(useCaver, currencyA, currencyB)
+  const [, pair] = usePair(currencyA, currencyB)
 
   // balances
-  const relevantTokenBalances = useTokenBalances(useCaver, account ?? undefined, [pair?.liquidityToken]);
+  const relevantTokenBalances = useTokenBalances(account ?? undefined, [pair?.liquidityToken]);
   const userLiquidity: undefined | TokenAmount = relevantTokenBalances?.[pair?.liquidityToken?.address ?? '']
 
   const [tokenA, tokenB] = [wrappedCurrency(currencyA, chainId), wrappedCurrency(currencyB, chainId)]
@@ -48,7 +47,7 @@ export function useDerivedBurnInfo(
   }
 
   // liquidity values
-  const totalSupply = useTotalSupply(useCaver, pair?.liquidityToken);
+  const totalSupply = useTotalSupply(pair?.liquidityToken);
   const liquidityValueA =
     pair &&
     totalSupply &&

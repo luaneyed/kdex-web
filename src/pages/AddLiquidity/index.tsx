@@ -41,10 +41,9 @@ export default function AddLiquidity({
   },
   history,
 }: RouteComponentProps<{ currencyIdA?: string; currencyIdB?: string }>) {
-  const useCaver = true;
-  const { account, chainId } = useActiveWeb3Context(useCaver);
-  const currencyA = useCurrency(useCaver, currencyIdA)
-  const currencyB = useCurrency(useCaver, currencyIdB)
+  const { account, chainId } = useActiveWeb3Context();
+  const currencyA = useCurrency(currencyIdA)
+  const currencyB = useCurrency(currencyIdB)
   const TranslateString = useI18n()
 
   const oneCurrencyIsWKLAY = Boolean(
@@ -68,7 +67,7 @@ export default function AddLiquidity({
     liquidityMinted,
     poolTokenPercentage,
     error,
-  } = useDerivedMintInfo(useCaver, currencyA ?? undefined, currencyB ?? undefined);
+  } = useDerivedMintInfo(currencyA ?? undefined, currencyB ?? undefined);
   const { onFieldAInput, onFieldBInput } = useMintActionHandlers(noLiquidity)
 
   const isValid = !error
@@ -110,12 +109,12 @@ export default function AddLiquidity({
   )
 
   // check whether the user has approved the router on the tokens
-  const [approvalA, approveACallback] = useApproveCallback(useCaver, parsedAmounts[Field.CURRENCY_A], ROUTER_ADDRESS)
-  const [approvalB, approveBCallback] = useApproveCallback(useCaver, parsedAmounts[Field.CURRENCY_B], ROUTER_ADDRESS)
+  const [approvalA, approveACallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_A], ROUTER_ADDRESS)
+  const [approvalB, approveBCallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_B], ROUTER_ADDRESS)
 
-  const addTransaction = useTransactionAdder(useCaver);
+  const addTransaction = useTransactionAdder();
 
-  const router = useRouterContract(useCaver);
+  const router = useRouterContract();
 
   async function onAdd() {
     if (!chainId || !router || !account) return
@@ -207,7 +206,6 @@ export default function AddLiquidity({
               currency0={currencies[Field.CURRENCY_A]}
               currency1={currencies[Field.CURRENCY_B]}
               size={30}
-              useCaver={useCaver}
             />
           </RowFlat>
         </LightCard>
@@ -222,7 +220,6 @@ export default function AddLiquidity({
             currency0={currencies[Field.CURRENCY_A]}
             currency1={currencies[Field.CURRENCY_B]}
             size={30}
-            useCaver={useCaver}
           />
         </RowFlat>
         <Row>
@@ -248,7 +245,6 @@ export default function AddLiquidity({
         noLiquidity={noLiquidity}
         onAdd={onAdd}
         poolTokenPercentage={poolTokenPercentage}
-        useCaver={useCaver}
       />
     )
   }
@@ -317,7 +313,6 @@ export default function AddLiquidity({
               />
             )}
             pendingText={pendingText}
-            useCaver={useCaver}
           />
           <CardBody>
             <AutoColumn gap="20px">
@@ -347,7 +342,6 @@ export default function AddLiquidity({
                 currency={currencies[Field.CURRENCY_A]}
                 id="add-liquidity-input-tokena"
                 showCommonBases={false}
-                useCaver={useCaver}
               />
               <ColumnCenter>
                 <AddIcon color="textSubtle" />
@@ -363,7 +357,6 @@ export default function AddLiquidity({
                 currency={currencies[Field.CURRENCY_B]}
                 id="add-liquidity-input-tokenb"
                 showCommonBases={false}
-                useCaver={useCaver}
               />
               {currencies[Field.CURRENCY_A] && currencies[Field.CURRENCY_B] && pairState !== PairState.INVALID && (
                 <div>
@@ -452,7 +445,7 @@ export default function AddLiquidity({
       </AppBody>
       {pair && !noLiquidity && pairState !== PairState.INVALID ? (
         <AutoColumn style={{ minWidth: '20rem', marginTop: '1rem' }}>
-          <MinimalPositionCard showUnwrapped={oneCurrencyIsWKLAY} pair={pair} useCaver={useCaver} />
+          <MinimalPositionCard showUnwrapped={oneCurrencyIsWKLAY} pair={pair} />
         </AutoColumn>
       ) : null}
     </>

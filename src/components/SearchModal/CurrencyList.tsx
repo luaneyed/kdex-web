@@ -87,21 +87,19 @@ function CurrencyRow({
   isSelected,
   otherSelected,
   style,
-  useCaver,
 }: {
   currency: Currency
   onSelect: () => void
   isSelected: boolean
   otherSelected: boolean
   style: CSSProperties
-  useCaver: boolean
 }) {
-  const { account, chainId } = useActiveWeb3Context(useCaver);
+  const { account, chainId } = useActiveWeb3Context();
   const key = currencyKey(currency)
   const selectedTokenList = useSelectedTokenList()
   const isOnSelectedList = isTokenOnList(selectedTokenList, currency)
-  const customAdded = useIsUserAddedToken(useCaver, currency);
-  const balance = useCurrencyBalance(useCaver, account ?? undefined, currency);
+  const customAdded = useIsUserAddedToken(currency);
+  const balance = useCurrencyBalance(account ?? undefined, currency);
 
   const removeToken = useRemoveUserAddedToken()
   const addToken = useAddUserToken()
@@ -115,7 +113,7 @@ function CurrencyRow({
       disabled={isSelected}
       selected={otherSelected}
     >
-      <CurrencyLogo currency={currency} size="24px" useCaver={useCaver} />
+      <CurrencyLogo currency={currency} size="24px" />
       <Column>
         <Text title={currency.name}>{currency.symbol}</Text>
         <FadedSpan>
@@ -163,7 +161,6 @@ export default function CurrencyList({
   otherCurrency,
   fixedListRef,
   showKLAY,
-  useCaver,
 }: {
   height: number
   currencies: Currency[]
@@ -172,7 +169,6 @@ export default function CurrencyList({
   otherCurrency?: Currency | null
   fixedListRef?: MutableRefObject<FixedSizeList | undefined>
   showKLAY: boolean,
-  useCaver: boolean,
 }) {
   const itemData = useMemo(() => (showKLAY ? [Currency.KLAY, ...currencies] : [...currencies]), [currencies, showKLAY])
 
@@ -189,11 +185,10 @@ export default function CurrencyList({
           isSelected={isSelected}
           onSelect={handleSelect}
           otherSelected={otherSelected}
-          useCaver={useCaver}
         />
       )
     },
-    [useCaver, onCurrencySelect, otherCurrency, selectedCurrency]
+    [onCurrencySelect, otherCurrency, selectedCurrency]
   )
 
   const itemKey = useCallback((index: number, data: any) => currencyKey(data[index]), [])

@@ -34,7 +34,6 @@ export default function ConfirmSwapModal({
   isOpen,
   attemptingTxn,
   txHash,
-  useCaver,
 }: {
   isOpen: boolean
   trade: Trade | undefined
@@ -47,7 +46,6 @@ export default function ConfirmSwapModal({
   onConfirm: () => void
   swapErrorMessage: string | undefined
   onDismiss: () => void
-  useCaver: boolean
 }) {
   const showAcceptChanges = useMemo(
     () => Boolean(trade && originalTrade && tradeMeaningfullyDiffers(trade, originalTrade)),
@@ -62,10 +60,9 @@ export default function ConfirmSwapModal({
         recipient={recipient}
         showAcceptChanges={showAcceptChanges}
         onAcceptChanges={onAcceptChanges}
-        useCaver={useCaver}
       />
     ) : null
-  }, [useCaver, allowedSlippage, onAcceptChanges, recipient, showAcceptChanges, trade]);
+  }, [allowedSlippage, onAcceptChanges, recipient, showAcceptChanges, trade]);
 
   const modalBottom = useCallback(() => {
     return trade ? (
@@ -107,7 +104,6 @@ export default function ConfirmSwapModal({
       hash={txHash}
       content={confirmationContent}
       pendingText={pendingText}
-      useCaver={useCaver}
     />
   )
 }
