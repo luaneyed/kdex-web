@@ -1,16 +1,16 @@
-import { Currency, CurrencyAmount, KLAY, JSBI, Pair, Percent, Price, TokenAmount } from '@pancakeswap-libs/sdk'
-import { useCallback, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { PairState, usePair } from '../../data/Reserves'
-import { useTotalSupply } from '../../data/TotalSupply'
+import { Currency, CurrencyAmount, JSBI, KLAY, Pair, Percent, Price, TokenAmount } from '@pancakeswap-libs/sdk';
+import { useCallback, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { useActiveWeb3React } from '../../hooks'
-import { TranslateString } from '../../utils/translateTextHelpers'
-import { wrappedCurrency, wrappedCurrencyAmount } from '../../utils/wrappedCurrency'
-import { AppDispatch, AppState } from '../index'
-import { tryParseAmount } from '../swap/hooks'
-import { useCurrencyBalances } from '../wallet/hooks'
-import { Field, typeInput } from './actions'
+import { AppDispatch, AppState } from '..';
+import { PairState, usePair } from '../../data/Reserves';
+import { useTotalSupply } from '../../data/TotalSupply';
+import { useActiveWeb3Context } from '../../hooks';
+import { TranslateString } from '../../utils/translateTextHelpers';
+import { wrappedCurrency, wrappedCurrencyAmount } from '../../utils/wrappedCurrency';
+import { tryParseAmount } from '../swap/hooks';
+import { useCurrencyBalances } from '../wallet/hooks';
+import { Field, typeInput } from './actions';
 
 const ZERO = JSBI.BigInt(0)
 
@@ -19,8 +19,9 @@ export function useMintState(): AppState['mint'] {
 }
 
 export function useDerivedMintInfo(
+  useCaver: boolean,
   currencyA: Currency | undefined,
-  currencyB: Currency | undefined
+  currencyB: Currency | undefined,
 ): {
   dependentField: Field
   currencies: { [field in Field]?: Currency }
@@ -34,7 +35,7 @@ export function useDerivedMintInfo(
   poolTokenPercentage?: Percent
   error?: string
 } {
-  const { account, chainId } = useActiveWeb3React()
+  const { account, chainId } = useActiveWeb3Context(useCaver);
 
   const { independentField, typedValue, otherTypedValue } = useMintState()
 
@@ -50,14 +51,14 @@ export function useDerivedMintInfo(
   )
 
   // pair
-  const [pairState, pair] = usePair(currencies[Field.CURRENCY_A], currencies[Field.CURRENCY_B])
-  const totalSupply = useTotalSupply(pair?.liquidityToken)
+  const [pairState, pair] = usePair(useCaver, currencies[Field.CURRENCY_A], currencies[Field.CURRENCY_B])
+  const totalSupply = useTotalSupply(useCaver, pair?.liquidityToken);
 
   const noLiquidity: boolean =
     pairState === PairState.NOT_EXISTS || Boolean(totalSupply && JSBI.equal(totalSupply.raw, ZERO))
 
   // balances
-  const balances = useCurrencyBalances(account ?? undefined, [
+  const balances = useCurrencyBalances(useCaver, account ?? undefined, [
     currencies[Field.CURRENCY_A],
     currencies[Field.CURRENCY_B],
   ])

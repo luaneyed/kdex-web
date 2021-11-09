@@ -1,15 +1,9 @@
 import { getAddress } from '@ethersproject/address';
 import { BigNumber } from '@ethersproject/bignumber';
-import { AddressZero } from '@ethersproject/constants';
-import { Contract } from '@ethersproject/contracts';
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { ChainId, Currency, CurrencyAmount, JSBI, KLAY, Percent, Token } from '@pancakeswap-libs/sdk';
-import Caver, { Contract as CaverContract } from 'caver-js';
 
-import { ROUTER_ADDRESS } from '../constants';
 import { TokenAddressMap } from '../state/lists/hooks';
-import { CaverCommonContract, CommonContract, EthersCommonContract } from './contract';
-import { abi as IUniswapV2Router02ABI } from './kdexRouter.json';
 
 // const RPC_URL = 'kenn';
 // export const caver =
@@ -82,48 +76,7 @@ export function getSigner(library: Web3Provider, account: string): JsonRpcSigner
 
 // account is optional
 export function getProviderOrSigner(library: Web3Provider, account?: string): Web3Provider | JsonRpcSigner {
-  return account ? getSigner(library, account) : library
-}
-
-// account is optional
-export function getEthersContract(address: string, ABI: any, library: Web3Provider, account?: string): Contract {
-  if (!isAddress(address) || address === AddressZero) {
-    throw Error(`Invalid 'address' parameter '${address}'.`)
-  }
-
-  console.log('new web3 Contract!');
-  return new Contract(address, ABI, getProviderOrSigner(library, account) as any)
-}
-
-// account is optional
-export function getCaverContract(address: string, ABI: any): CaverContract {
-  if (!isAddress(address) || address === AddressZero) {
-    throw Error(`Invalid 'address' parameter '${address}'.`)
-  }
-
-  // console.log('new caver Contract!', caver.account, caver.abi);
-
-  const { caver } = window;
-  console.log('new caver contract!', caver);
-  /* eslint-disable-next-line new-cap */
-  return new caver.klay.Contract(
-    ABI,
-    address
-  )
-  // contract.options.gas = 3000000
-}
-
-export function getContract(useCaver: boolean, address: string, abi: any, library: Web3Provider, account?: string): CommonContract {
-  const ethersContract = getEthersContract(address, abi, library, account);
-  
-  return useCaver
-    ? new CaverCommonContract(getCaverContract(address, abi), ethersContract.interface, account)
-    : new EthersCommonContract(ethersContract);
-}
-
-// account is optional
-export function getRouterContract(useCaver: boolean, _: number, library: Web3Provider, account?: string): CommonContract {
-  return getContract(useCaver, ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account);
+  return account ? getSigner(library, account) : library;
 }
 
 export function escapeRegExp(string: string): string {

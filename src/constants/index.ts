@@ -1,16 +1,29 @@
 import { ChainId, JSBI, Percent, Token, WKLAY } from '@pancakeswap-libs/sdk'
 
-export const ROUTER_ADDRESS = '0xecDC29C1A9C286C771686301554C219D4dDaA93e'
+export const isBaobab = process.env.REACT_APP_CHAIN_ID === '1001';
+export const ROUTER_ADDRESS = isBaobab ? '0xecDC29C1A9C286C771686301554C219D4dDaA93e' : '0x24694eAe27074E5b5325E0b7Bb4d4a64BC479ae0';
 
 // a list of tokens by chain
 type ChainTokenList = {
   readonly [chainId in ChainId]: Token[]
 }
 
-export const DAMON = new Token(ChainId.BAOBAB, '0x66F80d658792765aE76c64c1110D003930797062', 18, 'DAMON', 'Damon');
-export const KAY = new Token(ChainId.BAOBAB, '0x94e5b0A5fe58595A14d123A27eCc1feAB4D3F5e0', 16, 'KAY', 'Kay');
-export const ROSS = new Token(ChainId.BAOBAB, '0x9f25b88E25F74B711D38C228fabbB5178b5F6864', 8, 'ROSS', 'Ross');
-export const LUAN = new Token(ChainId.BAOBAB, '0x99ac0F642821C33eDcBeaf079Ad691b72b495de0', 6, 'LUAN', 'Luan');
+console.log('isBaobab!', isBaobab);
+export const DAMON = isBaobab
+  ? new Token(ChainId.BAOBAB, '0x66F80d658792765aE76c64c1110D003930797062', 18, 'DAMON', 'Damon')
+  : new Token(ChainId.CYPRESS, '0x66F80d658792765aE76c64c1110D003930797062', 18, 'DAMON', 'Damon');
+
+export const KAY = isBaobab
+  ? new Token(ChainId.BAOBAB, '0x94e5b0A5fe58595A14d123A27eCc1feAB4D3F5e0', 16, 'KAY', 'Kay')
+  : new Token(ChainId.CYPRESS, '0x94e5b0A5fe58595A14d123A27eCc1feAB4D3F5e0', 16, 'KAY', 'Kay');
+
+export const ROSS = isBaobab
+  ? new Token(ChainId.BAOBAB, '0x9f25b88E25F74B711D38C228fabbB5178b5F6864', 8, 'ROSS', 'Ross')
+  : new Token(ChainId.CYPRESS, '0x9f25b88E25F74B711D38C228fabbB5178b5F6864', 8, 'ROSS', 'Ross');
+
+export const LUAN = isBaobab
+  ? new Token(ChainId.BAOBAB, '0x99ac0F642821C33eDcBeaf079Ad691b72b495de0', 6, 'LUAN', 'Luan')
+  : new Token(ChainId.CYPRESS, '0x99ac0F642821C33eDcBeaf079Ad691b72b495de0', 6, 'LUAN', 'Luan');
 
 // export const CAKE = new Token(ChainId.CYPRESS, '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', 18, 'CAKE', 'PancakeSwap Token')
 // export const WBNB = new Token(ChainId.CYPRESS, '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', 18, 'WBNB', 'Wrapped BNB')
@@ -80,7 +93,8 @@ export const PINNED_PAIRS: { readonly [chainId in ChainId]?: [Token, Token][] } 
   ],
 }
 
-export const NetworkContextName = 'NETWORK'
+export const Web3NetworkContextName = 'WEB3-NETWORK'
+export const CaverNetworkContextName = 'CAVER-NETWORK'
 
 // default allowed slippage, in bips
 export const INITIAL_ALLOWED_SLIPPAGE = 80

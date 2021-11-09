@@ -1,28 +1,33 @@
-import React, { useContext } from 'react'
-import { Menu as UikitMenu} from '@pancakeswap-libs/uikit'
-import { useWeb3React } from '@web3-react/core'
-import { allLanguages } from 'constants/localisation/languageCodes'
-import { LanguageContext } from 'hooks/LanguageContext'
-import useTheme from 'hooks/useTheme'
-import useGetPriceData from 'hooks/useGetPriceData'
-import useGetLocalProfile from 'hooks/useGetLocalProfile'
-import useAuth from 'hooks/useAuth'
-import links from './config'
-import { LUAN } from '../../constants'
+import { Menu as UikitMenu } from '@pancakeswap-libs/uikit';
+import { useCaverJsReact } from '@sixnetwork/caverjs-react-core';
+import { useWeb3React } from '@web3-react/core';
+import { allLanguages } from 'constants/localisation/languageCodes';
+import { LanguageContext } from 'hooks/LanguageContext';
+import useAuth from 'hooks/useAuth';
+import useGetLocalProfile from 'hooks/useGetLocalProfile';
+import useGetPriceData from 'hooks/useGetPriceData';
+import useTheme from 'hooks/useTheme';
+import React, { useContext } from 'react';
 
-const Menu: React.FC = (props) => {
-  const { account } = useWeb3React()
-  const { login, logout } = useAuth()
+import { LUAN } from '../../constants';
+import links from './config';
+
+const Menu: React.FC<{ useCaver: boolean }> = (props) => {
+  const web3 = useWeb3React();
+  const caver = useCaverJsReact();
+  const { login, logout } = useAuth();
   const { selectedLanguage, setSelectedLanguage } = useContext(LanguageContext)
   const { isDark, toggleTheme } = useTheme()
   const priceData = useGetPriceData()
   const cakePriceUsd = priceData ? Number(priceData.data[LUAN.address].price) : undefined
-  const profile = useGetLocalProfile()
+  const { useCaver } = props;
+  const profile = useGetLocalProfile(useCaver);
 
   return (
+    <>
     <UikitMenu
       links={links}
-      account={account as string}
+      account={(web3.account ?? caver.account) as string}
       login={login}
       logout={logout}
       isDark={isDark}
@@ -34,6 +39,7 @@ const Menu: React.FC = (props) => {
       profile={profile}
       {...props}
     />
+    </>
   )
 }
 

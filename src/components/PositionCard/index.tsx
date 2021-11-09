@@ -1,22 +1,22 @@
-import React, { useState } from 'react'
-import { JSBI, Pair, Percent } from '@pancakeswap-libs/sdk'
-import { Button, Card as UIKitCard, CardBody, Text } from '@pancakeswap-libs/uikit'
-import { darken } from 'polished'
-import { ChevronDown, ChevronUp } from 'react-feather'
-import { Link } from 'react-router-dom'
-import styled from 'styled-components'
-import { useTotalSupply } from '../../data/TotalSupply'
+import { JSBI, Pair, Percent } from '@pancakeswap-libs/sdk';
+import { Button, Card as UIKitCard, CardBody, Text } from '@pancakeswap-libs/uikit';
+import { darken } from 'polished';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'react-feather';
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
 
-import { useActiveWeb3React } from '../../hooks'
-import { useTokenBalance } from '../../state/wallet/hooks'
-import { currencyId } from '../../utils/currencyId'
-import { unwrappedToken } from '../../utils/wrappedCurrency'
-import Card from '../Card'
-import { AutoColumn } from '../Column'
-import CurrencyLogo from '../CurrencyLogo'
-import DoubleCurrencyLogo from '../DoubleLogo'
-import { RowBetween, RowFixed } from '../Row'
-import { Dots } from '../swap/styleds'
+import { useTotalSupply } from '../../data/TotalSupply';
+import { useActiveWeb3Context } from '../../hooks';
+import { useTokenBalance } from '../../state/wallet/hooks';
+import { currencyId } from '../../utils/currencyId';
+import { unwrappedToken } from '../../utils/wrappedCurrency';
+import Card from '../Card';
+import { AutoColumn } from '../Column';
+import CurrencyLogo from '../CurrencyLogo';
+import DoubleCurrencyLogo from '../DoubleLogo';
+import { RowBetween, RowFixed } from '../Row';
+import { Dots } from '../swap/styleds';
 
 export const FixedHeightRow = styled(RowBetween)`
   height: 24px;
@@ -33,18 +33,19 @@ interface PositionCardProps {
   pair: Pair
   // eslint-disable-next-line react/no-unused-prop-types
   showUnwrapped?: boolean
+  useCaver: boolean
 }
 
-export function MinimalPositionCard({ pair, showUnwrapped = false }: PositionCardProps) {
-  const { account } = useActiveWeb3React()
+export function MinimalPositionCard({ pair, showUnwrapped = false, useCaver }: PositionCardProps) {
+  const { account } = useActiveWeb3Context(useCaver);
 
   const currency0 = showUnwrapped ? pair.token0 : unwrappedToken(pair.token0)
   const currency1 = showUnwrapped ? pair.token1 : unwrappedToken(pair.token1)
 
   const [showMore, setShowMore] = useState(false)
 
-  const userPoolBalance = useTokenBalance(account ?? undefined, pair.liquidityToken)
-  const totalPoolTokens = useTotalSupply(pair.liquidityToken)
+  const userPoolBalance = useTokenBalance(useCaver, account ?? undefined, pair.liquidityToken)
+  const totalPoolTokens = useTotalSupply(useCaver, pair.liquidityToken);
 
   const [token0Deposited, token1Deposited] =
     !!pair &&
@@ -73,7 +74,7 @@ export function MinimalPositionCard({ pair, showUnwrapped = false }: PositionCar
               </FixedHeightRow>
               <FixedHeightRow onClick={() => setShowMore(!showMore)}>
                 <RowFixed>
-                  <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin size={20} />
+                  <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin size={20} useCaver={useCaver} />
                   <Text fontSize="14px">
                     {currency0.symbol}/{currency1.symbol}
                   </Text>
@@ -116,16 +117,16 @@ export function MinimalPositionCard({ pair, showUnwrapped = false }: PositionCar
   )
 }
 
-export default function FullPositionCard({ pair }: PositionCardProps) {
-  const { account } = useActiveWeb3React()
+export default function FullPositionCard({ pair, useCaver }: PositionCardProps) {
+  const { account } = useActiveWeb3Context(useCaver);
 
   const currency0 = unwrappedToken(pair.token0)
   const currency1 = unwrappedToken(pair.token1)
 
   const [showMore, setShowMore] = useState(false)
 
-  const userPoolBalance = useTokenBalance(account ?? undefined, pair.liquidityToken)
-  const totalPoolTokens = useTotalSupply(pair.liquidityToken)
+  const userPoolBalance = useTokenBalance(useCaver, account ?? undefined, pair.liquidityToken)
+  const totalPoolTokens = useTotalSupply(useCaver, pair.liquidityToken);
 
   const poolTokenPercentage =
     !!userPoolBalance && !!totalPoolTokens && JSBI.greaterThanOrEqual(totalPoolTokens.raw, userPoolBalance.raw)
@@ -149,7 +150,7 @@ export default function FullPositionCard({ pair }: PositionCardProps) {
       <AutoColumn gap="12px">
         <FixedHeightRow onClick={() => setShowMore(!showMore)} style={{ cursor: 'pointer' }}>
           <RowFixed>
-            <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin size={20} />
+            <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin size={20} useCaver={useCaver} />
             <Text>{!currency0 || !currency1 ? <Dots>Loading</Dots> : `${currency0.symbol}/${currency1.symbol}`}</Text>
           </RowFixed>
           <RowFixed>
@@ -169,7 +170,7 @@ export default function FullPositionCard({ pair }: PositionCardProps) {
               {token0Deposited ? (
                 <RowFixed>
                   <Text ml="6px">{token0Deposited?.toSignificant(6)}</Text>
-                  <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency0} />
+                  <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency0} useCaver={useCaver} />
                 </RowFixed>
               ) : (
                 '-'
@@ -183,7 +184,7 @@ export default function FullPositionCard({ pair }: PositionCardProps) {
               {token1Deposited ? (
                 <RowFixed>
                   <Text ml="6px">{token1Deposited?.toSignificant(6)}</Text>
-                  <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency1} />
+                  <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency1} useCaver={useCaver} />
                 </RowFixed>
               ) : (
                 '-'

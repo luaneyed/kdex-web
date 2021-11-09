@@ -85,7 +85,7 @@ function listUrlRowHTMLId(listUrl: string) {
   return `list-row-${listUrl.replace(/\./g, '-')}`
 }
 
-const ListRow = memo(function ListRow({ listUrl, onBack }: { listUrl: string; onBack: () => void }) {
+const ListRow = memo(function ListRow({ listUrl, onBack, useCaver }: { listUrl: string; onBack: () => void, useCaver: boolean }) {
   const listsByUrl = useSelector<AppState, AppState['lists']['byUrl']>((state) => state.lists.byUrl)
   const selectedListUrl = useSelectedListUrl()
   const dispatch = useDispatch<AppDispatch>()
@@ -129,7 +129,7 @@ const ListRow = memo(function ListRow({ listUrl, onBack }: { listUrl: string; on
   return (
     <Row key={listUrl} align="center" padding="16px" id={listUrlRowHTMLId(listUrl)}>
       {list.logoURI ? (
-        <ListLogo style={{ marginRight: '1rem' }} logoURI={list.logoURI} alt={`${list.name} list logo`} />
+        <ListLogo style={{ marginRight: '1rem' }} logoURI={list.logoURI} alt={`${list.name} list logo`} useCaver={useCaver} />
       ) : (
         <div style={{ width: '24px', height: '24px', marginRight: '1rem' }} />
       )}
@@ -206,7 +206,7 @@ const ListContainer = styled.div`
   overflow: auto;
 `
 
-export function ListSelect({ onDismiss, onBack }: { onDismiss: () => void; onBack: () => void }) {
+export function ListSelect({ onDismiss, onBack, useCaver }: { useCaver: boolean, onDismiss: () => void; onBack: () => void }) {
   const [listUrlInput, setListUrlInput] = useState<string>('')
 
   const dispatch = useDispatch<AppDispatch>()
@@ -218,7 +218,7 @@ export function ListSelect({ onDismiss, onBack }: { onDismiss: () => void; onBac
     setListUrlInput(e.target.value)
     setAddError(null)
   }, [])
-  const fetchList = useFetchListCallback()
+  const fetchList = useFetchListCallback(useCaver);
 
   const handleAddList = useCallback(() => {
     if (adding) return
@@ -317,7 +317,7 @@ export function ListSelect({ onDismiss, onBack }: { onDismiss: () => void; onBac
 
       <ListContainer>
         {sortedLists.map((listUrl) => (
-          <ListRow key={listUrl} listUrl={listUrl} onBack={onBack} />
+          <ListRow key={listUrl} listUrl={listUrl} onBack={onBack} useCaver={useCaver} />
         ))}
       </ListContainer>
       <Separator />

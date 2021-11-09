@@ -1,50 +1,51 @@
-import { CurrencyAmount, JSBI, Token, Trade } from '@pancakeswap-libs/sdk'
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { ArrowDown } from 'react-feather'
-import { CardBody, ArrowDownIcon, Button, IconButton, Text } from '@pancakeswap-libs/uikit'
-import { ThemeContext } from 'styled-components'
-import AddressInputPanel from 'components/AddressInputPanel'
-import Card, { GreyCard } from 'components/Card'
-import { AutoColumn } from 'components/Column'
-import ConfirmSwapModal from 'components/swap/ConfirmSwapModal'
-import CurrencyInputPanel from 'components/CurrencyInputPanel'
-import CardNav from 'components/CardNav'
-import { AutoRow, RowBetween } from 'components/Row'
-import AdvancedSwapDetailsDropdown from 'components/swap/AdvancedSwapDetailsDropdown'
-import confirmPriceImpactWithoutFee from 'components/swap/confirmPriceImpactWithoutFee'
-import { ArrowWrapper, BottomGrouping, SwapCallbackError, Wrapper } from 'components/swap/styleds'
-import TradePrice from 'components/swap/TradePrice'
-import TokenWarningModal from 'components/TokenWarningModal'
-import SyrupWarningModal from 'components/SyrupWarningModal'
-import SafeMoonWarningModal from 'components/SafeMoonWarningModal'
-import ProgressSteps from 'components/ProgressSteps'
+import { CurrencyAmount, JSBI, Token, Trade } from '@pancakeswap-libs/sdk';
+import { ArrowDownIcon, Button, CardBody, IconButton, Text } from '@pancakeswap-libs/uikit';
+import AddressInputPanel from 'components/AddressInputPanel';
+import Card, { GreyCard } from 'components/Card';
+import CardNav from 'components/CardNav';
+import { AutoColumn } from 'components/Column';
+import ConnectWalletButton from 'components/ConnectWalletButton';
+import CurrencyInputPanel from 'components/CurrencyInputPanel';
+import Loader from 'components/Loader';
+import PageHeader from 'components/PageHeader';
+import ProgressSteps from 'components/ProgressSteps';
+import { AutoRow, RowBetween } from 'components/Row';
+import SafeMoonWarningModal from 'components/SafeMoonWarningModal';
+import { LinkStyledButton } from 'components/Shared';
+import AdvancedSwapDetailsDropdown from 'components/swap/AdvancedSwapDetailsDropdown';
+import confirmPriceImpactWithoutFee from 'components/swap/confirmPriceImpactWithoutFee';
+import ConfirmSwapModal from 'components/swap/ConfirmSwapModal';
+import { ArrowWrapper, BottomGrouping, SwapCallbackError, Wrapper } from 'components/swap/styleds';
+import TradePrice from 'components/swap/TradePrice';
+import SyrupWarningModal from 'components/SyrupWarningModal';
+import TokenWarningModal from 'components/TokenWarningModal';
+import { useActiveWeb3Context } from 'hooks';
+import { useCurrency } from 'hooks/Tokens';
+import { ApprovalState, useApproveCallbackFromTrade } from 'hooks/useApproveCallback';
+import useI18n from 'hooks/useI18n';
+import { useSwapCallback } from 'hooks/useSwapCallback';
+import useWrapCallback, { WrapType } from 'hooks/useWrapCallback';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { ArrowDown } from 'react-feather';
+import { Field } from 'state/swap/actions';
+import { useDefaultsFromURLSearch, useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks';
+import { useExpertModeManager, useUserDeadline, useUserSlippageTolerance } from 'state/user/hooks';
+import { ThemeContext } from 'styled-components';
+import { maxAmountSpend } from 'utils/maxAmountSpend';
+import { computeTradePriceBreakdown, warningSeverity } from 'utils/prices';
 
-import { INITIAL_ALLOWED_SLIPPAGE } from 'constants/index'
-import { useActiveWeb3React } from 'hooks'
-import { useCurrency } from 'hooks/Tokens'
-import { ApprovalState, useApproveCallbackFromTrade } from 'hooks/useApproveCallback'
-import { useSwapCallback } from 'hooks/useSwapCallback'
-import useWrapCallback, { WrapType } from 'hooks/useWrapCallback'
-import { Field } from 'state/swap/actions'
-import { useDefaultsFromURLSearch, useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { useExpertModeManager, useUserDeadline, useUserSlippageTolerance } from 'state/user/hooks'
-import { LinkStyledButton } from 'components/Shared'
-import { maxAmountSpend } from 'utils/maxAmountSpend'
-import { computeTradePriceBreakdown, warningSeverity } from 'utils/prices'
-import Loader from 'components/Loader'
-import useI18n from 'hooks/useI18n'
-import PageHeader from 'components/PageHeader'
-import ConnectWalletButton from 'components/ConnectWalletButton'
-import AppBody from '../AppBody'
+import { INITIAL_ALLOWED_SLIPPAGE } from '../../constants';
+import AppBody from '../AppBody';
 
 const Swap = () => {
-  const loadedUrlParams = useDefaultsFromURLSearch()
+  const useCaver = true;
+  const loadedUrlParams = useDefaultsFromURLSearch(useCaver);
   const TranslateString = useI18n()
 
   // token warning stuff
   const [loadedInputCurrency, loadedOutputCurrency] = [
-    useCurrency(loadedUrlParams?.inputCurrencyId),
-    useCurrency(loadedUrlParams?.outputCurrencyId),
+    useCurrency(useCaver, loadedUrlParams?.inputCurrencyId),
+    useCurrency(useCaver, loadedUrlParams?.outputCurrencyId),
   ]
   const [dismissTokenWarning, setDismissTokenWarning] = useState<boolean>(false)
   const [transactionWarning, setTransactionWarning] = useState<{
@@ -69,7 +70,7 @@ const Swap = () => {
     })
   }
 
-  const { account } = useActiveWeb3React()
+  const { account } = useActiveWeb3Context(useCaver);
   const theme = useContext(ThemeContext)
 
   const [isExpertMode] = useExpertModeManager()
@@ -77,11 +78,10 @@ const Swap = () => {
   // get custom setting values for user
   const [deadline] = useUserDeadline()
   const [allowedSlippage] = useUserSlippageTolerance()
-
-  const useCaver = true;
+  
   // swap state
   const { independentField, typedValue, recipient } = useSwapState()
-  const { v2Trade, currencyBalances, parsedAmount, currencies, inputError: swapInputError } = useDerivedSwapInfo()
+  const { v2Trade, currencyBalances, parsedAmount, currencies, inputError: swapInputError } = useDerivedSwapInfo(useCaver);
   const { wrapType, execute: onWrap, inputError: wrapInputError } = useWrapCallback(
     currencies[Field.INPUT],
     currencies[Field.OUTPUT],
@@ -147,7 +147,7 @@ const Swap = () => {
   const noRoute = !route
 
   // check whether the user has approved the router on the input token
-  const [approval, approveCallback] = useApproveCallbackFromTrade(trade, allowedSlippage)
+  const [approval, approveCallback] = useApproveCallbackFromTrade(useCaver, trade, allowedSlippage)
 
   // check if user has gone through approval process, used to show two step buttons, reset on token change
   const [approvalSubmitted, setApprovalSubmitted] = useState<boolean>(false)
@@ -281,6 +281,7 @@ const Swap = () => {
         isOpen={urlLoadedTokens.length > 0 && !dismissTokenWarning}
         tokens={urlLoadedTokens}
         onConfirm={handleConfirmTokenWarning}
+        useCaver={useCaver}
       />
       <SyrupWarningModal
         isOpen={transactionWarning.selectedToken === 'SYRUP'}
@@ -303,10 +304,12 @@ const Swap = () => {
             onConfirm={handleSwap}
             swapErrorMessage={swapErrorMessage}
             onDismiss={handleConfirmDismiss}
+            useCaver={useCaver}
           />
           <PageHeader
             title={TranslateString(8, 'Exchange')}
             description={TranslateString(1192, 'Trade tokens in an instant')}
+            useCaver={useCaver}
           />
           <CardBody>
             <AutoColumn gap="md">
@@ -324,6 +327,7 @@ const Swap = () => {
                 onCurrencySelect={handleInputSelect}
                 otherCurrency={currencies[Field.OUTPUT]}
                 id="swap-currency-input"
+                useCaver={useCaver}
               />
               <AutoColumn justify="space-between">
                 <AutoRow justify={isExpertMode ? 'space-between' : 'center'} style={{ padding: '0 1rem' }}>
@@ -360,6 +364,7 @@ const Swap = () => {
                 onCurrencySelect={handleOutputSelect}
                 otherCurrency={currencies[Field.INPUT]}
                 id="swap-currency-output"
+                useCaver={useCaver}
               />
 
               {recipient !== null && !showWrap ? (
@@ -372,7 +377,7 @@ const Swap = () => {
                       - Remove send
                     </LinkStyledButton>
                   </AutoRow>
-                  <AddressInputPanel id="recipient" value={recipient} onChange={onChangeRecipient} />
+                  <AddressInputPanel id="recipient" value={recipient} onChange={onChangeRecipient} useCaver={useCaver} />
                 </>
               ) : null}
 
@@ -487,7 +492,7 @@ const Swap = () => {
           </CardBody>
         </Wrapper>
       </AppBody>
-      <AdvancedSwapDetailsDropdown trade={trade} />
+      <AdvancedSwapDetailsDropdown trade={trade} useCaver={useCaver} />
     </>
   )
 }

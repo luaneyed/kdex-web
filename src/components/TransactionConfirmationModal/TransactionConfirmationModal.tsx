@@ -1,8 +1,9 @@
-import React from 'react'
-import Modal from '../Modal'
-import { useActiveWeb3React } from '../../hooks'
-import ConfirmationPendingContent from './ConfirmationPendingContent'
-import TransactionSubmittedContent from './TransactionSubmittedContent'
+import React from 'react';
+
+import { useActiveWeb3Context } from '../../hooks';
+import Modal from '../Modal';
+import ConfirmationPendingContent from './ConfirmationPendingContent';
+import TransactionSubmittedContent from './TransactionSubmittedContent';
 
 interface ConfirmationModalProps {
   isOpen: boolean
@@ -11,6 +12,7 @@ interface ConfirmationModalProps {
   content: () => React.ReactNode
   attemptingTxn: boolean
   pendingText: string
+  useCaver: boolean
 }
 
 const TransactionConfirmationModal = ({
@@ -19,9 +21,10 @@ const TransactionConfirmationModal = ({
   attemptingTxn,
   hash,
   pendingText,
-  content
+  content,
+  useCaver,
 }: ConfirmationModalProps) => {
-  const { chainId } = useActiveWeb3React()
+  const { chainId } = useActiveWeb3Context(useCaver);
 
   if (!chainId) return null
 

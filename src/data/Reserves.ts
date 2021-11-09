@@ -3,7 +3,7 @@ import { Currency, Pair, TokenAmount } from '@pancakeswap-libs/sdk';
 import { abi as IUniswapV2PairABI } from '@uniswap/v2-core/build/IUniswapV2Pair.json';
 import { useMemo } from 'react';
 
-import { useActiveWeb3React } from '../hooks';
+import { useActiveWeb3Context } from '../hooks';
 import { useMultipleContractSingleData } from '../state/multicall/hooks';
 import { wrappedCurrency } from '../utils/wrappedCurrency';
 
@@ -16,8 +16,8 @@ export enum PairState {
   INVALID
 }
 
-export function usePairs(currencies: [Currency | undefined, Currency | undefined][]): [PairState, Pair | null][] {
-  const { chainId } = useActiveWeb3React()
+export function usePairs(currencies: [Currency | undefined, Currency | undefined][], useCaver: boolean): [PairState, Pair | null][] {
+  const { chainId } = useActiveWeb3Context(useCaver);
 
   const tokens = useMemo(
     () =>
@@ -36,7 +36,7 @@ export function usePairs(currencies: [Currency | undefined, Currency | undefined
     [tokens]
   )
 
-  const results = useMultipleContractSingleData(pairAddresses, PAIR_INTERFACE, 'getReserves')
+  const results = useMultipleContractSingleData(useCaver, pairAddresses, PAIR_INTERFACE, 'getReserves')
 
   return useMemo(() => {
     return results.map((result, i) => {
@@ -57,6 +57,6 @@ export function usePairs(currencies: [Currency | undefined, Currency | undefined
   }, [results, tokens])
 }
 
-export function usePair(tokenA?: Currency, tokenB?: Currency): [PairState, Pair | null] {
-  return usePairs([[tokenA, tokenB]])[0]
+export function usePair(useCaver: boolean, tokenA?: Currency, tokenB?: Currency): [PairState, Pair | null] {
+  return usePairs([[tokenA, tokenB]], useCaver)[0]
 }

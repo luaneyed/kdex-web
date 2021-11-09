@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { useActiveWeb3React } from '../../hooks'
-import useDebounce from '../../hooks/useDebounce'
-import useIsWindowVisible from '../../hooks/useIsWindowVisible'
-import { updateBlockNumber } from './actions'
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
-export default function Updater(): null {
-  const { library, chainId } = useActiveWeb3React()
+import { useActiveWeb3Context } from '../../hooks';
+import useDebounce from '../../hooks/useDebounce';
+import useIsWindowVisible from '../../hooks/useIsWindowVisible';
+import { updateBlockNumber } from './actions';
+
+export default function Updater({ useCaver }: { useCaver: boolean }): null {
+  const { library, chainId } = useActiveWeb3Context(useCaver);
   const dispatch = useDispatch()
 
   const windowVisible = useIsWindowVisible()
@@ -18,6 +19,7 @@ export default function Updater(): null {
 
   const blockNumberCallback = useCallback(
     (blockNumber: number) => {
+      // console.log('bn callback', blockNumber);
       setState((s) => {
         if (chainId === s.chainId) {
           if (typeof s.blockNumber !== 'number') return { chainId, blockNumber }
@@ -32,6 +34,7 @@ export default function Updater(): null {
   // attach/detach listeners
   useEffect(() => {
     if (!library || !chainId || !windowVisible) return undefined
+    // console.log('lib effect!');
 
     setState({ chainId, blockNumber: null })
 

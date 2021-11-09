@@ -1,10 +1,11 @@
-import { Currency, currencyEquals, KLAY, WKLAY } from '@pancakeswap-libs/sdk'
-import { useMemo } from 'react'
-import { tryParseAmount } from '../state/swap/hooks'
-import { useTransactionAdder } from '../state/transactions/hooks'
-import { useCurrencyBalance } from '../state/wallet/hooks'
-import { useActiveWeb3React } from './index'
-import { useWKLAYContract, useWKLAYEthersContract } from './useContract'
+import { Currency, currencyEquals, KLAY, WKLAY } from '@pancakeswap-libs/sdk';
+import { useMemo } from 'react';
+
+import { useActiveWeb3Context } from '.';
+import { tryParseAmount } from '../state/swap/hooks';
+import { useTransactionAdder } from '../state/transactions/hooks';
+import { useCurrencyBalance } from '../state/wallet/hooks';
+import { useWKLAYContract } from './useContract';
 
 export enum WrapType {
   NOT_APPLICABLE,
@@ -25,12 +26,12 @@ export default function useWrapCallback(
   typedValue: string | undefined,
   useCaver: boolean,
 ): { wrapType: WrapType; execute?: undefined | (() => Promise<void>); inputError?: string } {
-  const { chainId, account } = useActiveWeb3React()
+  const { chainId, account } = useActiveWeb3Context(useCaver);
   const wklayContract = useWKLAYContract(useCaver);
-  const balance = useCurrencyBalance(account ?? undefined, inputCurrency)
+  const balance = useCurrencyBalance(useCaver, account ?? undefined, inputCurrency)
   // we can always parse the amount typed as the input currency, since wrapping is 1:1
   const inputAmount = useMemo(() => tryParseAmount(typedValue, inputCurrency), [inputCurrency, typedValue])
-  const addTransaction = useTransactionAdder()
+  const addTransaction = useTransactionAdder(useCaver);
 
   return useMemo(() => {
     if (!wklayContract || !chainId || !inputCurrency || !outputCurrency) return NOT_APPLICABLE

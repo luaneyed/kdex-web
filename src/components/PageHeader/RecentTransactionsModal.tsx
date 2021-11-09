@@ -1,14 +1,15 @@
-import React, { useMemo } from 'react'
-import { CheckmarkCircleIcon, ErrorIcon, Flex, LinkExternal, Text, Modal, Button } from '@pancakeswap-libs/uikit'
-import { useActiveWeb3React } from 'hooks'
-import { getKlaytnScopeLink } from 'utils'
-import { isTransactionRecent, useAllTransactions } from 'state/transactions/hooks'
-import { TransactionDetails } from 'state/transactions/reducer'
-import Loader from 'components/Loader'
+import { Button, CheckmarkCircleIcon, ErrorIcon, Flex, LinkExternal, Modal, Text } from '@pancakeswap-libs/uikit';
+import Loader from 'components/Loader';
+import { useActiveWeb3Context } from 'hooks';
+import React, { useMemo } from 'react';
+import { isTransactionRecent, useAllTransactions } from 'state/transactions/hooks';
+import { TransactionDetails } from 'state/transactions/reducer';
+import { getKlaytnScopeLink } from 'utils';
 
 type RecentTransactionsModalProps = {
   onDismiss?: () => void
   translateString: (translationId: number, fallback: string) => string
+  useCaver: boolean
 }
 
 // TODO: Fix UI Kit typings
@@ -30,9 +31,9 @@ const getRowStatus = (sortedRecentTransaction: TransactionDetails) => {
   return { icon: <ErrorIcon color="failure" />, color: 'failure' }
 }
 
-const RecentTransactionsModal = ({ onDismiss = defaultOnDismiss, translateString }: RecentTransactionsModalProps) => {
-  const { account, chainId } = useActiveWeb3React()
-  const allTransactions = useAllTransactions()
+const RecentTransactionsModal = ({ onDismiss = defaultOnDismiss, translateString, useCaver }: RecentTransactionsModalProps) => {
+  const { account, chainId } = useActiveWeb3Context(useCaver);
+  const allTransactions = useAllTransactions(useCaver);
 
   // Logic taken from Web3Status/index.tsx line 175
   const sortedRecentTransactions = useMemo(() => {

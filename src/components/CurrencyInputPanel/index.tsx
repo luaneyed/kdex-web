@@ -1,16 +1,17 @@
-import React, { useState, useCallback } from 'react'
-import { Currency, Pair } from '@pancakeswap-libs/sdk'
-import { Button, ChevronDownIcon, Text } from '@pancakeswap-libs/uikit'
-import styled from 'styled-components'
-import { darken } from 'polished'
-import useI18n from 'hooks/useI18n'
-import { useCurrencyBalance } from '../../state/wallet/hooks'
-import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
-import CurrencyLogo from '../CurrencyLogo'
-import DoubleCurrencyLogo from '../DoubleLogo'
-import { RowBetween } from '../Row'
-import { Input as NumericalInput } from '../NumericalInput'
-import { useActiveWeb3React } from '../../hooks'
+import { Currency, Pair } from '@pancakeswap-libs/sdk';
+import { Button, ChevronDownIcon, Text } from '@pancakeswap-libs/uikit';
+import useI18n from 'hooks/useI18n';
+import { darken } from 'polished';
+import React, { useCallback, useState } from 'react';
+import styled from 'styled-components';
+
+import { useActiveWeb3Context } from '../../hooks';
+import { useCurrencyBalance } from '../../state/wallet/hooks';
+import CurrencyLogo from '../CurrencyLogo';
+import DoubleCurrencyLogo from '../DoubleLogo';
+import { Input as NumericalInput } from '../NumericalInput';
+import { RowBetween } from '../Row';
+import CurrencySearchModal from '../SearchModal/CurrencySearchModal';
 
 const InputRow = styled.div<{ selected: boolean }>`
   display: flex;
@@ -81,7 +82,8 @@ interface CurrencyInputPanelProps {
   hideInput?: boolean
   otherCurrency?: Currency | null
   id: string
-  showCommonBases?: boolean
+  showCommonBases?: boolean,
+  useCaver: boolean,
 }
 export default function CurrencyInputPanel({
   value,
@@ -98,10 +100,11 @@ export default function CurrencyInputPanel({
   otherCurrency,
   id,
   showCommonBases,
+  useCaver,
 }: CurrencyInputPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
-  const { account } = useActiveWeb3React()
-  const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
+  const { account } = useActiveWeb3Context(useCaver);
+  const selectedCurrencyBalance = useCurrencyBalance(useCaver, account ?? undefined, currency ?? undefined)
   const TranslateString = useI18n()
   const translatedLabel = label || TranslateString(132, 'Input')
   const handleDismissSearch = useCallback(() => {
@@ -152,9 +155,9 @@ export default function CurrencyInputPanel({
           >
             <Aligner>
               {pair ? (
-                <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={16} margin />
+                <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={16} margin useCaver={useCaver} />
               ) : currency ? (
-                <CurrencyLogo currency={currency} size="24px" style={{ marginRight: '8px' }} />
+                <CurrencyLogo currency={currency} size="24px" style={{ marginRight: '8px' }} useCaver={useCaver} />
               ) : null}
               {pair ? (
                 <Text id="pair">
@@ -183,6 +186,7 @@ export default function CurrencyInputPanel({
           selectedCurrency={currency}
           otherSelectedCurrency={otherCurrency}
           showCommonBases={showCommonBases}
+          useCaver={useCaver}
         />
       )}
     </InputPanel>

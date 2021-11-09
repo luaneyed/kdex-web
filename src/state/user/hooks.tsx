@@ -1,27 +1,27 @@
-import { ChainId, Pair, Token } from '@pancakeswap-libs/sdk'
-import flatMap from 'lodash.flatmap'
-import { useCallback, useMemo } from 'react'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
-import { BASES_TO_TRACK_LIQUIDITY_FOR, PINNED_PAIRS } from '../../constants'
+import { ChainId, Pair, Token } from '@pancakeswap-libs/sdk';
+import flatMap from 'lodash.flatmap';
+import { useCallback, useMemo } from 'react';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
-import { useActiveWeb3React } from '../../hooks'
+import { AppDispatch, AppState } from '..';
+import { BASES_TO_TRACK_LIQUIDITY_FOR, PINNED_PAIRS } from '../../constants';
+import { useActiveWeb3Context } from '../../hooks';
 // eslint-disable-next-line import/no-cycle
-import { useAllTokens } from '../../hooks/Tokens'
-import { AppDispatch, AppState } from '../index'
+import { useAllTokens } from '../../hooks/Tokens';
+import { setThemeCache } from '../../utils/theme';
 import {
   addSerializedPair,
   addSerializedToken,
+  muteAudio,
   removeSerializedToken,
   SerializedPair,
   SerializedToken,
+  unmuteAudio,
   updateUserDarkMode,
   updateUserDeadline,
   updateUserExpertMode,
   updateUserSlippageTolerance,
-  muteAudio,
-  unmuteAudio,
-} from './actions'
-import { setThemeCache } from '../../utils/theme'
+} from './actions';
 
 function serializeToken(token: Token): SerializedToken {
   return {
@@ -158,8 +158,8 @@ export function useRemoveUserAddedToken(): (chainId: number, address: string) =>
   )
 }
 
-export function useUserAddedTokens(): Token[] {
-  const { chainId } = useActiveWeb3React()
+export function useUserAddedTokens(useCaver: boolean): Token[] {
+  const { chainId } = useActiveWeb3Context(useCaver);
   const serializedTokensMap = useSelector<AppState, AppState['user']['tokens']>(({ user: { tokens } }) => tokens)
 
   return useMemo(() => {
@@ -198,9 +198,9 @@ export function toV2LiquidityToken([tokenA, tokenB]: [Token, Token]): Token {
 /**
  * Returns all the pairs of tokens that are tracked by the user for the current chain ID.
  */
-export function useTrackedTokenPairs(): [Token, Token][] {
-  const { chainId } = useActiveWeb3React()
-  const tokens = useAllTokens()
+export function useTrackedTokenPairs(useCaver: boolean): [Token, Token][] {
+  const { chainId } = useActiveWeb3Context(useCaver);
+  const tokens = useAllTokens(useCaver);
 
   // pinned pairs
   const pinnedPairs = useMemo(() => (chainId ? PINNED_PAIRS[chainId] ?? [] : []), [chainId])

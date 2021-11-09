@@ -30,10 +30,12 @@ export default function CommonBases({
   chainId,
   onSelect,
   selectedCurrency,
+  useCaver,
 }: {
   chainId?: ChainId
   selectedCurrency?: Currency | null
   onSelect: (currency: Currency) => void
+  useCaver: boolean
 }) {
   const TranslateString = useI18n()
   return (
@@ -51,14 +53,14 @@ export default function CommonBases({
           }}
           disable={selectedCurrency === KLAY}
         >
-          <CurrencyLogo currency={KLAY} style={{ marginRight: 8 }} />
+          <CurrencyLogo currency={KLAY} style={{ marginRight: 8 }} useCaver={useCaver} />
           <Text>KLAY</Text>
         </BaseWrapper>
         {(chainId ? SUGGESTED_BASES[chainId] : []).map((token: Token) => {
           const selected = selectedCurrency instanceof Token && selectedCurrency.address === token.address
           return (
             <BaseWrapper onClick={() => !selected && onSelect(token)} disable={selected} key={token.address}>
-              <CurrencyLogo currency={token} style={{ marginRight: 8 }} />
+              <CurrencyLogo currency={token} style={{ marginRight: 8 }} useCaver={useCaver} />
               <Text>{token.symbol}</Text>
             </BaseWrapper>
           )

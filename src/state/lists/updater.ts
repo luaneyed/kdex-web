@@ -1,22 +1,23 @@
-import { getVersionUpgrade, minVersionBump, VersionUpgrade } from '@uniswap/token-lists'
-import { useCallback, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useActiveWeb3React } from '../../hooks'
-import { useFetchListCallback } from '../../hooks/useFetchListCallback'
-import useInterval from '../../hooks/useInterval'
-import useIsWindowVisible from '../../hooks/useIsWindowVisible'
-import { addPopup } from '../application/actions'
-import { AppDispatch, AppState } from '../index'
-import { acceptListUpdate } from './actions'
+import { getVersionUpgrade, minVersionBump, VersionUpgrade } from '@uniswap/token-lists';
+import { useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-export default function Updater(): null {
-  const { library } = useActiveWeb3React()
+import { AppDispatch, AppState } from '..';
+import { useActiveWeb3Context } from '../../hooks';
+import { useFetchListCallback } from '../../hooks/useFetchListCallback';
+import useInterval from '../../hooks/useInterval';
+import useIsWindowVisible from '../../hooks/useIsWindowVisible';
+import { addPopup } from '../application/actions';
+import { acceptListUpdate } from './actions';
+
+export default function Updater({ useCaver }: { useCaver: boolean }): null {
+  const { library } = useActiveWeb3Context(useCaver);
   const dispatch = useDispatch<AppDispatch>()
   const lists = useSelector<AppState, AppState['lists']['byUrl']>((state) => state.lists.byUrl)
 
   const isWindowVisible = useIsWindowVisible()
 
-  const fetchList = useFetchListCallback()
+  const fetchList = useFetchListCallback(useCaver);
 
   const fetchAllListsCallback = useCallback(() => {
     if (!isWindowVisible) return

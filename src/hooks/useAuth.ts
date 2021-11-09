@@ -1,30 +1,44 @@
-import { useCallback } from 'react'
-import { useWeb3React, UnsupportedChainIdError } from '@web3-react/core'
-import { NoBscProviderError } from '@binance-chain/bsc-connector'
+import { connectorLocalStorageKey, ConnectorNames } from '@pancakeswap-libs/uikit';
+import { useCaverJsReact } from '@sixnetwork/caverjs-react-core';
+import { UnsupportedChainIdError, useWeb3React } from '@web3-react/core';
 import {
   NoEthereumProviderError,
   UserRejectedRequestError as UserRejectedRequestErrorInjected,
-} from '@web3-react/injected-connector'
+} from '@web3-react/injected-connector';
 import {
   UserRejectedRequestError as UserRejectedRequestErrorWalletConnect,
   WalletConnectConnector,
-} from '@web3-react/walletconnect-connector'
-import { connectorLocalStorageKey, ConnectorNames } from '@pancakeswap-libs/uikit'
-import useToast from 'hooks/useToast'
-import { connectorsByName } from 'connectors'
+} from '@web3-react/walletconnect-connector';
+import { useKlipModal } from 'components/KlipModal/useKlipModal';
+import { connectorsByName, klipConnector } from 'connectors';
+import { NoKaikasProviderError } from 'connectors/KaikasConnector';
+import useToast from 'hooks/useToast';
+import { useCallback } from 'react';
+import { authenticateKlip } from 'utils/klipAuth';
 
 const useAuth = () => {
-  const { activate, deactivate } = useWeb3React()
+  const web3Context = useWeb3React();
+  const caverContext = useCaverJsReact();
+  const authKlip = useKlipModal(() => authenticateKlip('kdex'));
   const { toastError } = useToast()
 
-  const login = useCallback((connectorID: ConnectorNames) => {
+  const login = useCallback(async (connectorID: ConnectorNames) => {
     const connector = connectorsByName[connectorID]
     if (connector) {
-      activate(connector, async (error: Error) => {
+      if (connectorID === ConnectorNames.Klip) {
+        const account = await authKlip();
+        if (account) {
+          klipConnector.setAccount(account);
+        } else return;
+      }
+      
+      // const context = web3Context;
+      const context = (connectorID === ConnectorNames.Kaikas || connectorID === ConnectorNames.Klip) ? caverContext : web3Context;
+      context.activate(connector, async (error: Error) => {
         window.localStorage.removeItem(connectorLocalStorageKey)
         if (error instanceof UnsupportedChainIdError) {
           toastError('Unsupported Chain Id', 'Unsupported Chain Id Error. Check your chain Id.')
-        } else if (error instanceof NoEthereumProviderError || error instanceof NoBscProviderError) {
+        } else if (error instanceof NoEthereumProviderError || error instanceof NoKaikasProviderError) {
           toastError('Provider Error', 'No provider was found')
         } else if (
           error instanceof UserRejectedRequestErrorInjected ||
@@ -45,7 +59,13 @@ const useAuth = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return { login, logout: deactivate }
+  return {
+    login,
+    logout: () => {
+      web3Context.deactivate();
+      caverContext.deactivate();
+    },
+  };
 }
 
 export default useAuth

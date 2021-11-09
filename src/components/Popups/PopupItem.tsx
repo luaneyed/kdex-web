@@ -46,11 +46,13 @@ const AnimatedFader = animated(Fader)
 export default function PopupItem({
   removeAfterMs,
   content,
-  popKey
+  popKey,
+  useCaver,
 }: {
   removeAfterMs: number | null
   content: PopupContent
   popKey: string
+  useCaver: boolean
 }) {
   const removePopup = useRemovePopup()
   const removeThisPopup = useCallback(() => removePopup(popKey), [popKey, removePopup])
@@ -73,7 +75,7 @@ export default function PopupItem({
     const {
       txn: { hash, success, summary }
     } = content
-    popupContent = <TransactionPopup hash={hash} success={success} summary={summary} />
+    popupContent = <TransactionPopup hash={hash} success={success} summary={summary} useCaver={useCaver} />
   } else if ('listUpdate' in content) {
     const {
       listUpdate: { listUrl, oldList, newList, auto }

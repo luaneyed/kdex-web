@@ -1,10 +1,9 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { MaxUint256 } from '@ethersproject/constants';
-import { TransactionResponse } from '@ethersproject/providers';
 import { CurrencyAmount, KLAY, TokenAmount, Trade } from '@pancakeswap-libs/sdk';
 import { useCallback, useMemo } from 'react';
 
-import { useActiveWeb3React } from '.';
+import { useActiveWeb3Context } from '.';
 import { ROUTER_ADDRESS } from '../constants';
 import { useTokenAllowance } from '../data/Allowances';
 import { Field } from '../state/swap/actions';
@@ -22,13 +21,14 @@ export enum ApprovalState {
 
 // returns a variable indicating the state of the approval and a function which approves if necessary or early returns
 export function useApproveCallback(
+  useCaver: boolean,
   amountToApprove?: CurrencyAmount,
-  spender?: string
+  spender?: string,
 ): [ApprovalState, () => Promise<void>] {
-  const { account } = useActiveWeb3React()
+  const { account } = useActiveWeb3Context(useCaver);
   const token = amountToApprove instanceof TokenAmount ? amountToApprove.token : undefined
-  const currentAllowance = useTokenAllowance(token, account ?? undefined, spender)
-  const pendingApproval = useHasPendingApproval(token?.address, spender)
+  const currentAllowance = useTokenAllowance(useCaver, token, account ?? undefined, spender)
+  const pendingApproval = useHasPendingApproval(useCaver, token?.address, spender);
 
   // check the current approval status
   const approvalState: ApprovalState = useMemo(() => {
@@ -45,9 +45,8 @@ export function useApproveCallback(
       : ApprovalState.APPROVED
   }, [amountToApprove, currentAllowance, pendingApproval, spender])
 
-  const useCaver = true;
   const tokenContract = useTokenContract(useCaver, token?.address);
-  const addTransaction = useTransactionAdder()
+  const addTransaction = useTransactionAdder(useCaver);
 
   const approve = useCallback(async (): Promise<void> => {
     if (approvalState !== ApprovalState.NOT_APPROVED) {
@@ -117,10 +116,10 @@ export function useApproveCallback(
 }
 
 // wraps useApproveCallback in the context of a swap
-export function useApproveCallbackFromTrade(trade?: Trade, allowedSlippage = 0) {
+export function useApproveCallbackFromTrade(useCaver: boolean, trade?: Trade, allowedSlippage = 0) {
   const amountToApprove = useMemo(
     () => (trade ? computeSlippageAdjustedAmounts(trade, allowedSlippage)[Field.INPUT] : undefined),
     [trade, allowedSlippage]
   )
-  return useApproveCallback(amountToApprove, ROUTER_ADDRESS)
+  return useApproveCallback(useCaver, amountToApprove, ROUTER_ADDRESS)
 }

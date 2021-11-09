@@ -1,29 +1,30 @@
-import { Currency, KLAY, Token } from '@pancakeswap-libs/sdk'
-import React, { KeyboardEvent, RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { Text, CloseIcon } from '@pancakeswap-libs/uikit'
-import { useSelector } from 'react-redux'
-import { useTranslation } from 'react-i18next'
-import { FixedSizeList } from 'react-window'
-import { ThemeContext } from 'styled-components'
-import AutoSizer from 'react-virtualized-auto-sizer'
-import useI18n from 'hooks/useI18n'
-import { useActiveWeb3React } from '../../hooks'
-import { AppState } from '../../state'
-import { useAllTokens, useToken } from '../../hooks/Tokens'
-import { useSelectedListInfo } from '../../state/lists/hooks'
-import { LinkStyledButton } from '../Shared'
-import { isAddress } from '../../utils'
-import Card from '../Card'
-import Column from '../Column'
-import ListLogo from '../ListLogo'
-import QuestionHelper from '../QuestionHelper'
-import Row, { RowBetween } from '../Row'
-import CommonBases from './CommonBases'
-import CurrencyList from './CurrencyList'
-import { filterTokens } from './filtering'
-import SortButton from './SortButton'
-import { useTokenComparator } from './sorting'
-import { PaddedColumn, SearchInput, Separator } from './styleds'
+import { Currency, KLAY, Token } from '@pancakeswap-libs/sdk';
+import { CloseIcon, Text } from '@pancakeswap-libs/uikit';
+import useI18n from 'hooks/useI18n';
+import React, { KeyboardEvent, RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { FixedSizeList } from 'react-window';
+import { ThemeContext } from 'styled-components';
+
+import { useActiveWeb3Context } from '../../hooks';
+import { useAllTokens, useToken } from '../../hooks/Tokens';
+import { AppState } from '../../state';
+import { useSelectedListInfo } from '../../state/lists/hooks';
+import { isAddress } from '../../utils';
+import Card from '../Card';
+import Column from '../Column';
+import ListLogo from '../ListLogo';
+import QuestionHelper from '../QuestionHelper';
+import Row, { RowBetween } from '../Row';
+import { LinkStyledButton } from '../Shared';
+import CommonBases from './CommonBases';
+import CurrencyList from './CurrencyList';
+import { filterTokens } from './filtering';
+import SortButton from './SortButton';
+import { useTokenComparator } from './sorting';
+import { PaddedColumn, SearchInput, Separator } from './styleds';
 
 interface CurrencySearchProps {
   isOpen: boolean
@@ -33,6 +34,7 @@ interface CurrencySearchProps {
   otherSelectedCurrency?: Currency | null
   showCommonBases?: boolean
   onChangeList: () => void
+  useCaver: boolean
 }
 
 export function CurrencySearch({
@@ -43,26 +45,27 @@ export function CurrencySearch({
   onDismiss,
   isOpen,
   onChangeList,
+  useCaver,
 }: CurrencySearchProps) {
   const { t } = useTranslation()
-  const { chainId } = useActiveWeb3React()
+  const { chainId } = useActiveWeb3Context(useCaver);
   const theme = useContext(ThemeContext)
 
   const fixedList = useRef<FixedSizeList>()
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [invertSearchOrder, setInvertSearchOrder] = useState<boolean>(false)
-  const allTokens = useAllTokens()
+  const allTokens = useAllTokens(useCaver);
 
   // if they input an address, use it
   const isAddressSearch = isAddress(searchQuery)
-  const searchToken = useToken(searchQuery)
+  const searchToken = useToken(useCaver, searchQuery);
 
   const showKLAY: boolean = useMemo(() => {
     const s = searchQuery.toLowerCase().trim()
     return s === '' || s === 'k' || s === 'kl' || s === 'kla' || s === 'klay'
   }, [searchQuery])
 
-  const tokenComparator = useTokenComparator(invertSearchOrder)
+  const tokenComparator = useTokenComparator(useCaver, invertSearchOrder);
 
   const audioPlay = useSelector<AppState, AppState['user']['audioPlay']>((state) => state.user.audioPlay)
 
@@ -162,7 +165,7 @@ export function CurrencySearch({
           onKeyDown={handleEnter}
         />
         {showCommonBases && (
-          <CommonBases chainId={chainId} onSelect={handleCurrencySelect} selectedCurrency={selectedCurrency} />
+          <CommonBases chainId={chainId} onSelect={handleCurrencySelect} selectedCurrency={selectedCurrency} useCaver={useCaver} />
         )}
         <RowBetween>
           <Text fontSize="14px">{TranslateString(126, 'Token name')}</Text>
@@ -183,6 +186,7 @@ export function CurrencySearch({
               otherCurrency={otherSelectedCurrency}
               selectedCurrency={selectedCurrency}
               fixedListRef={fixedList}
+              useCaver={useCaver}
             />
           )}
         </AutoSizer>
@@ -200,6 +204,7 @@ export function CurrencySearch({
                       style={{ marginRight: 12 }}
                       logoURI={selectedListInfo.current.logoURI}
                       alt={`${selectedListInfo.current.name} list logo`}
+                      useCaver={useCaver}
                     />
                   ) : null}
                   <Text id="currency-search-selected-list-name">{selectedListInfo.current.name}</Text>

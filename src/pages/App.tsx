@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { Credentials, StringTranslations } from '@crowdin/crowdin-api-client'
 import { LangType } from '@pancakeswap-libs/uikit'
 import Popups from '../components/Popups'
-import Web3ReactManager from '../components/Web3ReactManager'
+import Web3ReactManager, { CaverReactManager } from '../components/Web3ReactManager'
 import { RedirectDuplicateTokenIds, RedirectOldAddLiquidityPathStructure } from './AddLiquidity/redirects'
 import { RedirectOldRemoveLiquidityPathStructure } from './RemoveLiquidity/redirects'
 import AddLiquidity from './AddLiquidity'
@@ -126,6 +126,8 @@ export default function App() {
 
   useGetDocumentTitlePrice()
 
+  const useCaver = true;
+
   return (
     <Suspense fallback={null}>
       <HashRouter>
@@ -134,24 +136,26 @@ export default function App() {
             value={{ selectedLanguage, setSelectedLanguage: handleLanguageSelect, translatedLanguage, setTranslatedLanguage }}
           >
             <TranslationsContext.Provider value={{ translations, setTranslations }}>
-              <Menu>
+              <Menu useCaver={useCaver}>
                 <BodyWrapper>
-                  <Popups />
+                  <Popups useCaver={useCaver} />
                   <Web3ReactManager>
-                    <Switch>
-                      <Route exact strict path="/swap" component={Swap} />
-                      <Route exact strict path="/find" component={PoolFinder} />
-                      <Route exact strict path="/pool" component={Pool} />
-                      <Route exact path="/add" component={AddLiquidity} />
-                      <Route exact strict path="/remove/:currencyIdA/:currencyIdB" component={RemoveLiquidity} />
+                    <CaverReactManager>
+                      <Switch>
+                        <Route exact strict path="/swap" component={Swap} />
+                        <Route exact strict path="/find" component={PoolFinder} />
+                        <Route exact strict path="/pool" component={Pool} />
+                        <Route exact path="/add" component={AddLiquidity} />
+                        <Route exact strict path="/remove/:currencyIdA/:currencyIdB" component={RemoveLiquidity} />
 
-                      {/* Redirection: These old routes are still used in the code base */}
-                      <Route exact path="/add/:currencyIdA" component={RedirectOldAddLiquidityPathStructure} />
-                      <Route exact path="/add/:currencyIdA/:currencyIdB" component={RedirectDuplicateTokenIds} />
-                      <Route exact strict path="/remove/:tokens" component={RedirectOldRemoveLiquidityPathStructure} />
+                        {/* Redirection: These old routes are still used in the code base */}
+                        <Route exact path="/add/:currencyIdA" component={RedirectOldAddLiquidityPathStructure} />
+                        <Route exact path="/add/:currencyIdA/:currencyIdB" component={RedirectDuplicateTokenIds} />
+                        <Route exact strict path="/remove/:tokens" component={RedirectOldRemoveLiquidityPathStructure} />
 
-                      <Route component={RedirectPathToSwapOnly} />
-                    </Switch>
+                        <Route component={RedirectPathToSwapOnly} />
+                      </Switch>
+                    </CaverReactManager>
                   </Web3ReactManager>
                   <Marginer />
                 </BodyWrapper>

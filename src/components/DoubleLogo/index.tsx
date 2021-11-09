@@ -1,4 +1,5 @@
 import { Currency } from '@pancakeswap-libs/sdk'
+import { useCaverJsReact } from '@sixnetwork/caverjs-react-core'
 import React from 'react'
 import styled from 'styled-components'
 import CurrencyLogo from '../CurrencyLogo'
@@ -15,6 +16,7 @@ interface DoubleCurrencyLogoProps {
   size?: number
   currency0?: Currency
   currency1?: Currency
+  useCaver: boolean
 }
 
 const HigherLogo = styled(CurrencyLogo)`
@@ -29,12 +31,13 @@ export default function DoubleCurrencyLogo({
   currency0,
   currency1,
   size = 16,
-  margin = false
+  margin = false,
+  useCaver,
 }: DoubleCurrencyLogoProps) {
   return (
     <Wrapper sizeraw={size} margin={margin}>
-      {currency0 && <HigherLogo currency={currency0} size={`${size.toString()  }px`} />}
-      {currency1 && <CoveredLogo currency={currency1} size={`${size.toString()  }px`} sizeraw={size} />}
+      {currency0 && <HigherLogo currency={currency0} size={`${size.toString()  }px`} useCaver={useCaver} />}
+      {currency1 && <CoveredLogo currency={currency1} size={`${size.toString()  }px`} sizeraw={size} useCaver={useCaver} />}
     </Wrapper>
   )
 }

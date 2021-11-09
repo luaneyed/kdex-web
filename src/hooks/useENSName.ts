@@ -11,7 +11,7 @@ import useDebounce from './useDebounce';
  * Does a reverse lookup for an address to find its ENS name.
  * Note this is not the same as looking up an ENS name to find an address.
  */
-export default function useENSName(address?: string): { ENSName: string | null; loading: boolean } {
+export default function useENSName(useCaver: boolean, address?: string): { ENSName: string | null; loading: boolean } {
   const debouncedAddress = useDebounce(address, 200)
   const ensNodeArgument = useMemo(() => {
     if (!debouncedAddress || !isAddress(debouncedAddress)) return [undefined]
@@ -21,16 +21,16 @@ export default function useENSName(address?: string): { ENSName: string | null; 
       return [undefined]
     }
   }, [debouncedAddress])
-  const useCaver = true;
+  
   const registrarContract = useENSRegistrarContract(useCaver, false);
-  const resolverAddress = useSingleCallResult(registrarContract, 'resolver', ensNodeArgument)
+  const resolverAddress = useSingleCallResult(useCaver, registrarContract, 'resolver', ensNodeArgument)
   const resolverAddressResult = resolverAddress.result?.[0]
   const resolverContract = useENSResolverContract(
     useCaver,
     resolverAddressResult && !isZero(resolverAddressResult) ? resolverAddressResult : undefined,
     false
   )
-  const name = useSingleCallResult(resolverContract, 'name', ensNodeArgument)
+  const name = useSingleCallResult(useCaver, resolverContract, 'name', ensNodeArgument)
 
   const changed = debouncedAddress !== address
   return {

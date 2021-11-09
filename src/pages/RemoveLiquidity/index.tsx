@@ -1,7 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { splitSignature } from '@ethersproject/bytes';
-import { Contract } from '@ethersproject/contracts';
-import { TransactionResponse } from '@ethersproject/providers';
 import { Currency, currencyEquals, KLAY, Percent, WKLAY } from '@pancakeswap-libs/sdk';
 import { Button, Flex, Text } from '@pancakeswap-libs/uikit';
 import ConnectWalletButton from 'components/ConnectWalletButton';
@@ -10,6 +8,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { ArrowDown, Plus } from 'react-feather';
 import { RouteComponentProps } from 'react-router';
 import styled, { ThemeContext } from 'styled-components';
+import { CommonContract } from 'utils/contract';
 
 import { AutoColumn, ColumnCenter } from '../../components/Column';
 import CurrencyInputPanel from '../../components/CurrencyInputPanel';
@@ -23,15 +22,15 @@ import Slider from '../../components/Slider';
 import { Dots } from '../../components/swap/styleds';
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal';
 import { ROUTER_ADDRESS } from '../../constants';
-import { useActiveWeb3React } from '../../hooks';
+import { useActiveWeb3Context } from '../../hooks';
 import { useCurrency } from '../../hooks/Tokens';
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback';
-import { usePairContract } from '../../hooks/useContract';
+import { usePairContract, useRouterContract } from '../../hooks/useContract';
 import { Field } from '../../state/burn/actions';
 import { useBurnActionHandlers, useBurnState, useDerivedBurnInfo } from '../../state/burn/hooks';
 import { useTransactionAdder } from '../../state/transactions/hooks';
 import { useUserDeadline, useUserSlippageTolerance } from '../../state/user/hooks';
-import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from '../../utils';
+import { calculateGasMargin, calculateSlippageAmount } from '../../utils';
 import { currencyId } from '../../utils/currencyId';
 import useDebouncedChangeHandler from '../../utils/useDebouncedChangeHandler';
 import { wrappedCurrency } from '../../utils/wrappedCurrency';
@@ -55,20 +54,21 @@ export default function RemoveLiquidity({
     params: { currencyIdA, currencyIdB },
   },
 }: RouteComponentProps<{ currencyIdA: string; currencyIdB: string }>) {
-  const [currencyA, currencyB] = [useCurrency(currencyIdA) ?? undefined, useCurrency(currencyIdB) ?? undefined]
-  const { account, chainId, library } = useActiveWeb3React()
+  const useCaver = true;
+  const [currencyA, currencyB] = [useCurrency(useCaver, currencyIdA) ?? undefined, useCurrency(useCaver, currencyIdB) ?? undefined]
+  const { account, chainId, library } = useActiveWeb3Context(useCaver);
   const TranslateString = useI18n()
   const [tokenA, tokenB] = useMemo(() => [wrappedCurrency(currencyA, chainId), wrappedCurrency(currencyB, chainId)], [
     currencyA,
     currencyB,
     chainId,
   ])
-
+  
   const theme = useContext(ThemeContext)
 
   // burn state
   const { independentField, typedValue } = useBurnState()
-  const { pair, parsedAmounts, error } = useDerivedBurnInfo(currencyA ?? undefined, currencyB ?? undefined)
+  const { pair, parsedAmounts, error } = useDerivedBurnInfo(useCaver, currencyA ?? undefined, currencyB ?? undefined);
   const { onUserInput: _onUserInput } = useBurnActionHandlers()
   const isValid = !error
 
@@ -99,17 +99,17 @@ export default function RemoveLiquidity({
   const atMaxAmount = parsedAmounts[Field.LIQUIDITY_PERCENT]?.equalTo(new Percent('1'))
 
   // pair contract
-  const pairContract: Contract | null = usePairContract(pair?.liquidityToken?.address)
+  const pairContract: CommonContract | null = usePairContract(useCaver, pair?.liquidityToken?.address)
 
   // allowance handling
   const [signatureData, setSignatureData] = useState<{ v: number; r: string; s: string; deadline: number } | null>(null)
-  const [approval, approveCallback] = useApproveCallback(parsedAmounts[Field.LIQUIDITY], ROUTER_ADDRESS)
+  const [approval, approveCallback] = useApproveCallback(useCaver, parsedAmounts[Field.LIQUIDITY], ROUTER_ADDRESS)
   async function onAttemptToApprove() {
     if (!pairContract || !pair || !library) throw new Error('missing dependencies')
     const liquidityAmount = parsedAmounts[Field.LIQUIDITY]
     if (!liquidityAmount) throw new Error('missing liquidity amount')
     // try to gather a signature for permission
-    const nonce = await pairContract.nonces(account)
+    const nonce = await pairContract.methods.nonces(account).call({});
 
     const deadlineForSignature: number = Math.ceil(Date.now() / 1000) + deadline
 
@@ -185,15 +185,16 @@ export default function RemoveLiquidity({
   const onCurrencyBInput = useCallback((val: string): void => onUserInput(Field.CURRENCY_B, val), [onUserInput])
 
   // tx sending
-  const addTransaction = useTransactionAdder()
+  const addTransaction = useTransactionAdder(useCaver);
+
+  const router = useRouterContract(useCaver);
+
   async function onRemove() {
-    if (!chainId || !library || !account) throw new Error('missing dependencies')
+    if (!chainId || !router || !account) throw new Error('missing dependencies')
     const { [Field.CURRENCY_A]: currencyAmountA, [Field.CURRENCY_B]: currencyAmountB } = parsedAmounts
     if (!currencyAmountA || !currencyAmountB) {
       throw new Error('missing currency amounts')
     }
-    const useCaver = true;
-    const router = getRouterContract(useCaver, chainId, library, account);
 
     const amountsMin = {
       [Field.CURRENCY_A]: calculateSlippageAmount(currencyAmountA, allowedSlippage)[0],
@@ -330,7 +331,7 @@ export default function RemoveLiquidity({
         <RowBetween align="flex-end">
           <Text fontSize="24px">{parsedAmounts[Field.CURRENCY_A]?.toSignificant(6)}</Text>
           <RowFixed gap="4px">
-            <CurrencyLogo currency={currencyA} size="24px" />
+            <CurrencyLogo currency={currencyA} size="24px" useCaver={useCaver} />
             <Text fontSize="24px" style={{ marginLeft: '10px' }}>
               {currencyA?.symbol}
             </Text>
@@ -342,7 +343,7 @@ export default function RemoveLiquidity({
         <RowBetween align="flex-end">
           <Text fontSize="24px">{parsedAmounts[Field.CURRENCY_B]?.toSignificant(6)}</Text>
           <RowFixed gap="4px">
-            <CurrencyLogo currency={currencyB} size="24px" />
+            <CurrencyLogo currency={currencyB} size="24px" useCaver={useCaver} />
             <Text fontSize="24px" style={{ marginLeft: '10px' }}>
               {currencyB?.symbol}
             </Text>
@@ -364,7 +365,7 @@ export default function RemoveLiquidity({
         <RowBetween>
           <Text color="textSubtle">{`LP ${currencyA?.symbol}/${currencyB?.symbol}`} Burned</Text>
           <RowFixed>
-            <DoubleCurrencyLogo currency0={currencyA} currency1={currencyB} margin />
+            <DoubleCurrencyLogo currency0={currencyA} currency1={currencyB} margin useCaver={useCaver} />
             <Text>{parsedAmounts[Field.LIQUIDITY]?.toSignificant(6)}</Text>
           </RowFixed>
         </RowBetween>
@@ -464,6 +465,7 @@ export default function RemoveLiquidity({
               />
             )}
             pendingText={pendingText}
+            useCaver={useCaver}
           />
           <AutoColumn gap="md">
             <Body>
@@ -533,7 +535,7 @@ export default function RemoveLiquidity({
                       <RowBetween>
                         <Text fontSize="24px">{formattedAmounts[Field.CURRENCY_A] || '-'}</Text>
                         <RowFixed>
-                          <CurrencyLogo currency={currencyA} style={{ marginRight: '12px' }} />
+                          <CurrencyLogo currency={currencyA} style={{ marginRight: '12px' }} useCaver={useCaver} />
                           <Text fontSize="24px" id="remove-liquidity-tokena-symbol">
                             {currencyA?.symbol}
                           </Text>
@@ -542,7 +544,7 @@ export default function RemoveLiquidity({
                       <RowBetween>
                         <Text fontSize="24px">{formattedAmounts[Field.CURRENCY_B] || '-'}</Text>
                         <RowFixed>
-                          <CurrencyLogo currency={currencyB} style={{ marginRight: '12px' }} />
+                          <CurrencyLogo currency={currencyB} style={{ marginRight: '12px' }} useCaver={useCaver} />
                           <Text fontSize="24px" id="remove-liquidity-tokenb-symbol">
                             {currencyB?.symbol}
                           </Text>
@@ -588,6 +590,7 @@ export default function RemoveLiquidity({
                     currency={pair?.liquidityToken}
                     pair={pair}
                     id="liquidity-amount"
+                    useCaver={useCaver}
                   />
                   <ColumnCenter>
                     <ArrowDown size="16" color={theme.colors.textSubtle} />
@@ -602,6 +605,7 @@ export default function RemoveLiquidity({
                     label="Output"
                     onCurrencySelect={handleSelectCurrencyA}
                     id="remove-liquidity-tokena"
+                    useCaver={useCaver}
                   />
                   <ColumnCenter>
                     <Plus size="16" color={theme.colors.textSubtle} />
@@ -616,6 +620,7 @@ export default function RemoveLiquidity({
                     label="Output"
                     onCurrencySelect={handleSelectCurrencyB}
                     id="remove-liquidity-tokenb"
+                    useCaver={useCaver}
                   />
                 </>
               )}
@@ -677,7 +682,7 @@ export default function RemoveLiquidity({
 
       {pair ? (
         <AutoColumn style={{ minWidth: '20rem', marginTop: '1rem' }}>
-          <MinimalPositionCard showUnwrapped={oneCurrencyIsWKLAY} pair={pair} />
+          <MinimalPositionCard showUnwrapped={oneCurrencyIsWKLAY} pair={pair} useCaver={useCaver} />
         </AutoColumn>
       ) : null}
     </>

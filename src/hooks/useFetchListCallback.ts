@@ -1,34 +1,32 @@
-import { nanoid } from '@reduxjs/toolkit'
-import { ChainId } from '@pancakeswap-libs/sdk'
-import { TokenList } from '@uniswap/token-lists'
-import { useCallback } from 'react'
-import { useDispatch } from 'react-redux'
-import { getNetworkLibrary, NETWORK_CHAIN_ID } from '../connectors'
-import { AppDispatch } from '../state'
-import { fetchTokenList } from '../state/lists/actions'
-import getTokenList from '../utils/getTokenList'
-import resolveENSContentHash from '../utils/resolveENSContentHash'
-import { useActiveWeb3React } from './index'
+import { nanoid } from '@reduxjs/toolkit';
+import { TokenList } from '@uniswap/token-lists';
+import { useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 
-export function useFetchListCallback(): (listUrl: string) => Promise<TokenList> {
-  const { chainId, library } = useActiveWeb3React()
+import { AppDispatch } from '../state';
+import { fetchTokenList } from '../state/lists/actions';
+import getTokenList from '../utils/getTokenList';
+import resolveENSContentHashEthers, { useENSResolver } from '../utils/resolveENSContentHash';
+
+export function useFetchListCallback(useCaver: boolean): (listUrl: string) => Promise<TokenList> {
   const dispatch = useDispatch<AppDispatch>()
+  const ensResolver = useENSResolver(useCaver);
 
-  const ensResolver = useCallback(
-    (ensName: string) => {
-      if (!library || chainId !== ChainId.CYPRESS) {
-        if (NETWORK_CHAIN_ID === ChainId.CYPRESS) {
-          const networkLibrary = getNetworkLibrary()
-          if (networkLibrary) {
-            return resolveENSContentHash(ensName, networkLibrary)
-          }
-        }
-        throw new Error('Could not construct mainnet ENS resolver')
-      }
-      return resolveENSContentHash(ensName, library)
-    },
-    [chainId, library]
-  )
+  // const ensResolver = useCallback(
+  //   (ensName: string) => {
+  //     if (!library || chainId !== ChainId.CYPRESS) {
+  //       if (NETWORK_CHAIN_ID === ChainId.CYPRESS) {
+  //         const networkLibrary = getNetworkLibrary()
+  //         if (networkLibrary) {
+  //           return resolveENSContentHashEthers(ensName, networkLibrary)
+  //         }
+  //       }
+  //       throw new Error('Could not construct mainnet ENS resolver')
+  //     }
+  //     return resolveENSContentHashEthers(ensName, library)
+  //   },
+  //   [chainId, library]
+  // )
 
   return useCallback(
     async (listUrl: string) => {

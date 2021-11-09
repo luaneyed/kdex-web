@@ -43,7 +43,8 @@ export class CaverCommonContract implements CommonContract {
         return ({
           //  todo : remove default account
           estimateGas: ({ from = this.account, gasLimit, value }: EstimateGasOptions) => withArgs.estimateGas({ from, gas: gasLimit, value }),
-          call: ({ from = this.account, gasPrice, gasLimit, value }: CallOptions) => withArgs.call({ from, gasPrice, gas: gasLimit, value }),
+          //  klaytn은 call에 value 넘기면 에러 나서 못 넘김
+          call: ({ from = this.account, gasPrice, gasLimit }: CallOptions) => withArgs.call({ from, gasPrice, gas: gasLimit }),
           send: async ({ from = this.account, gasPrice, gasLimit, value }: SendOptions): Promise<CommonTransactionReceipt> => {
             const r: TransactionReceipt = await withArgs.send({ from, gasPrice, gas: gasLimit, value });
             return {
