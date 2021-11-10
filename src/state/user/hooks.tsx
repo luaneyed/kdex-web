@@ -248,8 +248,6 @@ export function useTrackedTokenPairs(): [Token, Token][] {
     userPairs,
   ])
 
-  console.log('combinedList', combinedList);
-
   return useMemo(() => {
     // dedupes pairs of tokens in the combined list
     const keyed = combinedList.reduce<{ [key: string]: [Token, Token] }>((memo, [tokenA, tokenB]) => {

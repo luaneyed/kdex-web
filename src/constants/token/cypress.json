@@ -10,5 +10,37 @@
   "logoURI": "https://exchange.pancakeswap.finance/images/pancakeswap.png",
   "keywords": ["pancake", "default"],
   "tokens": [
+    {
+      "name": "KlaySwap Protocal",
+      "symbol": "KSP",
+      "address": "0xC6a2Ad8cC6e4A7E08FC37cC5954be07d499E7654",
+      "chainId": 8217,
+      "decimals": 18,
+      "logoURI": "https://exchange.pancakeswap.finance/images/coins/0xC0eFf7749b125444953ef89682201Fb8c6A917CD.png"
+    },
+    {
+      "name": "Orbit Bridge Klaytn USD Tether",
+      "symbol": "KUSDT",
+      "address": "0xceE8FAF64bB97a73bb51E115Aa89C17FfA8dD167",
+      "chainId": 8217,
+      "decimals": 6,
+      "logoURI": "https://exchange.pancakeswap.finance/images/coins/0xB67754f5b4C704A24d2db68e661b2875a4dDD197.png"
+    },
+    {
+      "name": "Orbit Bridge Klaytn USD Coin",
+      "symbol": "KUSDC",
+      "address": "0x754288077D0fF82AF7a5317C7CB8c444D421d103",
+      "chainId": 8217,
+      "decimals": 6,
+      "logoURI": "https://exchange.pancakeswap.finance/images/coins/0x1613957159e9b0ac6c80e824f7eea748a32a0ae2.png"
+    },
+    {
+      "name": "Klaytn Dai",
+      "symbol": "KDAI",
+      "address": "0x5c74070FDeA071359b86082bd9f9b3dEaafbe32b",
+      "chainId": 8217,
+      "decimals": 18,
+      "logoURI": "https://exchange.pancakeswap.finance/images/coins/0x4cfbbdfbd5bf0814472ff35c72717bd095ada055.png"
+    }
   ]
 }

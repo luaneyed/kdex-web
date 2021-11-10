@@ -3,48 +3,27 @@ import { ChainId, JSBI, Percent, Token, WKLAY } from '@pancakeswap-libs/sdk'
 export const isBaobab = process.env.REACT_APP_CHAIN_ID === '1001';
 export const ROUTER_ADDRESS = isBaobab ? '0xecDC29C1A9C286C771686301554C219D4dDaA93e' : '0x24694eAe27074E5b5325E0b7Bb4d4a64BC479ae0';
 
+console.log('isBaobab!', isBaobab);
+
 // a list of tokens by chain
 type ChainTokenList = {
   readonly [chainId in ChainId]: Token[]
 }
 
-console.log('isBaobab!', isBaobab);
-export const DAMON = isBaobab
-  ? new Token(ChainId.BAOBAB, '0x66F80d658792765aE76c64c1110D003930797062', 18, 'DAMON', 'Damon')
-  : new Token(ChainId.CYPRESS, '0x66F80d658792765aE76c64c1110D003930797062', 18, 'DAMON', 'Damon');
 
-export const KAY = isBaobab
-  ? new Token(ChainId.BAOBAB, '0x94e5b0A5fe58595A14d123A27eCc1feAB4D3F5e0', 16, 'KAY', 'Kay')
-  : new Token(ChainId.CYPRESS, '0x94e5b0A5fe58595A14d123A27eCc1feAB4D3F5e0', 16, 'KAY', 'Kay');
+// baobab tokens
 
-export const ROSS = isBaobab
-  ? new Token(ChainId.BAOBAB, '0x9f25b88E25F74B711D38C228fabbB5178b5F6864', 8, 'ROSS', 'Ross')
-  : new Token(ChainId.CYPRESS, '0x9f25b88E25F74B711D38C228fabbB5178b5F6864', 8, 'ROSS', 'Ross');
+export const LUAN = new Token(ChainId.BAOBAB, '0x99ac0F642821C33eDcBeaf079Ad691b72b495de0', 6, 'LUAN', 'Luan');
+export const DAMON = new Token(ChainId.BAOBAB, '0x66F80d658792765aE76c64c1110D003930797062', 18, 'DAMON', 'Damon');
+export const KAY = new Token(ChainId.BAOBAB, '0x94e5b0A5fe58595A14d123A27eCc1feAB4D3F5e0', 16, 'KAY', 'Kay');
+export const ROSS = new Token(ChainId.BAOBAB, '0x9f25b88E25F74B711D38C228fabbB5178b5F6864', 8, 'ROSS', 'Ross');
 
-export const LUAN = isBaobab
-  ? new Token(ChainId.BAOBAB, '0x99ac0F642821C33eDcBeaf079Ad691b72b495de0', 6, 'LUAN', 'Luan')
-  : new Token(ChainId.CYPRESS, '0x99ac0F642821C33eDcBeaf079Ad691b72b495de0', 6, 'LUAN', 'Luan');
+// cypress tokens
 
-// export const CAKE = new Token(ChainId.CYPRESS, '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', 18, 'CAKE', 'PancakeSwap Token')
-// export const WBNB = new Token(ChainId.CYPRESS, '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', 18, 'WBNB', 'Wrapped BNB')
-// export const DAI = new Token(ChainId.CYPRESS, '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3', 18, 'DAI', 'Dai Stablecoin')
-// export const BUSD = new Token(ChainId.CYPRESS, '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56', 18, 'BUSD', 'Binance USD')
-// export const BTCB = new Token(ChainId.CYPRESS, '0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c', 18, 'BTCB', 'Binance BTC')
-// export const USDT = new Token(ChainId.CYPRESS, '0x55d398326f99059fF775485246999027B3197955', 18, 'USDT', 'Tether USD')
-// export const UST = new Token(
-//   ChainId.CYPRESS,
-//   '0x23396cF899Ca06c4472205fC903bDB4de249D6fC',
-//   18,
-//   'UST',
-//   'Wrapped UST Token'
-// )
-// export const ETH = new Token(
-//   ChainId.CYPRESS,
-//   '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
-//   18,
-//   'ETH',
-//   'Binance-Peg Ethereum Token'
-// )
+export const KSP = new Token(ChainId.CYPRESS, '0xC6a2Ad8cC6e4A7E08FC37cC5954be07d499E7654', 18, 'KSP', 'KlaySwap Protocal');
+export const KUSDT = new Token(ChainId.CYPRESS, '0xceE8FAF64bB97a73bb51E115Aa89C17FfA8dD167', 6, 'KUSDT', 'Orbit Bridge Klaytn USD Tether');
+export const KUSDC = new Token(ChainId.CYPRESS, '0x754288077D0fF82AF7a5317C7CB8c444D421d103', 6, 'KUSDC', 'Orbit Bridge Klaytn USD Coin');
+export const KDAI = new Token(ChainId.CYPRESS, '0x5c74070FDeA071359b86082bd9f9b3dEaafbe32b', 18, 'KDAI', 'Klaytn Dai');
 
 const WKLAY_ONLY: ChainTokenList = {
   [ChainId.CYPRESS]: [WKLAY[ChainId.CYPRESS]],
@@ -54,8 +33,8 @@ const WKLAY_ONLY: ChainTokenList = {
 // used to construct intermediary pairs for trading
 export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
   ...WKLAY_ONLY,
-  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS]],
-  [ChainId.BAOBAB]: [...WKLAY_ONLY[ChainId.BAOBAB], DAMON, KAY, ROSS, LUAN],
+  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS], KSP, KUSDT, KUSDC, KDAI],
+  [ChainId.BAOBAB]: [...WKLAY_ONLY[ChainId.BAOBAB], LUAN, DAMON, KAY, ROSS],
 }
 
 /**
@@ -69,24 +48,27 @@ export const CUSTOM_BASES: { [chainId in ChainId]?: { [tokenAddress: string]: To
 // used for display in the default list when adding liquidity
 export const SUGGESTED_BASES: ChainTokenList = {
   ...WKLAY_ONLY,
-  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS]],
-  [ChainId.BAOBAB]: [...WKLAY_ONLY[ChainId.BAOBAB], DAMON, LUAN],
+  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS], KSP, KUSDT],
+  [ChainId.BAOBAB]: [...WKLAY_ONLY[ChainId.BAOBAB], LUAN, DAMON],
 }
 
 // used to construct the list of all pairs we consider by default in the frontend
 export const BASES_TO_TRACK_LIQUIDITY_FOR: ChainTokenList = {
   ...WKLAY_ONLY,
-  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS]],
-  [ChainId.BAOBAB]: [...WKLAY_ONLY[ChainId.BAOBAB], DAMON, KAY, ROSS, LUAN],
+  [ChainId.CYPRESS]: [...WKLAY_ONLY[ChainId.CYPRESS], KSP, KUSDT, KDAI],
+  [ChainId.BAOBAB]: [...WKLAY_ONLY[ChainId.BAOBAB], LUAN, DAMON, KAY],
 }
 
 export const PINNED_PAIRS: { readonly [chainId in ChainId]?: [Token, Token][] } = {
   [ChainId.CYPRESS]: [
+    [KSP, KUSDT],
+    [KSP, KUSDC],
+    [KSP, KDAI],
   ],
   [ChainId.BAOBAB]: [
-    [DAMON, LUAN],
-    [KAY, LUAN],
-    [ROSS, LUAN],
+    [LUAN, DAMON],
+    [LUAN, KAY],
+    [LUAN, ROSS],
   ],
 }
 
