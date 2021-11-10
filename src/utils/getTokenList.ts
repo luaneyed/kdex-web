@@ -1,14 +1,16 @@
-import { TokenList } from '@uniswap/token-lists'
-import schema from '@uniswap/token-lists/src/tokenlist.schema.json'
-import Ajv from 'ajv'
-import contenthashToUri from './contenthashToUri'
-import { parseENSAddress } from './parseENSAddress'
-import uriToHttp from './uriToHttp'
+import { TokenList } from '@uniswap/token-lists';
+import schema from '@uniswap/token-lists/src/tokenlist.schema.json';
+import Ajv from 'ajv';
+
+import { DEFAULT_TOKEN_LIST_URL } from '../constants/lists';
+import baobabTokenJson from '../constants/token/baobab.json';
+import cypressTokenJson from '../constants/token/cypress.json';
+import contenthashToUri from './contenthashToUri';
+import { parseENSAddress } from './parseENSAddress';
+import uriToHttp from './uriToHttp';
+import { isBaobab } from '../constants';
 
 // bakeryswap defaultTokenJson
-import { DEFAULT_TOKEN_LIST_URL } from '../constants/lists'
-import defaultTokenJson from '../constants/token/pancakeswap.json'
-
 const tokenListValidator = new Ajv({ allErrors: true }).compile(schema)
 
 /**
@@ -21,7 +23,7 @@ export default async function getTokenList(
   resolveENSContentHash: (ensName: string) => Promise<string>
 ): Promise<TokenList> {
   if (listUrl === DEFAULT_TOKEN_LIST_URL) {
-    return defaultTokenJson
+    return isBaobab ? baobabTokenJson : cypressTokenJson;
   }
   const parsedENS = parseENSAddress(listUrl)
 

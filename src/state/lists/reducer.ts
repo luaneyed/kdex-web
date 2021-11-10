@@ -1,12 +1,15 @@
-import { createReducer } from '@reduxjs/toolkit'
-import { getVersionUpgrade, VersionUpgrade } from '@uniswap/token-lists'
-// eslint-disable-next-line import/no-unresolved
-import { TokenList } from '@uniswap/token-lists/dist/types'
-import { DEFAULT_LIST_OF_LISTS, DEFAULT_TOKEN_LIST_URL } from '../../constants/lists'
-import { updateVersion } from '../global/actions'
-import { acceptListUpdate, addList, fetchTokenList, removeList, selectList } from './actions'
-import DEFAULT_LIST from '../../constants/token/pancakeswap.json'
+import { createReducer } from '@reduxjs/toolkit';
+import { getVersionUpgrade, VersionUpgrade } from '@uniswap/token-lists';
+import { TokenList } from '@uniswap/token-lists/dist/types';
 
+import { isBaobab } from '../../constants';
+import { DEFAULT_LIST_OF_LISTS, DEFAULT_TOKEN_LIST_URL } from '../../constants/lists';
+import baobabTokenJson from '../../constants/token/baobab.json';
+import cypressTokenJson from '../../constants/token/cypress.json';
+import { updateVersion } from '../global/actions';
+import { acceptListUpdate, addList, fetchTokenList, removeList, selectList } from './actions';
+
+// eslint-disable-next-line import/no-unresolved
 export interface ListsState {
   readonly byUrl: {
     readonly [url: string]: {
@@ -39,7 +42,7 @@ const initialState: ListsState = {
     }, {}),
     [DEFAULT_TOKEN_LIST_URL]: {
       error: null,
-      current: DEFAULT_LIST,
+      current: isBaobab ? baobabTokenJson : cypressTokenJson,
       loadingRequestId: null,
       pendingUpdate: null,
     },

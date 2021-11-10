@@ -31,7 +31,7 @@ export const injected = new InjectedConnector({
   supportedChainIds: [8217, 1001],
 })
 
-export const kaikasConnector = new KaikasConnector({ supportedChainIds: [1001] });
+export const kaikasConnector = new KaikasConnector({ supportedChainIds: [8217, 1001] });
 // KlipConnector의 actiavte 구현이 엉망이라서 modal 기능 안 쓰고 직접 구현
 export const klipConnector = new KlipConnector({ supportedChainIds: [8217] });
 
