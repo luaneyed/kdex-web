@@ -1,25 +1,36 @@
-import { JsonRpcProvider } from '@ethersproject/providers';
+import { Networkish } from '@ethersproject/networks';
+import { Formatter, JsonRpcProvider } from '@ethersproject/providers';
+import { ConnectionInfo } from '@ethersproject/providers/node_modules/@ethersproject/web';
 import { AbstractConnector } from '@sixnetwork/caverjs-react-abstract-connector';
 import { AbstractConnectorArguments, ConnectorUpdate } from '@sixnetwork/caverjs-react-types';
-import Caver from 'caver-js';
+import { AbiItem } from 'caver-js/packages/caver-utils';
 
 import getRPCHelper from './getRPCHelper';
+import { KlipTransactionExecutor } from './klipContractExecutor';
 
-// import warning from 'tiny-warning'
-// const Caver = require("caver-js")
-export class NoKlaytnProviderError extends Error {
-  public constructor() {
-    super()
-    this.name = this.constructor.name
-    this.message = 'No Klaytn provider was found on window.klaytn.'
+class MyFormatter extends Formatter {
+  getDefaultFormats() {
+    const f = super.getDefaultFormats();
+    delete f.receipt.cumulativeGasUsed; //  Not supported by klaytn EN
+    delete f.receipt.type;  //  Different with ethereum
+    return f;
   }
 }
 
-export class UserRejectedRequestError extends Error {
-  public constructor() {
-    super()
-    this.name = this.constructor.name
-    this.message = 'The user rejected the request.'
+const formatter = new MyFormatter();
+
+
+export class KlipProvider extends JsonRpcProvider {
+  constructor(private readonly account: string, private readonly executor: KlipTransactionExecutor, url?: ConnectionInfo | string, network?: Networkish) {
+    super(url, network);
+  }
+
+  static getFormatter() {
+    return formatter;
+  }
+
+  sendWithKlip(abi: AbiItem, params: any[], to: string, value: string) {
+    return this.executor({ abi, params, to, value, from: this.account });
   }
 }
 
@@ -30,16 +41,22 @@ export class KlipConnector extends AbstractConnector {
 
   private account: string | null = null;
 
+  private executor: KlipTransactionExecutor | null = null;
+
   private providerCaver;
 
   public async activate(): Promise<ConnectorUpdate> { //  Unused
-    const provider = new JsonRpcProvider(await getRPCHelper(), { name: 'cypress', chainId: 8217 });
+    if (!this.account || !this.executor) {
+      throw new Error('KlipConnector is not prepared');
+    }
+    const provider = new KlipProvider(this.account, this.executor, await getRPCHelper(), { name: 'cypress', chainId: 8217 });
     this.providerCaver = provider;
     return { provider };
   }
 
-  public async setAccount(account: string) {
+  public async prepare(account: string, executor: KlipTransactionExecutor) {
     this.account = account;
+    this.executor = executor;
   }
 
   public async getProvider(): Promise<any> {

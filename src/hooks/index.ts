@@ -13,6 +13,7 @@ import { useWalletType, WalletType } from 'state/atoms';
 
 import { injected } from '../connectors';
 import { CaverNetworkContextName, Web3NetworkContextName } from '../constants';
+import { KlipProvider } from '../utils/klipConnector';
 
 // eslint-disable-next-line import/no-unresolved
 export function useActiveWeb3Context() {
@@ -45,9 +46,9 @@ export function useActiveWeb3React(): Web3ReactContextInterface<Web3Provider> & 
   return context.active ? context : contextNetwork
 }
 
-export function useActiveCaverReact(): CaverJsReactContextInterface<CaverProvider> & { chainId?: ChainId } {
-  const context = useCaverJsReact<CaverProvider>();
-  const contextNetwork = useCaverJsReact<CaverProvider>(CaverNetworkContextName);
+export function useActiveCaverReact(): CaverJsReactContextInterface<CaverProvider | KlipProvider> & { chainId?: ChainId } {
+  const context = useCaverJsReact<CaverProvider | KlipProvider>();
+  const contextNetwork = useCaverJsReact<CaverProvider | KlipProvider>(CaverNetworkContextName);
   
   return context.active ? context : contextNetwork;
 }

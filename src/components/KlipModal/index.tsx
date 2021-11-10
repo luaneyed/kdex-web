@@ -4,21 +4,21 @@ import QRCode from 'qrcode.react';
 import React, { useEffect, useState } from 'react';
 
 interface Props {
+  title: string;
   requestKey: string;
   expirationTime: number;
   onDismiss?: () => void;
 }
 
-export const KlipModal: React.FC<Props> = ({ requestKey, expirationTime, onDismiss = () => { console.log('klipModal dismiss!!') } }) => {
+export const KlipModal: React.FC<Props> = ({ title, requestKey, expirationTime, onDismiss = () => { console.log('klipModal dismiss!!') } }) => {
   const [leftMs, setLeftMs] = useState(expirationTime - Date.now());
   
   useEffect(() => {
-    console.log('ue!', new Date(expirationTime));
     const id = setInterval(() => setLeftMs(expirationTime - Date.now()), 1000);
     return () => clearInterval(id);
   }, [expirationTime]);
 
-  return <Modal title="Connect to Kakao Klip via QR Code" onDismiss={onDismiss}>
+  return <Modal title={title} onDismiss={onDismiss}>
     <Flex justifyContent="center">
       <QRCode value={`https://klipwallet.com/?target=/a2a?request_key=${requestKey}`} />
     </Flex>

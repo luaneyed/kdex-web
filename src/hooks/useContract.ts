@@ -6,7 +6,8 @@ import { abi as IUniswapV2PairABI } from '@uniswap/v2-core/build/IUniswapV2Pair.
 import Caver, { Contract as CaverContract } from 'caver-js';
 import { useCallback, useMemo } from 'react';
 import { getProviderOrSigner, isAddress } from 'utils';
-import { CaverCommonContract, CommonContract, EthersCommonContract } from 'utils/contract';
+import { CaverCommonContract, CommonContract, EthersCommonContract, KlipCommonContract } from 'utils/contract';
+import { KlipProvider } from 'utils/klipConnector';
 
 import { useActiveCaverReact, useActiveWeb3Context, useActiveWeb3React } from '.';
 import { ROUTER_ADDRESS } from '../constants';
@@ -48,48 +49,39 @@ export function getCaverContract(address: string, ABI: any): CaverContract {
 // returns null on errors
 export function useContractGetter() {
   const [walletType] = useWalletType();
-  const useCaver = walletType !== WalletType.MetaMask;
-  const { library, account: web3Account } = useActiveWeb3React();
-  const { account: caverAccount } = useActiveCaverReact();
+  const { library: web3Library, account: web3Account } = useActiveWeb3React();
+  const { library: caverLibrary, account: caverAccount } = useActiveCaverReact();
 
   return useCallback((address: string | undefined, ABI: any, withSignerIfPossible = true): CommonContract | null => {
+    const useCaver = walletType !== WalletType.MetaMask;
     const account = (useCaver ? web3Account : caverAccount) ?? undefined;
 
-    if (!address || !ABI || !library) return null
+    if (!address || !ABI || !web3Library || !caverLibrary) return null;
     try {
-      const ethersContract = getEthersContract(address, ABI, library, withSignerIfPossible && account ? account : undefined);
-      
-      return useCaver
-        ? new CaverCommonContract(getCaverContract(address, ABI), ethersContract.interface, account)
-        : new EthersCommonContract(ethersContract);
+      const ethersContract = getEthersContract(address, ABI, web3Library, withSignerIfPossible && account ? account : undefined);
+
+      if (!useCaver) {
+        return new EthersCommonContract(ethersContract);
+      }
+      if (walletType === WalletType.Klip) {
+        if (caverLibrary instanceof KlipProvider) {
+          return new KlipCommonContract(caverLibrary, getCaverContract(address, ABI), ethersContract.interface, account);
+        }
+        //  Can occur while updating
+        console.error('Wallet Type is Klip but caverLibrary is not KlipProvider');
+        return null;
+      }
+      return new CaverCommonContract(getCaverContract(address, ABI), ethersContract.interface, account);
     } catch (error) {
       console.error('Failed to get contract', error)
       return null
     }
-  }, [useCaver, library, web3Account, caverAccount])
+  }, [walletType, web3Library, caverLibrary, web3Account, caverAccount])
 }
 
 // returns null on errors
 export function useContract(address: string | undefined, ABI: any, withSignerIfPossible = true): CommonContract | null {
   return useContractGetter()(address, ABI, withSignerIfPossible);
-  // const { library, account: web3Account } = useActiveWeb3React();
-  // const { account: caverAccount } = useActiveCaverReact();
-
-  // return useMemo(() => {
-  //   const account = (useCaver ? web3Account : caverAccount) ?? undefined;
-
-  //   if (!address || !ABI || !library) return null
-  //   try {
-  //     const ethersContract = getEthersContract(address, ABI, library, withSignerIfPossible && account ? account : undefined);
-      
-  //     return useCaver
-  //       ? new CaverCommonContract(getCaverContract(address, ABI), ethersContract.interface, account)
-  //       : new EthersCommonContract(ethersContract);
-  //   } catch (error) {
-  //     console.error('Failed to get contract', error)
-  //     return null
-  //   }
-  // }, [useCaver, address, ABI, library, withSignerIfPossible, web3Account, caverAccount])
 }
 
 // account is optional

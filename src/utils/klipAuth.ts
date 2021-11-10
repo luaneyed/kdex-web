@@ -1,13 +1,15 @@
 import axios, { AxiosError } from 'axios';
 
+import { useKlipModal } from '../components/KlipModal/useKlipModal';
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 type AuthResponse = { status: 'prepared' | 'canceled' | 'error' } | { status: 'completed', address: string };
 
+let curRequester: KlipAuthRequest | undefined;
+
 class KlipAuthRequest {
   constructor(readonly requestKey: string, readonly expirationTime: number) {}
-  
-  // readonly authorizeLink = `https://klipwallet.com/?target=/a2a?request_key=${this.requestKey}`;
 
   async tryResult(): Promise<AuthResponse> {
     try {
@@ -25,7 +27,8 @@ class KlipAuthRequest {
   }
 
   async waitResult(interval = 700): Promise<string | null> {
-    while (true) {
+    curRequester = this;
+    while (curRequester === this) {
       const response = await this.tryResult();
       if (response.status === 'error') {
         return null;
@@ -35,10 +38,11 @@ class KlipAuthRequest {
       }
       await sleep(interval);
     }
+    return null;
   }
 }
 
-export const authenticateKlip = async (bappName: string) => {
+const authenticateKlip = async (bappName: string) => {
   const { data: { request_key, expiration_time } } = await axios.post(
     'https://a2a-api.klipwallet.com/v2/a2a/prepare',
     { bapp: { name: bappName }, type: 'auth' },
@@ -46,3 +50,8 @@ export const authenticateKlip = async (bappName: string) => {
 
   return new KlipAuthRequest(request_key, expiration_time * 1000);
 };
+
+export const useKlipAuthenticationModal = (bappName: string): () => ReturnType<KlipAuthRequest['waitResult']> => useKlipModal(
+  () => authenticateKlip(bappName),
+  'Connect to Kakao Klip',
+);

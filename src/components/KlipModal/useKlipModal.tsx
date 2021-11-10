@@ -3,13 +3,13 @@ import React, { ReactElement, useCallback, useEffect, useState } from 'react';
 
 import { KlipModal } from '.';
 
-interface KlipRequest {
+export interface KlipRequest<R> {
   readonly requestKey: string;
   readonly expirationTime: number;
-  waitResult(interval?: number): Promise<string | null>;
+  waitResult(interval?: number): Promise<R>;
 }
 
-export const useKlipModal = (prepare: () => Promise<KlipRequest>) => {
+export const useKlipModal = <R, T extends (...args: any[]) => Promise<KlipRequest<R>>>(prepare: T, title: string) => {
   const [requestKey, setRequestKey] = useState('');
   const [expirationTime, setExpirationTime] = useState(0);
   const [modal, setModal] = useState<ReactElement>();
@@ -18,9 +18,9 @@ export const useKlipModal = (prepare: () => Promise<KlipRequest>) => {
 
   useEffect(() => {
     if (!modal && requestKey && expirationTime) {
-      setModal(<KlipModal requestKey={requestKey} expirationTime={expirationTime} />);
+      setModal(<KlipModal title={title} requestKey={requestKey} expirationTime={expirationTime} />);
     }
-  }, [modal, requestKey, expirationTime]);
+  }, [title, modal, requestKey, expirationTime]);
 
   useEffect(() => {
     if (!isModalShowed && modal) {
@@ -29,12 +29,12 @@ export const useKlipModal = (prepare: () => Promise<KlipRequest>) => {
     }
   }, [isModalShowed, modal, showModal]);
 
-  return useCallback(async () => {
+  return useCallback(async (...args: Parameters<T>) => {
     setRequestKey('');
     setExpirationTime(0);
     setModal(undefined);
     setIsModalShowed(false);
-    const request = await prepare();
+    const request = await prepare(...args);
     setRequestKey(request.requestKey);
     setExpirationTime(request.expirationTime);  //  -> modal is showed here
     return request.waitResult().finally(closeModal);

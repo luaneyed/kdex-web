@@ -9,20 +9,22 @@ import {
   UserRejectedRequestError as UserRejectedRequestErrorWalletConnect,
   WalletConnectConnector,
 } from '@web3-react/walletconnect-connector';
-import { useKlipModal } from 'components/KlipModal/useKlipModal';
 import { connectorsByName, klipConnector } from 'connectors';
 import { NoKaikasProviderError } from 'connectors/KaikasConnector';
 import useToast from 'hooks/useToast';
 import { useCallback } from 'react';
 import { useWalletType, WalletType } from 'state/atoms';
-import { authenticateKlip } from 'utils/klipAuth';
+import { useKlipAuthenticationModal } from 'utils/klipAuth';
+
+import { useKlipContractExecutor } from '../utils/klipContractExecutor';
 
 const useAuth = () => {
   const [, setWalletType] = useWalletType();
   const web3Context = useWeb3React();
   const caverContext = useCaverJsReact();
-  const authKlip = useKlipModal(() => authenticateKlip('kdex'));
-  const { toastError } = useToast()
+  const authKlip = useKlipAuthenticationModal('kdex');
+  const klipTransactionExecutor = useKlipContractExecutor('kdex');
+  const { toastError } = useToast();
 
   const login = useCallback(async (connectorID: ConnectorNames) => {
     const connector = connectorsByName[connectorID]
@@ -30,7 +32,7 @@ const useAuth = () => {
       if (connectorID === ConnectorNames.Klip) {
         const account = await authKlip();
         if (account) {
-          klipConnector.setAccount(account);
+          klipConnector.prepare(account, klipTransactionExecutor);
         } else return;
       }
       

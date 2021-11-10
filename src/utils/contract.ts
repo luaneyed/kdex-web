@@ -1,8 +1,11 @@
 import { Contract } from '@ethersproject/contracts';
-import { Interface } from '@ethersproject/contracts/node_modules/@ethersproject/abi';
+import { Interface, ParamType } from '@ethersproject/contracts/node_modules/@ethersproject/abi';
 import { BigNumber } from '@ethersproject/contracts/node_modules/@ethersproject/bignumber';
 import { Contract as CaverContract } from 'caver-js';
 import { TransactionReceipt } from 'caver-js/packages/caver-rtm';
+import { AbiOutput, StateMutabilityType } from 'caver-js/packages/caver-utils';
+
+import { KlipProvider } from './klipConnector';
 
 export { CaverContract }
 
@@ -26,9 +29,8 @@ export class EthersCommonContract implements CommonContract {
   );
 }
 
-
 export class CaverCommonContract implements CommonContract {
-  constructor(private readonly origin: CaverContract, private readonly inter: Interface, private readonly account?: string) {}
+  constructor(protected readonly origin: CaverContract, protected readonly inter: Interface, protected readonly account?: string) {}
 
   readonly address = this.origin.options.address;
   
@@ -68,11 +70,87 @@ export class CaverCommonContract implements CommonContract {
                 logIndex: l.logIndex === undefined ? undefined : Number(l.logIndex),
               })),
               blockNumber: r.blockNumber === undefined ? undefined : Number(r.blockNumber),
-              type: r.typeInt,
+              // type: r.typeInt,
             }
           },
       });
       }])
+  );
+}
+
+export class KlipCommonContract extends CaverCommonContract {
+  constructor(private readonly provider: KlipProvider, _origin: CaverContract, _inter: Interface, _account?: string) {
+    super(_origin, _inter, _account);
+  }
+
+  private convertOutput(output: ParamType): AbiOutput {
+    return {
+      name: output.name,
+      type: output.type,
+      components: output.components?.map((c) => this.convertOutput(c)),
+    };
+  }
+
+  readonly methods = Object.fromEntries(
+    Object.entries(this.origin.methods)
+    .map(([name, method]) => [
+      name,
+      (...args: Array<any>) => ({
+        //  todo : remove default account
+        estimateGas: ({ from = this.account, gasLimit, value }: EstimateGasOptions) => (method as any)(...args).estimateGas({ from, gas: gasLimit, value }),
+        //  klaytn은 call에 value 넘기면 에러 나서 못 넘김
+        call: ({ from = this.account, gasPrice, gasLimit }: CallOptions) => (method as any)(...args).call({ from, gasPrice, gas: gasLimit }),
+        send: async ({ value }: SendOptions): Promise<CommonTransactionReceipt> => {
+          const fn = this.inter.getFunction(name);
+          const abi = {
+            constant: fn.constant,
+            inputs: fn.inputs.map((i) => ({ name: i.name, type: i.type })),
+            name: fn.name,
+            outputs: fn.outputs?.map((o) => this.convertOutput(o)),
+            payable: fn.payable,
+            stateMutability: fn.stateMutability as StateMutabilityType,
+            type: fn.type,
+          };
+
+          //  Klip은 uint256에 hex 넘기면 invalid params 에러 남
+          const params = args.map((a, i) => abi.inputs![i].type === 'uint256' ? BigNumber.from(a).toString() : a);
+          const minUnit = '1000000000000';
+
+          const result = await this.provider.sendWithKlip(abi, params, this.address, value ? BigNumber.from(value).div(minUnit).mul(minUnit).toString() : '0');
+          if (result.status !== 'success') {
+            throw new Error('Transacion failed!');
+          }
+          const { tx_hash } = result;
+
+          const r = await this.provider.getTransactionReceipt(tx_hash);
+          console.log('Klip Transaction Receipt', r);
+
+          return {
+            to: r.to,
+            from: r.from,
+            contractAddress: r.contractAddress,
+            transactionIndex: r.transactionIndex === null ? null : Number(r.transactionIndex),
+            gasUsed: BigNumber.from(r.gasUsed),
+            logsBloom: r.logsBloom,
+            blockHash: r.blockHash,
+            transactionHash: r.transactionHash,
+            logs: r.logs?.map((l) => ({
+              blockNumber: l.blockNumber === undefined ? undefined : Number(l.blockNumber),
+              blockHash: l.blockHash,
+              transactionIndex: l.transactionIndex === undefined ? undefined : Number(l.transactionIndex),
+              removed: l.removed,
+              address: l.address,
+              data: l.data,
+              topics: l.topics,
+              transactionHash: l.transactionHash,
+              logIndex: l.logIndex === undefined ? undefined : Number(l.logIndex),
+            })),
+            blockNumber: r.blockNumber === undefined ? undefined : Number(r.blockNumber),
+            // type: r.t,
+          }
+        },
+      }),
+    ])
   );
 }
 
@@ -106,7 +184,7 @@ export interface CommonTransactionReceipt {
   // cumulativeGasUsed: BigNumber,
   // effectiveGasPrice: BigNumber,
   // byzantium: boolean,
-  type: number;
+  // type: number;
   // status?: number
 }
 
