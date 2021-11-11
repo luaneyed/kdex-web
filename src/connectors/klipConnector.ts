@@ -5,8 +5,8 @@ import { AbstractConnector } from '@sixnetwork/caverjs-react-abstract-connector'
 import { AbstractConnectorArguments, ConnectorUpdate } from '@sixnetwork/caverjs-react-types';
 import { AbiItem } from 'caver-js/packages/caver-utils';
 
-import getRPCHelper from './getRPCHelper';
-import { KlipTransactionExecutor } from './klipContractExecutor';
+import getRPCHelper from '../utils/getRPCHelper';
+import { KlipTransactionExecutor } from '../utils/klipContractExecutor';
 
 class MyFormatter extends Formatter {
   getDefaultFormats() {

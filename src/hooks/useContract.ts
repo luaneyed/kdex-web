@@ -7,7 +7,7 @@ import Caver, { Contract as CaverContract } from 'caver-js';
 import { useCallback, useMemo } from 'react';
 import { getProviderOrSigner, isAddress } from 'utils';
 import { CaverCommonContract, CommonContract, EthersCommonContract, KlipCommonContract } from 'utils/contract';
-import { KlipProvider } from 'utils/klipConnector';
+import { KlipProvider } from 'connectors/KlipConnector';
 
 import { useActiveCaverReact, useActiveWeb3Context, useActiveWeb3React } from '.';
 import { ROUTER_ADDRESS } from '../constants';

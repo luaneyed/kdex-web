@@ -13,7 +13,7 @@ import { useWalletType, WalletType } from 'state/atoms';
 
 import { injected } from '../connectors';
 import { CaverNetworkContextName, Web3NetworkContextName } from '../constants';
-import { KlipProvider } from '../utils/klipConnector';
+import { KlipProvider } from '../connectors/KlipConnector';
 
 // eslint-disable-next-line import/no-unresolved
 export function useActiveWeb3Context() {

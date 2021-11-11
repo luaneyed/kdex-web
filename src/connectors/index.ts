@@ -2,13 +2,13 @@ import { Web3Provider } from '@ethersproject/providers';
 import { ConnectorNames } from '@pancakeswap-libs/uikit';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
-// import { KlipConnector } from '@sixnetwork/klip-connector'
 import { WalletLinkConnector } from '@web3-react/walletlink-connector';
-import { KlipConnector } from 'utils/klipConnector';
 
 import { KaikasConnector } from './KaikasConnector';
+import { KlipConnector } from './KlipConnector';
 import { NetworkConnector } from './NetworkConnector';
 
+// import { KlipConnector } from '@sixnetwork/klip-connector'
 const NETWORK_URL = process.env.REACT_APP_NETWORK_URL
 
 export const NETWORK_CHAIN_ID: number = parseInt(process.env.REACT_APP_CHAIN_ID ?? '1001')

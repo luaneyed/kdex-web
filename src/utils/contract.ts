@@ -5,7 +5,7 @@ import { Contract as CaverContract } from 'caver-js';
 import { TransactionReceipt } from 'caver-js/packages/caver-rtm';
 import { AbiOutput, StateMutabilityType } from 'caver-js/packages/caver-utils';
 
-import { KlipProvider } from './klipConnector';
+import { KlipProvider } from '../connectors/KlipConnector';
 
 export { CaverContract }
 
